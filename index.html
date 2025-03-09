@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parseltongue 2.0 - LLM Payload Crafter</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div id="app" class="container">
+        <header>
+            <h1>🐍 Parseltongue 2.0</h1>
+            <h3>LLM Payload Crafter</h3>
+        </header>
+
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button :class="{ active: activeTab === 'steganography' }" @click="activeTab = 'steganography'">Steganography</button>
+                <button :class="{ active: activeTab === 'transforms' }" @click="activeTab = 'transforms'">Text Transforms</button>
+                <button :class="{ active: activeTab === 'about' }" @click="activeTab = 'about'">About</button>
+            </div>
+
+            <!-- Steganography Tab -->
+            <div v-if="activeTab === 'steganography'" class="tab-content">
+                <h4>✨ Emoji Steganography</h4>
+                <div class="form-group">
+                    <label for="emoji-message">Enter your message:</label>
+                    <textarea id="emoji-message" v-model="emojiMessage" placeholder="Type your message here..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Select an emoji carrier:</label>
+                    <div class="emoji-grid">
+                        <button 
+                            v-for="carrier in carriers" 
+                            :key="carrier.name"
+                            class="emoji-button"
+                            @click="selectCarrier(carrier)"
+                            :class="{ selected: selectedCarrier === carrier }"
+                        >
+                            {{ carrier.emoji }}
+                            <span class="tooltip">{{ carrier.desc }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group" v-if="selectedCarrier && emojiMessage">
+                    <label>Encoded Message:</label>
+                    <textarea readonly v-model="encodedEmojiMessage"></textarea>
+                    <button class="copy-button" @click="copyToClipboard(encodedEmojiMessage)">
+                        <i class="fas fa-clipboard"></i> Copy
+                    </button>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <h4>🔍 Invisible Text</h4>
+                <div class="form-group">
+                    <label for="invisible-input">Enter text to make invisible:</label>
+                    <textarea id="invisible-input" v-model="invisibleInput" placeholder="Type your message here..."></textarea>
+                </div>
+
+                <div class="form-group" v-if="invisibleInput">
+                    <label>Invisible Text:</label>
+                    <textarea readonly v-model="invisibleOutput"></textarea>
+                    <button class="copy-button" @click="copyToClipboard(invisibleOutput)">
+                        <i class="fas fa-clipboard"></i> Copy
+                    </button>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <h4>🔎 Universal Decoder</h4>
+                <div class="form-group">
+                    <label for="decode-input">Enter text to decode:</label>
+                    <textarea id="decode-input" v-model="decodeInput" placeholder="Paste encoded text here..."></textarea>
+                </div>
+
+                <div class="form-group" v-if="decodedMessage">
+                    <label>Decoded Message:</label>
+                    <textarea readonly v-model="decodedMessage"></textarea>
+                    <button class="copy-button" @click="copyToClipboard(decodedMessage)">
+                        <i class="fas fa-clipboard"></i> Copy
+                    </button>
+                </div>
+            </div>
+
+            <!-- Text Transforms Tab -->
+            <div v-if="activeTab === 'transforms'" class="tab-content">
+                <h4>Text Transformation Tools</h4>
+                <div class="form-group">
+                    <label for="transform-input">Enter text to transform:</label>
+                    <textarea id="transform-input" v-model="transformInput" placeholder="Type your text here..."></textarea>
+                </div>
+
+                <div class="transform-buttons">
+                    <button v-for="transform in transforms" :key="transform.name" @click="applyTransform(transform.func)" class="transform-button">
+                        {{ transform.name }}
+                    </button>
+                </div>
+
+                <div class="form-group" v-if="transformOutput">
+                    <label>Transformed Text:</label>
+                    <textarea readonly v-model="transformOutput"></textarea>
+                    <button class="copy-button" @click="copyToClipboard(transformOutput)">
+                        <i class="fas fa-clipboard"></i> Copy
+                    </button>
+                </div>
+            </div>
+
+            <!-- About Tab -->
+            <div v-if="activeTab === 'about'" class="tab-content">
+                <h4>About Parseltongue 2.0</h4>
+                <p>
+                    Parseltongue 2.0 is a tool for crafting and obfuscating text using various transformation and steganography techniques.
+                    It's designed for educational purposes and to demonstrate the creative ways text can be manipulated.
+                </p>
+                <h5>Features:</h5>
+                <ul>
+                    <li>Emoji Steganography - Hide messages within emoji using Unicode variation selectors</li>
+                    <li>Invisible Text - Create text that's invisible but still present in the document</li>
+                    <li>Text Transformations - Convert text to various formats like leetspeak, binary, morse code, etc.</li>
+                    <li>Universal Decoder - Automatically detect and decode hidden messages</li>
+                </ul>
+                <p>
+                    <strong>Note:</strong> This tool is for educational purposes only. Please use responsibly.
+                </p>
+                <p>
+                    <a href="https://github.com/yourusername/parseltongue" target="_blank" class="github-link">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/transforms.js"></script>
+    <script src="js/steganography.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

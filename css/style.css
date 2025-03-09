@@ -1,0 +1,228 @@
+/* Dark hacker theme styling */
+:root {
+    --main-bg-color: #0E1117;
+    --text-color: #00FF41;
+    --button-bg: #1E1E1E;
+    --button-border: #00FF41;
+    --button-hover-bg: #00FF41;
+    --button-hover-text: #1E1E1E;
+    --input-bg: #1E1E1E;
+    --input-border: #00FF41;
+    --section-divider: #00FF41;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: 'Courier New', monospace;
+    color: var(--text-color);
+    margin-bottom: 15px;
+}
+
+/* Tabs styling */
+.tabs {
+    margin-top: 20px;
+}
+
+.tab-buttons {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--text-color);
+}
+
+.tab-buttons button {
+    background-color: transparent;
+    color: var(--text-color);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s;
+}
+
+.tab-buttons button.active {
+    border-bottom: 3px solid var(--text-color);
+    font-weight: bold;
+}
+
+.tab-buttons button:hover {
+    background-color: rgba(0, 255, 65, 0.1);
+}
+
+.tab-content {
+    padding: 20px 0;
+}
+
+/* Form elements */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+textarea {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    resize: vertical;
+    min-height: 100px;
+}
+
+button {
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    border: 1px solid var(--button-border);
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s;
+}
+
+button:hover {
+    background-color: var(--button-hover-bg);
+    color: var(--button-hover-text);
+}
+
+/* Emoji grid */
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.emoji-button {
+    padding: 5px;
+    min-width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    position: relative;
+}
+
+.emoji-button.selected {
+    background-color: rgba(0, 255, 65, 0.2);
+    border: 2px solid var(--text-color);
+}
+
+.emoji-button .tooltip {
+    visibility: hidden;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    text-align: center;
+    border-radius: 4px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.emoji-button:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Transform buttons */
+.transform-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.transform-button {
+    padding: 5px 10px;
+    margin: 2px;
+    height: auto;
+}
+
+/* Copy button */
+.copy-button {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Section dividers */
+.section-divider {
+    border-top: 1px solid var(--section-divider);
+    margin: 30px 0;
+}
+
+/* GitHub link */
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 8px 16px;
+    border: 1px solid var(--button-border);
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.github-link:hover {
+    background-color: var(--button-hover-bg);
+    color: var(--button-hover-text);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .emoji-grid {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    }
+    
+    .emoji-button {
+        min-width: 50px;
+        height: 50px;
+    }
+    
+    .tab-buttons {
+        flex-direction: column;
+    }
+    
+    .tab-buttons button {
+        width: 100%;
+        text-align: left;
+    }
+}
