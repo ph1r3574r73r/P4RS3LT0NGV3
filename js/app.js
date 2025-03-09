@@ -68,13 +68,13 @@ new Vue({
 
             if (this.activeSteg === 'invisible') {
                 this.encodedMessage = window.steganography.encodeInvisible(this.emojiMessage);
-                this.copyToClipboard(this.encodedMessage);
+                // Don't auto-copy to avoid clipboard permission errors
             } else if (this.selectedCarrier) {
                 this.encodedMessage = window.steganography.encodeEmoji(
                     this.selectedCarrier.emoji,
                     this.emojiMessage
                 );
-                this.copyToClipboard(this.encodedMessage);
+                // Don't auto-copy to avoid clipboard permission errors
             }
         },
         autoDecode() {
@@ -88,7 +88,7 @@ new Vue({
             
             if (result) {
                 this.decodedMessage = `Decoded (${result.method}): ${result.text}`;
-                this.copyToClipboard(result.text);
+                // Don't auto-copy to avoid clipboard permission errors
             } else {
                 this.decodedMessage = 'No encoded message detected';
             }
@@ -101,33 +101,69 @@ new Vue({
         async copyToClipboard(text) {
             if (!text) return;
             
-            try {
-                await navigator.clipboard.writeText(text);
-                
-                // Show a brief notification
-                const notification = document.createElement('div');
-                notification.className = 'copy-notification';
-                notification.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                document.body.appendChild(notification);
-                
-                // Remove after animation
-                setTimeout(() => {
-                    notification.classList.add('fade-out');
-                    setTimeout(() => document.body.removeChild(notification), 300);
-                }, 1000);
-            } catch (err) {
-                console.error('Failed to copy text:', err);
-                // Show error notification
-                const notification = document.createElement('div');
-                notification.className = 'copy-notification error';
-                notification.innerHTML = '<i class="fas fa-times"></i> Copy failed';
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    notification.classList.add('fade-out');
-                    setTimeout(() => document.body.removeChild(notification), 300);
-                }, 1000);
+            // Don't auto-copy in preview/iframe environments to avoid permission errors
+            // Only copy when explicitly triggered by a button click
+            const isExplicitUserAction = event && event.isTrusted;
+            
+            // Only try to copy if we're not in a restricted environment or it's a direct user action
+            if (isExplicitUserAction) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    
+                    // Show a success notification
+                    this.showNotification('<i class="fas fa-check"></i> Copied!', 'success');
+                } catch (err) {
+                    console.warn('Clipboard access not available:', err);
+                    
+                    // Try fallback method for copying (textarea method)
+                    this.fallbackCopy(text);
+                }
             }
+        },
+        
+        fallbackCopy(text) {
+            try {
+                // Create temporary textarea
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';  // Avoid scrolling to bottom
+                document.body.appendChild(textarea);
+                textarea.select();
+                
+                // Try the copy command
+                const successful = document.execCommand('copy');
+                
+                // Show appropriate notification
+                if (successful) {
+                    this.showNotification('<i class="fas fa-check"></i> Copied!', 'success');
+                } else {
+                    this.showNotification('<i class="fas fa-exclamation-triangle"></i> Copy not supported', 'error');
+                }
+                
+                // Clean up
+                document.body.removeChild(textarea);
+            } catch (err) {
+                console.warn('Fallback copy method failed:', err);
+                this.showNotification('<i class="fas fa-exclamation-triangle"></i> Copy not supported', 'error');
+            }
+        },
+        
+        showNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `copy-notification ${type}`;
+            notification.innerHTML = message;
+            document.body.appendChild(notification);
+            
+            // Remove after animation
+            setTimeout(() => {
+                notification.classList.add('fade-out');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 1000);
         },
         
         // Universal Decoder - tries all decoding methods

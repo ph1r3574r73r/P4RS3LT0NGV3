@@ -101,7 +101,9 @@
                     <div class="output-section" v-if="encodedMessage">
                         <div class="output-container">
                             <textarea readonly v-model="encodedMessage"></textarea>
-
+                            <button class="copy-button" @click="copyToClipboard(encodedMessage)" title="Copy to clipboard">
+                                <i class="fas fa-copy"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -115,7 +117,9 @@
                             ></textarea>
                             <div class="decoded-message" v-if="decodedMessage">
                                 {{ decodedMessage }}
-
+                                <button class="copy-button" @click="copyToClipboard(decodedMessage.substring(decodedMessage.indexOf(': ') + 2))" title="Copy decoded text">
+                                    <i class="fas fa-copy"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -161,7 +165,9 @@
                                 v-model="transformOutput"
                                 aria-label="Transformed text output"
                             ></textarea>
-
+                            <button class="copy-button" @click="copyToClipboard(transformOutput)" title="Copy to clipboard">
+                                <i class="fas fa-copy"></i>
+                            </button>
                         </div>
                     </div>
                 </div>

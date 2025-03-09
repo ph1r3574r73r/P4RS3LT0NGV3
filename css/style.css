@@ -210,33 +210,7 @@ button {
     transition: all 0.3s;
 }
 
-.copy-button {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 6px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--button-bg);
-    border: 1px solid var(--input-border);
-    border-radius: 4px;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.copy-button:hover {
-    background: var(--button-hover-bg);
-    border-color: var(--accent-color);
-    color: var(--accent-color);
-}
-
-.copy-button:active {
-    transform: translateY(1px);
-}
+/* Copy button styling moved to a single definition below */
 
 button:hover {
     background-color: var(--button-hover-bg);
@@ -390,20 +364,45 @@ button:hover {
     position: absolute;
     top: 8px;
     right: 8px;
-    padding: 8px;
+    padding: 6px;
     background: var(--button-bg);
-    border: none;
-    border-radius: 6px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
     color: var(--text-color);
-    opacity: 0.7;
+    opacity: 0.8;
+    cursor: pointer;
     transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
 }
 
 .copy-button:hover {
-    opacity: 1;
     background: var(--button-hover-bg);
-    color: var(--main-bg-color);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    opacity: 1;
 }
+
+.copy-button:active {
+    transform: translateY(1px);
+}
+
+.decoded-message {
+    position: relative;
+    padding: 12px;
+    background: var(--input-bg);
+    border-radius: 4px;
+    margin-top: 12px;
+    border: 1px solid var(--input-border);
+    font-family: 'Fira Code', monospace;
+    word-break: break-word;
+}
+
+/* Copy button hover styling is defined above */
 
 .form-group label {
     display: flex;
