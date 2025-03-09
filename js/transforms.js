@@ -15,11 +15,23 @@ const transforms = {
             '(': ')', ')': '(', '[': ']', ']': '[', '{': '}', '}': '{', '<': '>', '>': '<',
             '&': '⅋', '_': '‾'
         },
+        // Create reverse map for decoding
+        reverseMap: function() {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return revMap;
+        },
         func: function(text) {
             return [...text].map(c => this.map[c] || c).reverse().join('');
         },
         preview: function(text) {
             return this.func(text);
+        },
+        reverse: function(text) {
+            const revMap = this.reverseMap();
+            return [...text].map(c => revMap[c] || c).reverse().join('');
         }
     },
 
@@ -130,11 +142,29 @@ const transforms = {
             '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
             '8': '---..', '9': '----.'
         },
-        func: function(text) {
-            return [...text.toLowerCase()].map(c => this.map[c] || c).join(' ');
+        // Create reverse map for decoding
+        reverseMap: function() {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return revMap;
+        },
+        func: function(text, decode = false) {
+            if (decode) {
+                // Decode mode
+                const revMap = this.reverseMap();
+                return text.split(/\s+/).map(c => revMap[c] || c).join('');
+            } else {
+                // Encode mode
+                return [...text.toLowerCase()].map(c => this.map[c] || c).join(' ');
+            }
         },
         preview: function(text) {
             return this.func(text);
+        },
+        reverse: function(text) {
+            return this.func(text, true);
         }
     },
 
@@ -145,8 +175,24 @@ const transforms = {
         },
         preview: function(text) {
             return this.func(text);
+        },
+        reverse: function(text) {
+            // Remove spaces and ensure we have valid binary
+            const binText = text.replace(/\s+/g, '');
+            let result = '';
+            
+            // Process 8 bits at a time
+            for (let i = 0; i < binText.length; i += 8) {
+                const byte = binText.substr(i, 8);
+                if (byte.length === 8) {
+                    result += String.fromCharCode(parseInt(byte, 2));
+                }
+            }
+            return result;
         }
     }
+    // Note: other transforms don't have reverse functions because they're not easily reversible
+    // The universal decoder will only try to reverse transforms that have a reverse function
 };
 
 // Export transforms for use in app.js

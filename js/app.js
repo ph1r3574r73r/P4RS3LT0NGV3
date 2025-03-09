@@ -83,23 +83,15 @@ new Vue({
                 return;
             }
 
-            // Try invisible text decoding
-            let decoded = window.steganography.decodeInvisible(this.decodeInput);
-            if (decoded) {
-                this.decodedMessage = decoded;
-                this.copyToClipboard(decoded);
-                return;
+            // Use the universal decoder
+            const result = this.universalDecode(this.decodeInput);
+            
+            if (result) {
+                this.decodedMessage = `Decoded (${result.method}): ${result.text}`;
+                this.copyToClipboard(result.text);
+            } else {
+                this.decodedMessage = 'No encoded message detected';
             }
-
-            // Try emoji decoding
-            decoded = window.steganography.decodeEmoji(this.decodeInput);
-            if (decoded) {
-                this.decodedMessage = decoded;
-                this.copyToClipboard(decoded);
-                return;
-            }
-
-            this.decodedMessage = 'No hidden message found';
         },
         previewInvisible(text) {
             return '[invisible]';
@@ -107,11 +99,120 @@ new Vue({
 
         // Utility Methods
         async copyToClipboard(text) {
+            if (!text) return;
+            
             try {
                 await navigator.clipboard.writeText(text);
+                
+                // Show a brief notification
+                const notification = document.createElement('div');
+                notification.className = 'copy-notification';
+                notification.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                document.body.appendChild(notification);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => document.body.removeChild(notification), 300);
+                }, 1000);
             } catch (err) {
                 console.error('Failed to copy text:', err);
+                // Show error notification
+                const notification = document.createElement('div');
+                notification.className = 'copy-notification error';
+                notification.innerHTML = '<i class="fas fa-times"></i> Copy failed';
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => document.body.removeChild(notification), 300);
+                }, 1000);
             }
+        },
+        
+        // Universal Decoder - tries all decoding methods
+        universalDecode(input) {
+            if (!input) return '';
+            
+            // Try all decoders in order
+            
+            // 1. Try steganography decoders
+            // - Check for emoji steganography first
+            // The emoji encoding uses variation selectors which are hard to see
+            if (/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}]/u.test(input)) {
+                const decoded = window.steganography.decodeEmoji(input);
+                if (decoded) {
+                    return { text: decoded, method: 'Emoji Steganography' };
+                }
+            }
+            
+            // - Invisible text
+            let decoded = window.steganography.decodeInvisible(input);
+            if (decoded) {
+                return { text: decoded, method: 'Invisible Text' };
+            }
+            
+            // 2. Try transform reversals
+            // - Binary
+            if (/^[01\s]+$/.test(input.trim())) {
+                try {
+                    // Use binary transform's reverse function if available
+                    if (window.transforms.binary && window.transforms.binary.reverse) {
+                        const result = window.transforms.binary.reverse(input);
+                        if (result && /[\x20-\x7E]/.test(result)) { // Make sure it's readable ASCII
+                            return { text: result, method: 'Binary' };
+                        }
+                    } else {
+                        // Fallback implementation
+                        const binText = input.replace(/\s+/g, '');
+                        let result = '';
+                        for (let i = 0; i < binText.length; i += 8) {
+                            const byte = binText.substr(i, 8);
+                            if (byte.length === 8) {
+                                result += String.fromCharCode(parseInt(byte, 2));
+                            }
+                        }
+                        if (result && /[\x20-\x7E]/.test(result)) { // Make sure it's readable ASCII
+                            return { text: result, method: 'Binary' };
+                        }
+                    }
+                } catch (e) { 
+                    console.error('Binary decode error:', e);
+                }
+            }
+            
+            // - Morse code
+            if (/^[.\-\s\/]+$/.test(input.trim())) {
+                try {
+                    // Use morse transform's reverse function if available
+                    if (window.transforms.morse && window.transforms.morse.reverse) {
+                        const result = window.transforms.morse.reverse(input);
+                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                            return { text: result, method: 'Morse Code' };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Morse decode error:', e);
+                }
+            }
+            
+            // - Try reverse each transform
+            for (const name in window.transforms) {
+                const transform = window.transforms[name];
+                if (transform.reverse) {
+                    try {
+                        const result = transform.reverse(input);
+                        // Only return if the result is different and contains readable characters
+                        if (result !== input && /[a-zA-Z0-9\s]/.test(result)) {
+                            return { text: result, method: transform.name };
+                        }
+                    } catch (e) {
+                        console.error(`Error decoding with ${name}:`, e);
+                    }
+                }
+            }
+            
+            return null;
         }
     },
     // Initialize theme
