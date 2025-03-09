@@ -287,6 +287,20 @@ button:hover {
     gap: 12px;
 }
 
+/* Encoded preview styling */
+.encoded-preview {
+    display: inline-block;
+    padding: 2px 4px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    font-family: monospace;
+    word-break: break-all;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.5px; /* Better display for variation selectors */
+}
+
 .transform-button kbd {
     position: absolute;
     top: 4px;

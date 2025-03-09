@@ -1,9 +1,65 @@
 // Steganography carriers
+// First define encoding function for preview usage
+function encodeForPreview(emoji, text) {
+    if (!text) return emoji;
+    
+    // Convert text to binary string
+    const binary = Array.from(text)
+        .map(c => c.charCodeAt(0).toString(2).padStart(8, '0'))
+        .join('');
+    
+    // Use variation selectors to encode binary
+    const vs15 = '\ufe0e';  // text variation selector (0)
+    const vs16 = '\ufe0f';  // emoji variation selector (1)
+    
+    // Start with the emoji character
+    let result = emoji;
+    
+    // Add variation selectors based on binary representation
+    for (const bit of binary) {
+        result += bit === '0' ? vs15 : vs16;
+    }
+    
+    // Ensure there's a zero-width space after the encoded content
+    result += '\u200B';
+    
+    return result;
+}
+
 const carriers = [
-    { emoji: '🐍', name: 'SNAKE', desc: 'Classic Snake', preview: text => `🐍${text}` },
-    { emoji: '🐉', name: 'DRAGON', desc: 'Mystical Dragon', preview: text => `🐉${text}` },
-    { emoji: '🦎', name: 'LIZARD', desc: 'Sneaky Lizard', preview: text => `🦎${text}` },
-    { emoji: '🐊', name: 'CROCODILE', desc: 'Dangerous Croc', preview: text => `🐊${text}` }
+    { 
+        emoji: '🐍', 
+        name: 'SNAKE', 
+        desc: 'Classic Snake', 
+        preview: function(text) {
+            // Show actual encoded result for preview
+            return encodeForPreview(this.emoji, text);
+        }
+    },
+    { 
+        emoji: '🐉', 
+        name: 'DRAGON', 
+        desc: 'Mystical Dragon', 
+        preview: function(text) {
+            return encodeForPreview(this.emoji, text);
+        }
+    },
+    { 
+        emoji: '🦎', 
+        name: 'LIZARD', 
+        desc: 'Sneaky Lizard', 
+        preview: function(text) {
+            return encodeForPreview(this.emoji, text);
+        }
+    },
+    { 
+        emoji: '🐊', 
+        name: 'CROCODILE', 
+        desc: 'Dangerous Croc', 
+        preview: function(text) {
+            return encodeForPreview(this.emoji, text);
+        }
+    }
 ];
 
 // Emoji encoding/decoding

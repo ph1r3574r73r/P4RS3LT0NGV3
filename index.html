@@ -81,7 +81,7 @@
                             >
                                 {{ carrier.emoji }} {{ carrier.name }}
                                 <small class="transform-preview" v-if="emojiMessage">
-                                    {{ carrier.preview ? carrier.preview(emojiMessage.slice(0, 10)) : '' }}
+                                    <span class="encoded-preview">{{ carrier.preview ? carrier.preview(emojiMessage.slice(0, 10)) : '' }}</span>
                                 </small>
                             </button>
                             <button 
