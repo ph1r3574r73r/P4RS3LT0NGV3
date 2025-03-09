@@ -43,7 +43,6 @@
                 <button 
                     :class="{ active: activeTab === 'transforms' }" 
                     @click="activeTab = 'transforms'"
-                    @keyup.t="activeTab = 'transforms'"
                     title="Transform text (T)"
                 >
                     <i class="fas fa-font"></i> Transform
@@ -51,7 +50,6 @@
                 <button 
                     :class="{ active: activeTab === 'steganography' }" 
                     @click="activeTab = 'steganography'"
-                    @keyup.h="activeTab = 'steganography'"
                     title="Hide text (H)"
                 >
                     <i class="fas fa-eye-slash"></i> Hide
@@ -102,9 +100,7 @@
                     <div class="output-section" v-if="encodedMessage">
                         <div class="output-container">
                             <textarea readonly v-model="encodedMessage"></textarea>
-                            <button class="copy-button" @click="copyToClipboard(encodedMessage)" title="Copy to clipboard">
-                                <i class="fas fa-copy"></i>
-                            </button>
+
                         </div>
                     </div>
 
@@ -118,9 +114,7 @@
                             ></textarea>
                             <div class="decoded-message" v-if="decodedMessage">
                                 {{ decodedMessage }}
-                                <button class="copy-button" @click="copyToClipboard(decodedMessage)" title="Copy decoded text">
-                                    <i class="fas fa-copy"></i>
-                                </button>
+
                             </div>
                         </div>
                     </div>
@@ -144,16 +138,15 @@
                             <button 
                                 v-for="(transform, index) in transforms" 
                                 :key="transform.name" 
-                                @click="applyTransform(transform.func)"
-                                @keyup="index < 9 ? applyTransform(transform.func) : null"
+                                @click="applyTransform(transform)"
                                 class="transform-button"
-                                :class="{ active: activeTransform === transform.name }"
+                                :class="{ active: activeTransform === transform }"
                                 :title="transform.name + (index < 9 ? ' (' + (index + 1) + ')' : '')"
                                 :data-shortcut="index < 9 ? index + 1 : ''"
                             >
                                 {{ transform.name }}
                                 <small class="transform-preview" v-if="transformInput">
-                                    {{ transform.preview ? transform.preview(transformInput.slice(0, 10)) : '' }}
+                                    {{ transform.preview(transformInput.slice(0, 10)) }}
                                 </small>
                                 <kbd v-if="index < 9">{{ index + 1 }}</kbd>
                             </button>
@@ -167,15 +160,7 @@
                                 v-model="transformOutput"
                                 aria-label="Transformed text output"
                             ></textarea>
-                            <button 
-                                class="copy-button" 
-                                @click="copyToClipboard(transformOutput)" 
-                                @keyup.c="copyToClipboard(transformOutput)"
-                                title="Copy to clipboard (C)"
-                                aria-label="Copy transformed text to clipboard"
-                            >
-                                <i class="fas fa-copy"></i>
-                            </button>
+
                         </div>
                     </div>
                 </div>
