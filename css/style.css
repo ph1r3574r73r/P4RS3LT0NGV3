@@ -208,7 +208,7 @@ textarea {
     border-radius: 6px;
     padding: 12px;
     border: 1px solid var(--input-border);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    box-shadow: none;
 }
 
 .emoji-library-header {
@@ -220,7 +220,7 @@ textarea {
     padding: 10px 12px;
     background: var(--secondary-bg);
     border-radius: 6px 6px 0 0;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    box-shadow: none;
     position: relative;
     overflow: hidden;
 }
@@ -316,7 +316,7 @@ textarea {
     border-radius: 10px;
     background-color: var(--secondary-bg);
     padding: 0;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: none;
     position: relative;
     overflow: hidden;
 }
@@ -354,9 +354,12 @@ textarea {
     align-items: center;
     gap: 6px;
     border-left: 2px solid var(--special-color);
-    box-shadow: none;
+    box-shadow: none !important;
     max-width: 450px;
     width: 100%;
+    border-bottom: none !important;
+    border-top: none !important;
+    border-right: none !important;
 }
 
 .emoji-grid-note i {
@@ -377,7 +380,7 @@ textarea {
     margin-left: auto;
     margin-right: auto;
     font-weight: 500;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
     border: 1px solid rgba(66, 165, 245, 0.15);
     opacity: 0.9;
 }
@@ -438,6 +441,8 @@ textarea {
     overflow: visible !important;
     min-height: 0 !important;
     max-width: 100% !important;
+    border-bottom: none !important;
+    border-top: none !important;
 }
 
 .emoji-button {
