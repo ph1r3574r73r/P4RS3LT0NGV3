@@ -427,17 +427,38 @@ window.emojiLibrary.EMOJI_LIST = [
     "🇮🇪", // Ireland
 ];
 
-// Define standard emoji categories using the Unicode CLDR categorization
+// Define emoji categories with specific emojis for each category
+window.emojiLibrary.EMOJIS = {
+    faces_people: ["😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", "😋", "😎", "😍", "😘", "🥰", "😗", "😙", "😚", "🙂", "🤗", "🤩", "🤔", "🤨", "😐", "😑", "😶", "🙄", "😏", "😣", "😥", "😮", "🤐", "😯", "😪", "😫", "😴", "😌", "😛", "😜", "😝", "🤤", "😒", "😓", "😔", "😕", "🙃", "🤑", "😲", "🙁", "😖", "😞", "😟", "😤", "😢", "😭", "😧", "😨", "😩", "🤯", "😱", "😳", "🥵", "🥶", "😡", "😠", "🤬", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "😇", "🥳", "🥴", "🥺", "🧐", "🥱", "🧠"],
+
+    gestures: ["👍", "👎", "👌", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "👇", "🖕", "☝️", "✋", "🤚", "🖐️", "🖖", "👋", "🤏", "👐", "🙌", "👏", "🤝", "🙏"],
+
+    animals_nature: ["🦊", "🦁", "🐯", "🐮", "🐷", "🐸", "🐵", "🐔", "🐧", "🐦", "🐤", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴", "🐝", "🐛", "🦋", "🐌", "🐞", "🐜", "🕷️", "🦂", "🐍", "🦨", "🦩", "🦫", "🦬", "🐻‍❄️", "🐼", "🐨", "🐕", "🐶", "🐩", "🐈", "🐱"],
+
+    activities_sports: ["⚽", "🏀", "🏈", "🏐", "🏉", "🎾", "🎳", "🏑", "🏒", "🏓", "🏸", "🥊", "🥋", "🥅", "🤾", "🎿", "🏄", "🏂", "🏊", "🏋️", "🤼", "🤸", "🤺", "🤽", "🤹", "🎯", "🎱", "🎽", "🚴", "🚵"],
+
+    technology_objects: ["💻", "⌨️", "🖥️", "🖱️", "🖨️", "📱", "☎️", "📞", "📟", "📠", "📺", "📻", "🎙️", "🎚️", "🎛️", "🧭", "📡", "🔋", "🔌", "💡", "🛢️", "💸", "💵", "💳", "🔑", "🔓", "🔒"],
+
+    mystical_fantasy: ["🧙", "🧚", "🧛", "🧜", "👹", "👺", "👻", "👽", "👾", "🔮", "🪄", "🐉", "🐲", "🦄"],
+
+    nature_weather: ["🌈", "🌞", "🌙", "⭐", "🌟", "⚡", "❄️", "🔥", "💧", "🌊", "🌪️", "🌋"],
+
+    symbols: ["❤️", "💛", "💚", "💙", "💜", "💔", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟", "💢", "💣", "💥", "💦", "💨", "💩", "💫", "💬", "💠", "💮"],
+
+    flags: ["🏁", "🚩", "🎌", "🏴", "🏳️", "🏳️‍🌈", "🏳️‍⚧️", "🏴‍☠️", "🇺🇸", "🇨🇦", "🇬🇧", "🇩🇪", "🇫🇷", "🇮🇹", "🇯🇵", "🇰🇷", "🇷🇺", "🇨🇳", "🇮🇳", "🇧🇷", "🇦🇺", "🇪🇸", "🇳🇱", "🇸🇪"]
+};
+
+// Define standard emoji categories
 window.emojiLibrary.CATEGORIES = [
     { id: 'all', name: 'All Emojis', icon: '🔍' },
-    { id: 'smileys', name: 'Smileys & Emotion', icon: '😀' },
-    { id: 'people', name: 'People & Body', icon: '👋' },
-    { id: 'animals', name: 'Animals & Nature', icon: '🐵' },
-    { id: 'food', name: 'Food & Drink', icon: '🍎' },
-    { id: 'travel', name: 'Travel & Places', icon: '🚗' },
-    { id: 'activities', name: 'Activities', icon: '⚽' },
-    { id: 'objects', name: 'Objects', icon: '💡' },
-    { id: 'symbols', name: 'Symbols', icon: '🔣' },
+    { id: 'faces_people', name: 'Faces & People', icon: '😀' },
+    { id: 'gestures', name: 'Gestures', icon: '👍' },
+    { id: 'animals_nature', name: 'Animals & Nature', icon: '🦊' },
+    { id: 'activities_sports', name: 'Activities & Sports', icon: '⚽' },
+    { id: 'technology_objects', name: 'Tech & Objects', icon: '💻' },
+    { id: 'mystical_fantasy', name: 'Mystical & Fantasy', icon: '🧙' },
+    { id: 'nature_weather', name: 'Nature & Weather', icon: '🌈' },
+    { id: 'symbols', name: 'Symbols', icon: '❤️' },
     { id: 'flags', name: 'Flags', icon: '🏁' }
 ];
 
@@ -455,11 +476,11 @@ window.emojiLibrary.renderEmojiGrid = function(containerId, onEmojiSelect, filte
     // Clear container
     container.innerHTML = '';
     
-    // Create grid note
-    const gridNote = document.createElement('div');
-    gridNote.className = 'emoji-grid-note';
-    gridNote.innerHTML = '<i class="fas fa-magic"></i> Click any emoji to automatically copy your hidden message';
-    container.appendChild(gridNote);
+    // Add header with instruction message
+    const emojiHeader = document.createElement('div');
+    emojiHeader.className = 'emoji-header';
+    emojiHeader.innerHTML = '<h3><i class="fas fa-icons"></i> Choose an Emoji</h3><p class="emoji-subtitle"><i class="fas fa-magic"></i> Click any emoji to copy your hidden message</p>';
+    container.appendChild(emojiHeader);
     
     // Create category tabs
     const categoryTabs = document.createElement('div');
@@ -483,12 +504,30 @@ window.emojiLibrary.renderEmojiGrid = function(containerId, onEmojiSelect, filte
     const gridContainer = document.createElement('div');
     gridContainer.className = 'emoji-grid';
     
-    // Combine all emojis for a larger selection
-    const allEmojis = [...window.emojiLibrary.EMOJI_LIST, ...window.emojiLibrary.ADDITIONAL_EMOJIS];
+    // Get the active category
+    let activeCategory = 'all';
+    const activeCategoryTab = container.querySelector('.emoji-category-tab.active');
+    if (activeCategoryTab) {
+        activeCategory = activeCategoryTab.getAttribute('data-category');
+    }
     
-    // Use the provided filtered list if available, otherwise default to full list
-    const emojisToShow = filteredList && filteredList.length > 0 ? filteredList : allEmojis;
-    console.log(`Adding ${emojisToShow.length} emojis to grid`);
+    // Determine which emojis to show based on category and filter
+    let emojisToShow = [];
+    
+    if (filteredList && filteredList.length > 0) {
+        // If we have a filtered list (from search), use that
+        emojisToShow = filteredList;
+    } else if (activeCategory === 'all') {
+        // For 'all' category, combine all emojis from the categories
+        Object.values(window.emojiLibrary.EMOJIS).forEach(categoryEmojis => {
+            emojisToShow = [...emojisToShow, ...categoryEmojis];
+        });
+    } else if (window.emojiLibrary.EMOJIS[activeCategory]) {
+        // For specific category, use emojis from that category
+        emojisToShow = window.emojiLibrary.EMOJIS[activeCategory];
+    }
+    
+    console.log(`Adding ${emojisToShow.length} emojis to grid for category: ${activeCategory}`);
     
     // Add emojis to grid with enforced styling
     emojisToShow.forEach(emoji => {
@@ -514,197 +553,21 @@ window.emojiLibrary.renderEmojiGrid = function(containerId, onEmojiSelect, filte
     container.appendChild(gridContainer);
     console.log('Emoji grid rendering complete');
     
-    // Helper function to categorize emojis using standard Unicode ranges
-    function categorizeEmoji(emoji) {
-        // Get the code point of the emoji
-        const code = emoji.codePointAt(0);
-        
-        // Smileys & Emotion (faces, emotions, hearts)
-        if ((code >= 0x1F600 && code <= 0x1F64F) || // Emoticons
-            (code >= 0x1F910 && code <= 0x1F92F) || // Face-hand
-            (code >= 0x1F970 && code <= 0x1F97A) || // Faces
-            (code >= 0x1F9D0 && code <= 0x1F9DF) || // Faces
-            (code >= 0x2763 && code <= 0x2764) || // Hearts
-            (code >= 0x1F48B && code <= 0x1F49F) || // Hearts and love
-            (code >= 0x1F493 && code <= 0x1F49F) || // Hearts
-            emoji === '😀' || emoji === '😃' || emoji === '😄' || emoji === '😁' || emoji === '😆' || 
-            emoji === '😅' || emoji === '😂' || emoji === '🤣' || emoji === '☺️' || emoji === '😊') {
-            return 'smileys';
-        }
-        
-        // People & Body (people, hands, body parts)
-        if ((code >= 0x1F466 && code <= 0x1F487) || // People
-            (code >= 0x1F9D1 && code <= 0x1F9DD) || // People
-            (code >= 0x1F468 && code <= 0x1F469) || // Man/Woman
-            (code >= 0x1F46E && code <= 0x1F9CF) || // People roles
-            (code >= 0x1F44B && code <= 0x1F450) || // Hands
-            (code >= 0x1F918 && code <= 0x1F91F) || // Hand symbols
-            (code >= 0x1F926 && code <= 0x1F937) || // People gestures
-            emoji.includes('👨') || emoji.includes('👩') || emoji.includes('🧑') || 
-            emoji.includes('👶') || emoji.includes('👦') || emoji.includes('👧') || 
-            emoji.includes('🧒') || emoji.includes('👴') || emoji.includes('👵') || 
-            emoji.includes('🧓') || emoji.includes('👮') || emoji.includes('👷')) {
-            return 'people';
-        }
-        
-        // Animals & Nature (animals, plants, weather)
-        if ((code >= 0x1F400 && code <= 0x1F43F) || // Animals
-            (code >= 0x1F980 && code <= 0x1F9AF) || // Animals
-            (code >= 0x1F330 && code <= 0x1F33F) || // Plants
-            (code >= 0x1F340 && code <= 0x1F37F) || // More plants
-            (code >= 0x1F300 && code <= 0x1F32C) || // Weather
-            emoji === '🐵' || emoji === '🐒' || emoji === '🦍' || emoji === '🦧' || 
-            emoji === '🐶' || emoji === '🐕' || emoji === '🦮' || emoji === '🐩' || 
-            emoji === '🐺' || emoji === '🦊' || emoji === '🦝' || emoji === '🐱' || 
-            emoji === '🌱' || emoji === '🌲' || emoji === '🌳' || emoji === '🌴' || 
-            emoji === '🌵' || emoji === '🌷' || emoji === '🌸' || emoji === '🌹') {
-            return 'animals';
-        }
-        
-        // Food & Drink
-        if ((code >= 0x1F32D && code <= 0x1F37F) || // Food items
-            (code >= 0x1F95F && code <= 0x1F9AA) || // More food
-            (code >= 0x1F950 && code <= 0x1F96F) || // More food
-            emoji === '🍇' || emoji === '🍈' || emoji === '🍉' || emoji === '🍊' || 
-            emoji === '🍋' || emoji === '🍌' || emoji === '🍍' || emoji === '🥭' || 
-            emoji === '🍎' || emoji === '🍏' || emoji === '🍐' || emoji === '🍑' || 
-            emoji === '🍒' || emoji === '🍓' || emoji === '🥝' || emoji === '🍅' || 
-            emoji === '🥥' || emoji === '🥑' || emoji === '🍆' || emoji === '🥔') {
-            return 'food';
-        }
-        
-        // Travel & Places (transportation, buildings, maps)
-        if ((code >= 0x1F680 && code <= 0x1F6FF) || // Transport
-            (code >= 0x1F30D && code <= 0x1F32C) || // Earth/Weather
-            (code >= 0x1F3D7 && code <= 0x1F3DB) || // Buildings
-            (code >= 0x1F3E0 && code <= 0x1F3F0) || // Buildings
-            (code >= 0x26E9 && code <= 0x26F5) || // Buildings/Places
-            emoji === '🚗' || emoji === '🚕' || emoji === '🚙' || emoji === '🚌' || 
-            emoji === '🚎' || emoji === '🏎️' || emoji === '🚓' || emoji === '🚑' || 
-            emoji === '🚒' || emoji === '🚐' || emoji === '🛻' || emoji === '🚚' || 
-            emoji === '🚛' || emoji === '🚜' || emoji === '🛵' || emoji === '🏍️' || 
-            emoji === '🛺' || emoji === '🚲' || emoji === '🛴' || emoji === '🚏') {
-            return 'travel';
-        }
-        
-        // Activities (sports, music, arts, hobbies)
-        if ((code >= 0x1F380 && code <= 0x1F3A0) || // Events
-            (code >= 0x1F3A3 && code <= 0x1F3BE) || // Sports
-            (code >= 0x1F3BF && code <= 0x1F3C9) || // Sports
-            (code >= 0x1F3CF && code <= 0x1F3D6) || // Sports
-            (code >= 0x1F3F8 && code <= 0x1F3FF) || // Activities
-            (code >= 0x1F93A && code <= 0x1F94F) || // Sports
-            emoji === '⚽' || emoji === '⚾' || emoji === '🏀' || emoji === '🏐' || 
-            emoji === '🏈' || emoji === '🏉' || emoji === '🎾' || emoji === '🥏' || 
-            emoji === '🎳' || emoji === '🏏' || emoji === '🏑' || emoji === '🏒' || 
-            emoji === '🥍' || emoji === '🏓' || emoji === '🏸' || emoji === '🥊') {
-            return 'activities';
-        }
-        
-        // Objects (household, office, tools)
-        if ((code >= 0x1F4A1 && code <= 0x1F4CC) || // Office
-            (code >= 0x1F4D0 && code <= 0x1F4F7) || // Office/Tools
-            (code >= 0x1F4FF && code <= 0x1F53D) || // Various objects
-            (code >= 0x1F56F && code <= 0x1F5A4) || // Objects
-            (code >= 0x1F5D1 && code <= 0x1F5FF) || // Office objects
-            (code >= 0x1F6D1 && code <= 0x1F6DF) || // Misc objects
-            emoji === '⌚' || emoji === '📱' || emoji === '📲' || emoji === '💻' || 
-            emoji === '⌨️' || emoji === '🖥️' || emoji === '🖨️' || emoji === '🖱️' || 
-            emoji === '🖲️' || emoji === '🕹️' || emoji === '🗜️' || emoji === '💽' || 
-            emoji === '💾' || emoji === '💿' || emoji === '📀' || emoji === '📼') {
-            return 'objects';
-        }
-        
-        // Symbols (punctuation, alphanum, geometric, etc)
-        if ((code >= 0x1F300 && code <= 0x1F320) || // Various symbols
-            (code >= 0x1F170 && code <= 0x1F251) || // Enclosed characters
-            (code >= 0x1F523 && code <= 0x1F5FF) || // Symbols
-            (code >= 0x2600 && code <= 0x26FF) || // Misc symbols
-            (code >= 0x2700 && code <= 0x27BF) || // Dingbats
-            (code >= 0x1F5FB && code <= 0x1F64F) || // Symbols
-            (code >= 0x1F680 && code <= 0x1F6FF) || // Transport symbols
-            emoji === '💯' || emoji === '📛' || emoji === '🔰' || emoji === '⭕' || 
-            emoji === '✅' || emoji === '☑️' || emoji === '✔️' || emoji === '❌' || 
-            emoji === '❎' || emoji === '➰' || emoji === '➿' || emoji === '〽️' || 
-            emoji === '✳️' || emoji === '✴️' || emoji === '❇️' || emoji === '©️') {
-            return 'symbols';
-        }
-        
-        // Flags (country flags, flag symbols)
-        if ((code >= 0x1F1E6 && code <= 0x1F1FF) || // Regional indicators for flags
-            emoji === '🏁' || emoji === '🚩' || emoji === '🎌' || emoji === '🏴' || 
-            emoji.includes('🏳️') || // Flag variants
-            emoji.includes('🏴') || // Flag variants
-            // Check for country flags (pairs of regional indicators)
-            (emoji.length >= 2 && 
-             emoji.codePointAt(0) >= 0x1F1E6 && emoji.codePointAt(0) <= 0x1F1FF && 
-             emoji.codePointAt(2) >= 0x1F1E6 && emoji.codePointAt(2) <= 0x1F1FF)) {
-            return 'flags';
-        }
-        
-        // Default to 'all' if we can't categorize
-        return 'all';
-    }
-    
-    // Add event listeners to category tabs with actual filtering
-    document.querySelectorAll('.emoji-category-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Remove active class from all tabs
-            document.querySelectorAll('.emoji-category-tab').forEach(t => {
-                t.classList.remove('active');
-            });
-            // Add active class to clicked tab
-            this.classList.add('active');
+    // Add event listeners to category tabs
+    const categoryTabButtons = container.querySelectorAll('.emoji-category-tab');
+    categoryTabButtons.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Update active tab
+            categoryTabButtons.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
             
-            const selectedCategory = this.getAttribute('data-category');
-            console.log('Selected category:', selectedCategory);
+            // Re-render the emoji grid with the selected category
+            const selectedCategory = tab.getAttribute('data-category');
+            console.log('Category selected:', selectedCategory);
             
-            // Get all emoji buttons
-            const allEmojis = [...window.emojiLibrary.EMOJI_LIST, ...window.emojiLibrary.ADDITIONAL_EMOJIS];
-            
-            // Filter emojis based on selected category
-            let filteredEmojis = allEmojis;
-            if (selectedCategory !== 'all') {
-                filteredEmojis = allEmojis.filter(emoji => {
-                    const category = categorizeEmoji(emoji);
-                    console.log(`Emoji: ${emoji}, Category: ${category}`);
-                    return category === selectedCategory;
-                });
-            }
-            
-            // Clear and rebuild the grid with filtered emojis
-            const gridContainer = container.querySelector('.emoji-grid');
-            if (gridContainer) {
-                // Clear existing emojis
-                gridContainer.innerHTML = '';
-                
-                // Add filtered emojis
-                filteredEmojis.forEach(emoji => {
-                    const emojiButton = document.createElement('button');
-                    emojiButton.className = 'emoji-button';
-                    emojiButton.textContent = emoji;
-                    emojiButton.title = 'Click to encode with this emoji';
-                    
-                    emojiButton.addEventListener('click', () => {
-                        if (typeof onEmojiSelect === 'function') {
-                            onEmojiSelect(emoji);
-                            // Add visual feedback when clicked
-                            emojiButton.style.backgroundColor = '#e6f7ff';
-                            setTimeout(() => {
-                                emojiButton.style.backgroundColor = '';
-                            }, 300);
-                        }
-                    });
-                    
-                    gridContainer.appendChild(emojiButton);
-                });
-                
-                // Update the count display
-                const countDisplay = container.querySelector('.emoji-count');
-                if (countDisplay) {
-                    countDisplay.textContent = `${filteredEmojis.length} emojis available`;
-                }
-            }
+            // Clear and recreate the grid
+            container.removeChild(gridContainer);
+            window.emojiLibrary.renderEmojiGrid(containerId, onEmojiSelect);
         });
     });
     

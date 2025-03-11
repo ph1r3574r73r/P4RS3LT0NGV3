@@ -3,7 +3,9 @@
     --main-bg-color: #1a1a1a;
     --secondary-bg: #242424;
     --text-color: #e0e0e0;
+    --text-muted: #a0a0a0;
     --accent-color: #64b5f6;
+    --accent-color-rgb: 100, 181, 246;
     --accent-hover: #90caf9;
     --success-color: #81c784;
     --button-bg: #2d2d2d;
@@ -57,6 +59,77 @@ header {
 
 .logo {
     text-align: left;
+}
+
+.logo h1 {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #00ff00;
+    text-shadow: 0 0 5px #00ff00, 0 0 10px rgba(0, 255, 0, 0.8);
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 255, 0, 0.2) 50%, transparent 100%);
+    padding: 8px;
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    animation: glitch 3s infinite;
+}
+
+/* Glitch animation */
+@keyframes glitch {
+    0% {
+        text-shadow: 0 0 5px #00ff00, 0 0 10px rgba(0, 255, 0, 0.8);
+        transform: translateX(0);
+    }
+    5% {
+        text-shadow: -2px 0 #ff00ff, 2px 0 #00ffff;
+        transform: translateX(2px);
+    }
+    10% {
+        text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff;
+        transform: translateX(-2px);
+    }
+    15% {
+        text-shadow: 0 0 5px #00ff00, 0 0 10px rgba(0, 255, 0, 0.8);
+        transform: translateX(0);
+    }
+    85% {
+        text-shadow: 0 0 5px #00ff00, 0 0 10px rgba(0, 255, 0, 0.8);
+        transform: translateX(0);
+    }
+    90% {
+        text-shadow: 1px 0 #ff00ff, -1px 0 #00ffff;
+        transform: translateX(1px);
+    }
+    95% {
+        text-shadow: -1px 0 #ff00ff, 1px 0 #00ffff;
+        transform: translateX(-1px);
+    }
+    100% {
+        text-shadow: 0 0 5px #00ff00, 0 0 10px rgba(0, 255, 0, 0.8);
+        transform: translateX(0);
+    }
+}
+
+/* Adding scanline effect */
+.logo h1::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        transparent 0%,
+        transparent 50%,
+        rgba(0, 255, 0, 0.2) 50%,
+        rgba(0, 255, 0, 0.2) 100%
+    );
+    background-size: 100% 4px;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.3;
 }
 
 .theme-toggle {
@@ -163,13 +236,91 @@ h1, h2, h3, h4, h5 {
     position: relative;
 }
 
+.section-header {
+    margin-bottom: 15px;
+}
+
+.section-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-color);
+}
+
+.section-header h3 small {
+    font-size: 0.7em;
+    font-weight: normal;
+    color: var(--text-muted);
+    background-color: rgba(100, 181, 246, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.section-header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
 .decoded-message {
     margin-top: 8px;
-    padding: 8px;
+    padding: 12px;
     background: var(--button-bg);
     border-radius: 4px;
     font-family: 'Fira Code', monospace;
     position: relative;
+}
+
+.decode-method {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+.decode-method strong {
+    color: var(--accent-color);
+}
+
+.decode-priority {
+    font-size: 0.8em;
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    color: var(--accent-color);
+}
+
+.decode-result {
+    margin-bottom: 12px;
+    word-break: break-all;
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+.decode-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.use-as-input-button {
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+    color: var(--accent-color);
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.8em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.use-as-input-button:hover {
+    background-color: rgba(var(--accent-color-rgb), 0.2);
 }
 
 textarea {
@@ -345,26 +496,65 @@ textarea {
 
 .emoji-grid-note {
     background: linear-gradient(to right, rgba(102, 187, 106, 0.05), rgba(126, 87, 194, 0.05));
-    padding: 8px 12px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
     color: var(--text-color);
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 8px;
     border-left: 2px solid var(--special-color);
     box-shadow: none !important;
-    max-width: 450px;
+    max-width: 500px;
     width: 100%;
     border-bottom: none !important;
     border-top: none !important;
     border-right: none !important;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 
-.emoji-grid-note i {
+.emoji-header {
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 1px solid var(--input-border);
+    background: linear-gradient(to right, rgba(66, 165, 245, 0.02), rgba(126, 87, 194, 0.02));
+}
+
+.emoji-header h3 {
+    font-size: 1.3rem;
+    margin: 0 0 8px 0;
+    color: var(--text-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.emoji-header h3 i {
     color: var(--special-color);
-    font-size: 1rem;
+    font-size: 1.2rem;
+}
+
+.emoji-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    opacity: 0.85;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.emoji-grid-note i, .emoji-subtitle i {
+    color: var(--special-color);
+    font-size: 0.9rem;
     opacity: 0.9;
 }
 
@@ -387,16 +577,16 @@ textarea {
 
 .emoji-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)) !important;
-    grid-auto-rows: 40px !important;
-    gap: 4px !important;
-    padding: 10px !important;
-    border-radius: 4px !important;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)) !important;
+    grid-auto-rows: 42px !important;
+    gap: 6px !important;
+    padding: 12px !important;
+    border-radius: 6px !important;
     border: 1px solid var(--input-border) !important;
     background-color: var(--secondary-bg) !important;
     box-shadow: none !important;
     transition: all 0.2s ease !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 10px !important;
     width: 100% !important;
     max-height: none !important;
     overflow: visible !important;
@@ -406,19 +596,26 @@ textarea {
 .emoji-category-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: 6px;
+    margin-bottom: 10px;
     width: 100%;
+    justify-content: center;
 }
 
 .emoji-category-tab {
-    padding: 5px 10px;
+    padding: 6px 12px;
     background: var(--button-bg);
     border: 1px solid var(--input-border);
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.9rem;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 120px;
+    white-space: nowrap;
 }
 
 .emoji-category-tab.active,
@@ -451,15 +648,16 @@ textarea {
     justify-content: center;
     width: 100%;
     height: 100%;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     background-color: var(--button-bg);
     border: 1px solid var(--input-border);
-    border-radius: 3px;
+    border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
     padding: 0;
     position: relative;
     overflow: hidden;
+    line-height: 1;
 }
 
 .emoji-button:before {

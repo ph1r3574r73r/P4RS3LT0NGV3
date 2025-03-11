@@ -51,14 +51,14 @@
             <div class="tab-buttons">
                 <button 
                     :class="{ active: activeTab === 'transforms' }" 
-                    @click="activeTab = 'transforms'"
+                    @click="switchToTab('transforms')"
                     title="Transform text (T)"
                 >
                     <i class="fas fa-font"></i> Transform
                 </button>
                 <button 
                     :class="{ active: activeTab === 'steganography' }" 
-                    @click="activeTab = 'steganography'"
+                    @click="switchToTab('steganography')"
                     title="Hide text in emojis (H)"
                 >
                     <i class="fas fa-smile"></i> Emoji
@@ -77,16 +77,12 @@
                         ></textarea>
                     </div>
 
-                    <div class="transform-section">
+                    
                     </div>
 
                     <!-- Emoji Library Section -->
                     <div class="emoji-library">
-                        <div class="emoji-library-header">
-                            <div class="emoji-library-title">
-                                <h3><i class="fas fa-icons"></i> Choose an Emoji</h3>
-                            </div>
-                        </div>
+
                         <!-- Emoji grid container - this MUST have id="emoji-grid-container" -->
                         <div id="emoji-grid-container" class="emoji-grid-container">
                             <!-- Dynamic content will be inserted here by JavaScript -->
@@ -136,8 +132,14 @@
                     <!-- Universal Decoder Section for Steganography Tab -->
                     <div class="decode-section">
                         <div class="section-header">
-                            <h3><i class="fas fa-magic"></i> Universal Decoder</h3>
-                            <p>Paste any encoded text to try all decoding methods at once</p>
+                            <h3>
+                                <i class="fas fa-magic"></i> Universal Decoder
+                                <small v-if="activeTransform">(Prioritizing {{ activeTransform.name }})</small>
+                            </h3>
+                            <p v-if="activeTransform && transformHasReverse(activeTransform)">
+                                Paste encoded text to decode with {{ activeTransform.name }} or try other methods
+                            </p>
+                            <p v-else>Paste any encoded text to try all decoding methods at once</p>
                         </div>
                         <div class="input-container">
                             <textarea 
@@ -147,11 +149,19 @@
                                 @input="runUniversalDecode"
                             ></textarea>
                             <div class="decoded-message" v-if="universalDecodeResult">
-                                <div class="decode-method">Decoded using: <strong>{{ universalDecodeResult.method }}</strong></div>
+                                <div class="decode-method">
+                                    <span>Decoded using: <strong>{{ universalDecodeResult.method }}</strong></span>
+                                    <span v-if="activeTransform && universalDecodeResult.method === activeTransform.name" class="decode-priority">(Priority Match)</span>
+                                </div>
                                 <div class="decode-result">{{ universalDecodeResult.text }}</div>
-                                <button class="copy-button" @click="copyToClipboard(universalDecodeResult.text)" title="Copy decoded text">
-                                    <i class="fas fa-copy"></i>
-                                </button>
+                                <div class="decode-actions">
+                                    <button class="copy-button" @click="copyToClipboard(universalDecodeResult.text)" title="Copy decoded text">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                    <button class="use-as-input-button" v-if="universalDecodeResult.text" @click="transformInput = universalDecodeResult.text" title="Use this as input for transforms">
+                                        <i class="fas fa-arrow-up"></i> Use as Input
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -187,7 +197,7 @@
                                 <div class="transform-buttons">
                                     <div v-for="transform in getTransformsByCategory('encoding')" :key="transform.name" class="transform-button-group">
                                         <button 
-                                            @click="applyTransform(transform)"
+                                            @click="applyTransform(transform, $event)"
                                             class="transform-button transform-category-encoding"
                                             :class="{ active: activeTransform === transform }"
                                             :title="'Click to transform and copy: ' + transform.name"
@@ -216,7 +226,7 @@
                                 <div class="transform-buttons">
                                     <div v-for="transform in getTransformsByCategory('cipher')" :key="transform.name" class="transform-button-group">
                                         <button 
-                                            @click="applyTransform(transform)"
+                                            @click="applyTransform(transform, $event)"
                                             class="transform-button transform-category-cipher"
                                             :class="{ active: activeTransform === transform }"
                                             :title="'Click to transform and copy: ' + transform.name"
@@ -245,7 +255,7 @@
                                 <div class="transform-buttons">
                                     <div v-for="transform in getTransformsByCategory('visual')" :key="transform.name" class="transform-button-group">
                                         <button 
-                                            @click="applyTransform(transform)"
+                                            @click="applyTransform(transform, $event)"
                                             class="transform-button transform-category-visual"
                                             :class="{ active: activeTransform === transform }"
                                             :title="'Click to transform and copy: ' + transform.name"
@@ -274,7 +284,7 @@
                                 <div class="transform-buttons">
                                     <div v-for="transform in getTransformsByCategory('format')" :key="transform.name" class="transform-button-group">
                                         <button 
-                                            @click="applyTransform(transform)"
+                                            @click="applyTransform(transform, $event)"
                                             class="transform-button transform-category-format"
                                             :class="{ active: activeTransform === transform }"
                                             :title="'Click to transform and copy: ' + transform.name"
@@ -303,7 +313,7 @@
                                 <div class="transform-buttons">
                                     <div v-for="transform in getTransformsByCategory('unicode')" :key="transform.name" class="transform-button-group">
                                         <button 
-                                            @click="applyTransform(transform)"
+                                            @click="applyTransform(transform, $event)"
                                             class="transform-button transform-category-unicode"
                                             :class="{ active: activeTransform === transform }"
                                             :title="'Click to transform and copy: ' + transform.name"
@@ -332,7 +342,7 @@
                                 <div class="transform-buttons">
                                     <div v-for="transform in getTransformsByCategory('special')" :key="transform.name" class="transform-button-group">
                                         <button 
-                                            @click="applyTransform(transform)"
+                                            @click="applyTransform(transform, $event)"
                                             class="transform-button transform-category-special"
                                             :class="{ active: activeTransform === transform }"
                                             :title="'Click to transform and copy: ' + transform.name"
@@ -373,8 +383,14 @@
                     <!-- Universal Decoder Section for Transforms Tab -->
                     <div class="decode-section">
                         <div class="section-header">
-                            <h3><i class="fas fa-magic"></i> Universal Decoder</h3>
-                            <p>Paste any encoded text to try all decoding methods at once</p>
+                            <h3>
+                                <i class="fas fa-magic"></i> Universal Decoder
+                                <small v-if="activeTransform">(Prioritizing {{ activeTransform.name }})</small>
+                            </h3>
+                            <p v-if="activeTransform && transformHasReverse(activeTransform)">
+                                Paste encoded text to decode with {{ activeTransform.name }} or try other methods
+                            </p>
+                            <p v-else>Paste any encoded text to try all decoding methods at once</p>
                         </div>
                         <div class="input-container">
                             <textarea 
@@ -384,11 +400,19 @@
                                 @input="runUniversalDecode"
                             ></textarea>
                             <div class="decoded-message" v-if="universalDecodeResult">
-                                <div class="decode-method">Decoded using: <strong>{{ universalDecodeResult.method }}</strong></div>
+                                <div class="decode-method">
+                                    <span>Decoded using: <strong>{{ universalDecodeResult.method }}</strong></span>
+                                    <span v-if="activeTransform && universalDecodeResult.method === activeTransform.name" class="decode-priority">(Priority Match)</span>
+                                </div>
                                 <div class="decode-result">{{ universalDecodeResult.text }}</div>
-                                <button class="copy-button" @click="copyToClipboard(universalDecodeResult.text)" title="Copy decoded text">
-                                    <i class="fas fa-copy"></i>
-                                </button>
+                                <div class="decode-actions">
+                                    <button class="copy-button" @click="copyToClipboard(universalDecodeResult.text)" title="Copy decoded text">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                    <button class="use-as-input-button" v-if="universalDecodeResult.text" @click="transformInput = universalDecodeResult.text" title="Use this as input for transforms">
+                                        <i class="fas fa-arrow-up"></i> Use as Input
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

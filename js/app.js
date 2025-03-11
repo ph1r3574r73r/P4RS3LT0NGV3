@@ -38,6 +38,10 @@ window.app = new Vue({
         universalDecodeInput: '',
         universalDecodeResult: null,
         isPasteOperation: false, // Flag to track paste operations
+        lastCopyTime: 0,         // Timestamp of last copy operation for debounce
+        ignoreKeyboardEvents: false, // Flag to prevent keyboard events from triggering copies
+        isTransformCopy: false,   // Flag to mark transform-initiated copy operations
+        keyboardEventsTimeout: null, // Timeout for resetting keyboard event flag
         activeSteg: null,
         carriers: window.steganography.carriers,
         showDecoder: true,
@@ -51,6 +55,33 @@ window.app = new Vue({
         showCopyHistory: false
     },
     methods: {
+        // Switch between tabs with proper initialization
+        switchToTab(tabName) {
+            this.activeTab = tabName;
+            console.log('Switched to tab:', tabName);
+            
+            // Reset universal decoder input when switching tabs
+            this.universalDecodeInput = '';
+            this.universalDecodeResult = null;
+            
+            // Initialize emoji grid when switching to steganography tab
+            if (tabName === 'steganography') {
+                this.$nextTick(() => {
+                    console.log('Tab switch: Initializing emoji grid');
+                    const emojiGridContainer = document.getElementById('emoji-grid-container');
+                    if (emojiGridContainer) {
+                        console.log('Found emoji grid container after tab switch');
+                        // Make sure the container is visible
+                        emojiGridContainer.setAttribute('style', 'display: block !important; visibility: visible !important; min-height: 300px; padding: 10px;');
+                        // Render the emoji grid
+                        this.renderEmojiGrid();
+                    } else {
+                        console.log('Emoji grid container not found after tab switch');
+                    }
+                });
+            }
+        },
+        
         // Get transforms grouped by category
         getTransformsByCategory(category) {
             return this.transforms.filter(transform => 
@@ -81,12 +112,19 @@ window.app = new Vue({
         },
 
         // Transform Methods
-        applyTransform(transform) {
+        applyTransform(transform, event) {
             if (this.transformInput) {
+                // Prevent default button behavior
+                event && event.preventDefault();
+                
+                // Update active transform and apply it
                 this.activeTransform = transform;
                 this.transformOutput = transform.func(this.transformInput);
                 
-                // Force copy and log to history
+                // Set flag to mark this as a transform-initiated copy
+                this.isTransformCopy = true;
+                
+                // Force copy the transform output to clipboard
                 this.forceCopyToClipboard(this.transformOutput);
                 
                 // Add to copy history
@@ -94,18 +132,30 @@ window.app = new Vue({
                 
                 // Enhanced notification for transform and copy
                 this.showNotification(`<i class="fas fa-check"></i> ${transform.name} applied and copied!`, 'success');
+                
+                // Remove active state from transform buttons
+                document.querySelectorAll('.transform-button').forEach(button => {
+                    button.classList.remove('active');
+                });
+                
+                // Keep focus on input and move cursor to end
+                const inputBox = document.querySelector('#transform-input');
+                if (inputBox) {
+                    inputBox.focus();
+                    const len = inputBox.value.length;
+                    inputBox.setSelectionRange(len, len);
+                }
+                
+                // Reset flags immediately
+                this.isTransformCopy = false;
+                this.ignoreKeyboardEvents = false;
             }
         },
         autoTransform() {
             // Only proceed if we're in the transforms tab and have an active transform
             if (this.transformInput && this.activeTransform && this.activeTab === 'transforms') {
+                // Update the output without copying
                 this.transformOutput = this.activeTransform.func(this.transformInput);
-                
-                // Use forceCopyToClipboard for auto-copy
-                this.forceCopyToClipboard(this.transformOutput);
-                
-                // Add to copy history
-                this.addToCopyHistory(`Transform: ${this.activeTransform.name}`, this.transformOutput);
             }
         },
         
@@ -258,8 +308,29 @@ window.app = new Vue({
         },
         
         // Utility Methods
+        // Track last copy operation to prevent rapid repeated copies
+        lastCopyTime: 0,
+        
         async copyToClipboard(text) {
             if (!text) return;
+            
+            // Check clipboard lock - don't proceed if locked
+            if (this.clipboardLocked) {
+                console.log('Copy operation prevented by clipboard lock');
+                return;
+            }
+            
+            // Prevent rapid successive copy operations (debounce)
+            const now = Date.now();
+            if (now - this.lastCopyTime < 500) {
+                console.log('Copy operation debounced');
+                return;
+            }
+            this.lastCopyTime = now;
+            
+            // Set clipboard lock immediately
+            this.clipboardLocked = true;
+            console.log('Setting clipboard lock during regular copy');
             
             // Always try to copy, regardless of event source
             try {
@@ -271,6 +342,25 @@ window.app = new Vue({
                 // Add to history - determine source from active tab or context
                 const source = this.activeTab === 'transforms' ? 'Transform' : 'Steganography';
                 this.addToCopyHistory(source, text);
+                
+                // Aggressively clear focus and selections
+                if (document.activeElement && document.activeElement.blur) {
+                    document.activeElement.blur();
+                }
+                
+                // Clear any text selection
+                if (window.getSelection) {
+                    window.getSelection().removeAllRanges();
+                }
+                
+                // Focus body to avoid any specific interactive elements
+                document.body.focus();
+                
+                // Release clipboard lock after a longer delay
+                setTimeout(() => {
+                    this.clipboardLocked = false;
+                    console.log('Clipboard lock released after regular copy');
+                }, 500);
             } catch (err) {
                 console.warn('Clipboard access not available:', err);
                 
@@ -281,10 +371,31 @@ window.app = new Vue({
         
         fallbackCopy(text) {
             try {
+                // Check if keyboard events should be ignored
+                if (this.ignoreKeyboardEvents && !this.isTransformCopy) {
+                    console.log('Ignoring fallback copy due to keyboard event flag');
+                    return;
+                }
+                
+                // Reset the transform flag if it was set
+                if (this.isTransformCopy) {
+                    this.isTransformCopy = false;
+                }
+                
+                // Debounce check
+                const now = Date.now();
+                if (now - this.lastCopyTime < 300) {
+                    console.log('Fallback copy operation debounced');
+                    return;
+                }
+                this.lastCopyTime = now;
+                
                 // Create temporary textarea
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
                 textarea.style.position = 'fixed';  // Avoid scrolling to bottom
+                textarea.style.left = '-9999px';    // Move offscreen
+                textarea.style.top = '0';
                 document.body.appendChild(textarea);
                 textarea.select();
                 
@@ -295,11 +406,8 @@ window.app = new Vue({
                 if (successful) {
                     this.showNotification('<i class="fas fa-check"></i> Copied!', 'success');
                     
-                    // Add to history when successful
-                    // Try to determine a more specific source based on the context
+                    // Add to history with context
                     let source = this.activeTab === 'transforms' ? 'Transform' : 'Steganography';
-                    
-                    // Add more context if available
                     if (this.activeTab === 'transforms' && this.activeTransform) {
                         source = `Transform: ${this.activeTransform.name}`;
                     } else if (this.activeTab === 'steganography') {
@@ -309,7 +417,6 @@ window.app = new Vue({
                             source = `Emoji: ${this.selectedEmoji}`;
                         }
                     }
-                    
                     this.addToCopyHistory(source, text);
                 } else {
                     this.showNotification('<i class="fas fa-exclamation-triangle"></i> Copy not supported', 'error');
@@ -317,6 +424,19 @@ window.app = new Vue({
                 
                 // Clean up
                 document.body.removeChild(textarea);
+                
+                // Aggressively clear focus and selection
+                if (document.activeElement && document.activeElement.blur) {
+                    document.activeElement.blur();
+                }
+                
+                // Clear any text selection
+                if (window.getSelection) {
+                    window.getSelection().removeAllRanges();
+                }
+                
+                // Focus on body element
+                document.body.focus();
             } catch (err) {
                 console.warn('Fallback copy method failed:', err);
                 this.showNotification('<i class="fas fa-exclamation-triangle"></i> Copy not supported', 'error');
@@ -327,52 +447,79 @@ window.app = new Vue({
         forceCopyToClipboard(text) {
             if (!text) return;
             
-            // Skip notifications if this was triggered by a paste operation
+            // Skip copy operations during paste
             if (this.isPasteOperation) {
-                console.log('Skipping clipboard notification for paste operation');
+                this.isPasteOperation = false;
                 return;
             }
             
-            console.log('Force copying to clipboard:', text);
+            // Block keyboard-triggered copies unless it's a transform
+            if (!this.isTransformCopy && this.ignoreKeyboardEvents) {
+                return;
+            }
             
             try {
-                // Try to use the Clipboard API first
+                // Use Clipboard API
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(text)
                         .then(() => {
-                            console.log('Force copy successful using Clipboard API');
-                            // Show clear notification on success
-                            this.showCopiedPopup();
+                            // Only show notification for transform copies
+                            if (this.isTransformCopy) {
+                                this.showCopiedPopup();
+                                
+                                // Temporarily disable keyboard events
+                                this.ignoreKeyboardEvents = true;
+                                clearTimeout(this.keyboardEventsTimeout);
+                                this.keyboardEventsTimeout = setTimeout(() => {
+                                    this.ignoreKeyboardEvents = false;
+                                }, 1000);
+                            }
+                            
+                            // Reset transform flag
+                            this.isTransformCopy = false;
+                            
+                            // Focus back on input
+                            const inputBox = document.querySelector('#transform-input');
+                            if (inputBox) {
+                                inputBox.focus();
+                                const len = inputBox.value.length;
+                                inputBox.setSelectionRange(len, len);
+                            }
                         })
                         .catch(err => {
-                            console.warn('Force Clipboard API failed:', err);
+                            console.warn('Clipboard API failed:', err);
                             this.forceFallbackCopy(text);
-                            // Still show notification, as fallback might work
-                            this.showCopiedPopup();
                         });
                 } else {
-                    // Fall back to execCommand method
                     this.forceFallbackCopy(text);
-                    // Show notification for fallback method too
-                    this.showCopiedPopup();
                 }
             } catch (error) {
                 console.error('Force copy failed:', error);
-                // Try one last fallback and still show notification
                 this.forceFallbackCopy(text);
-                this.showCopiedPopup();
             }
         },
         
         // Fallback copy method that doesn't rely on user-initiated events
         forceFallbackCopy(text) {
             try {
+                // If clipboard is locked, don't proceed
+                if (this.clipboardLocked) {
+                    console.log('Fallback copy prevented by clipboard lock');
+                    return;
+                }
+                
+                // Set clipboard lock immediately
+                this.clipboardLocked = true;
+                
+                // Create temporary textarea for copying
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
                 textarea.style.position = 'fixed';
                 textarea.style.left = '-9999px';
                 textarea.style.top = '0';
                 document.body.appendChild(textarea);
+                
+                // Focus and select the text
                 textarea.focus();
                 textarea.select();
                 
@@ -383,9 +530,25 @@ window.app = new Vue({
                     console.error('Force fallback copy command failed:', err);
                 }
                 
+                // Remove the temporary element
                 document.body.removeChild(textarea);
+                
+                // Keep focus on input
+                const inputBox = document.querySelector('#transform-input');
+                if (inputBox) {
+                    inputBox.focus();
+                    const len = inputBox.value.length;
+                    inputBox.setSelectionRange(len, len);
+                }
+                
+                // Reset flags immediately
+                this.clipboardLocked = false;
+                this.isTransformCopy = false;
+                this.ignoreKeyboardEvents = false;
+                console.log('Clipboard lock released after fallback copy');
             } catch (err) {
                 console.error('Force fallback copy method failed:', err);
+                this.clipboardLocked = false; // Make sure we don't leave it locked in case of error
             }
         },
         
@@ -464,7 +627,28 @@ window.app = new Vue({
                 return;
             }
             
-            // Try to decode using all available methods
+            // Try to decode using the currently selected transform first, if any
+            if (this.activeTransform && this.transformHasReverse(this.activeTransform)) {
+                try {
+                    console.log(`Trying to decode with currently selected transform: ${this.activeTransform.name}`);
+                    const decodedText = this.activeTransform.reverse(this.universalDecodeInput);
+                    
+                    // If the decoded text is different from the input and looks like readable text
+                    if (decodedText !== this.universalDecodeInput && /[a-zA-Z0-9\s]{3,}/.test(decodedText)) {
+                        this.universalDecodeResult = {
+                            text: decodedText,
+                            method: this.activeTransform.name
+                        };
+                        console.log(`Successfully decoded with ${this.activeTransform.name}`);
+                        return;
+                    }
+                } catch (e) {
+                    console.error(`Error decoding with selected transform ${this.activeTransform.name}:`, e);
+                }
+            }
+            
+            // If the selected transform didn't work or there isn't one selected,
+            // fall back to trying all available methods
             const result = this.universalDecode(this.universalDecodeInput);
             
             // Update the result
@@ -507,26 +691,60 @@ window.app = new Vue({
             }
             
             // 2. Try transform reversals
-            // - Binary
+            // Try to decode using active transform first
+            if (this.activeTab === 'transforms' && this.activeTransform) {
+                try {
+                    const transformKey = Object.keys(window.transforms).find(
+                        key => window.transforms[key].name === this.activeTransform.name
+                    );
+                    
+                    if (transformKey && window.transforms[transformKey].reverse) {
+                        const result = window.transforms[transformKey].reverse(input);
+                        if (result && result !== input) {
+                            return { 
+                                text: result, 
+                                method: this.activeTransform.name,
+                                priorityMatch: true 
+                            };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error decoding with active transform:', e);
+                }
+            }
+            
+            // - Binary (improved with more patterns)
             if (/^[01\s]+$/.test(input.trim())) {
                 try {
                     // Use binary transform's reverse function if available
                     if (window.transforms.binary && window.transforms.binary.reverse) {
                         const result = window.transforms.binary.reverse(input);
-                        if (result && /[\x20-\x7E]/.test(result)) { // Make sure it's readable ASCII
+                        if (result && /[\x20-\x7E]{3,}/.test(result)) { // Make sure it's readable ASCII
                             return { text: result, method: 'Binary' };
                         }
-                    } else {
+                    }
+                    
+                    // Try different binary formats (with and without spaces)
+                    const variations = [
+                        input.trim(),                     // Original input
+                        input.replace(/\s+/g, ''),       // No spaces
+                        input.replace(/([01]{8})/g, '$1 ') // Force 8-bit spacing
+                    ];
+                    
+                    for (const binVariation of variations) {
                         // Fallback implementation
-                        const binText = input.replace(/\s+/g, '');
+                        const binText = binVariation.replace(/\s+/g, '');
                         let result = '';
+                        
+                        // Try standard 8-bit ASCII
                         for (let i = 0; i < binText.length; i += 8) {
                             const byte = binText.substr(i, 8);
                             if (byte.length === 8) {
                                 result += String.fromCharCode(parseInt(byte, 2));
                             }
                         }
-                        if (result && /[\x20-\x7E]/.test(result)) { // Make sure it's readable ASCII
+                        
+                        if (result && /[\x20-\x7E]{3,}/.test(result)) { // Make sure it's readable ASCII
                             return { text: result, method: 'Binary' };
                         }
                     }
@@ -962,32 +1180,39 @@ window.app = new Vue({
             
             // Define a function to properly initialize the emoji grid
             const initializeEmojiGrid = () => {
+                // Only try to initialize when steganography tab is active
+                if (this.activeTab !== 'steganography') {
+                    return;
+                }
+                
                 const emojiGridContainer = document.getElementById('emoji-grid-container');
                 
                 if (emojiGridContainer) {
                     console.log('Found emoji-grid-container, rendering grid');
                     
                     // Set inline styles to ensure visibility
-                    emojiGridContainer.setAttribute('style', 'display: block !important; visibility: visible !important; min-height: 300px; padding: 10px; border: 1px solid #ccc;');
+                    emojiGridContainer.setAttribute('style', 'display: block !important; visibility: visible !important; min-height: 300px; padding: 10px;');
                     
                     // Also make sure the parent container is visible
                     const emojiLibrary = document.querySelector('.emoji-library');
                     if (emojiLibrary) {
-                        emojiLibrary.setAttribute('style', 'display: block !important; visibility: visible !important; margin-top: 30px; border: 3px solid var(--accent-color); overflow: visible;');
+                        emojiLibrary.setAttribute('style', 'display: block !important; visibility: visible !important; margin-top: 20px; overflow: visible;');
                     }
                     
                     // Now render the grid
                     this.renderEmojiGrid();
                     console.log('Emoji grid rendering complete in mounted()');
+                    
+                    // Stop retrying once we've successfully found and rendered the grid
+                    clearInterval(emojiGridInitializer);
                 } else {
-                    console.error('emoji-grid-container not found, will retry');
-                    // Try again after a longer delay if not found
-                    setTimeout(initializeEmojiGrid, 500);
+                    console.log('emoji-grid-container not found, will retry when steganography tab is active');
                 }
             };
             
-            // Start with a small delay to ensure DOM is ready
-            setTimeout(initializeEmojiGrid, 100);
+            // Use an interval instead of recursive setTimeout for more reliable initialization
+            // This will try every 500ms until it succeeds or the page is navigated away from
+            const emojiGridInitializer = setInterval(initializeEmojiGrid, 500);
             
             // Set up paste event handlers for all textareas to prevent unwanted clipboard notifications
             this.setupPasteHandlers();
@@ -1018,11 +1243,17 @@ window.app = new Vue({
         // But no keyboard shortcuts/hotkeys for now
     },
     
-    // Watch for input events and ensure emojis stay visible
+    // Watch for input events and ensure proper focus handling
     watch: {
+        // Watch transform input to update transforms
+        transformInput() {
+            // Only auto-transform if we have an active transform
+            if (this.activeTransform && this.activeTab === 'transforms') {
+                this.transformOutput = this.activeTransform.func(this.transformInput);
+            }
+        },
         // Make sure emoji list stays loaded when user types in any input
         emojiMessage() {
-            // Reset the filtered emojis to the full list whenever typing occurs
             this.filteredEmojis = [...window.emojiLibrary.EMOJI_LIST];
             this.$nextTick(() => {
                 this.renderEmojiGrid();
@@ -1030,7 +1261,6 @@ window.app = new Vue({
         },
         // Also watch the decode input field for typing activity
         decodeInput() {
-            // Always show full emoji list
             this.filteredEmojis = [...window.emojiLibrary.EMOJI_LIST];
             this.$nextTick(() => {
                 this.renderEmojiGrid();
