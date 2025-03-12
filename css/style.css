@@ -23,12 +23,15 @@
     --format-color: #ffb74d;        /* Orange for formatting */
     --unicode-color: #42a5f5;       /* Blue for unicode transformations */
     --special-color: #66bb6a;       /* Green for special transformations */
+    scroll-behavior: smooth;
+    scroll-padding-top: 20px;
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -38,6 +41,10 @@ body {
     line-height: 1.6;
     padding: 20px;
     min-height: 100vh;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "liga" 1, "calt" 1; /* Enable ligatures */
 }
 
 .container {
@@ -591,6 +598,12 @@ textarea {
     max-height: none !important;
     overflow: visible !important;
     max-width: 100% !important;
+    font-family: 'Segoe UI Emoji', 'Segoe UI Symbol', 'Apple Color Emoji',
+                'Noto Color Emoji', 'Android Emoji', 'EmojiOne Color',
+                'Twemoji Mozilla', sans-serif !important;
+    /* Improve emoji rendering */
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
 }
 
 .emoji-category-tabs {
@@ -870,8 +883,16 @@ button:hover {
     border-left-style: solid;
     background-color: var(--button-bg);
     transition: all 0.2s ease;
-    cursor: default;
+    cursor: pointer;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    user-select: none;
+}
+
+.legend-item.active-category {
+    background-color: var(--accent-color);
+    color: var(--main-bg-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .legend-item:hover {

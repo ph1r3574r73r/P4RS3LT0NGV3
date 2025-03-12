@@ -3,6 +3,25 @@
 // Create namespace for emoji library
 window.emojiLibrary = {};
 
+// Polyfill for Intl.Segmenter if not available
+if (!Intl.Segmenter) {
+    console.warn('Intl.Segmenter not available, falling back to basic character splitting');
+}
+
+// Helper function to properly split text into grapheme clusters (emojis)
+window.emojiLibrary.splitEmojis = function(text) {
+    if (Intl.Segmenter) {
+        const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+        return Array.from(segmenter.segment(text), ({ segment }) => segment);
+    }
+    return Array.from(text);
+};
+
+// Helper function to properly join emojis
+window.emojiLibrary.joinEmojis = function(emojis) {
+    return emojis.join('');
+};
+
 // Additional emojis for expanded library
 window.emojiLibrary.ADDITIONAL_EMOJIS = [
     // Animals & Nature

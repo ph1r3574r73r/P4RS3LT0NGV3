@@ -456,20 +456,32 @@ const transforms = {
     strikethrough: {
         name: 'Strikethrough',
         func: function(text) {
-            return [...text].map(c => c + '̶').join('');
+            // Use proper Unicode combining characters for strikethrough
+            const segments = window.emojiLibrary.splitEmojis(text);
+            return segments.map(c => c + '\u0336').join('');
         },
         preview: function(text) {
             return this.func(text);
+        },
+        reverse: function(text) {
+            // Remove combining strikethrough characters
+            return text.replace(/\u0336/g, '');
         }
     },
     
     underline: {
         name: 'Underline',
         func: function(text) {
-            return [...text].map(c => c + '̲').join('');
+            // Use proper Unicode combining characters for underline
+            const segments = window.emojiLibrary.splitEmojis(text);
+            return segments.map(c => c + '\u0332').join('');
         },
         preview: function(text) {
             return this.func(text);
+        },
+        reverse: function(text) {
+            // Remove combining underline characters
+            return text.replace(/\u0332/g, '');
         }
     },
     
@@ -792,6 +804,54 @@ const transforms = {
         }
     },
     
+    greek: {
+        name: 'Greek Letters',
+        map: {
+            'A': 'Α', 'B': 'Β', 'G': 'Γ', 'D': 'Δ', 'E': 'Ε',
+            'Z': 'Ζ', 'H': 'Η', 'TH': 'Θ', 'I': 'Ι', 'K': 'Κ',
+            'L': 'Λ', 'M': 'Μ', 'N': 'Ν', 'X': 'Ξ', 'O': 'Ο',
+            'P': 'Π', 'R': 'Ρ', 'S': 'Σ', 'T': 'Τ', 'Y': 'Υ',
+            'F': 'Φ', 'CH': 'Χ', 'PS': 'Ψ', 'W': 'Ω',
+            'a': 'α', 'b': 'β', 'g': 'γ', 'd': 'δ', 'e': 'ε',
+            'z': 'ζ', 'h': 'η', 'th': 'θ', 'i': 'ι', 'k': 'κ',
+            'l': 'λ', 'm': 'μ', 'n': 'ν', 'x': 'ξ', 'o': 'ο',
+            'p': 'π', 'r': 'ρ', 's': 'σ', 't': 'τ', 'y': 'υ',
+            'f': 'φ', 'ch': 'χ', 'ps': 'ψ', 'w': 'ω'
+        },
+        func: function(text) {
+            return text.replace(/ch|th|ps|[a-zA-Z]/g, match => this.map[match] || match);
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            const reverseMap = {};
+            Object.entries(this.map).forEach(([k, v]) => reverseMap[v] = k);
+            return text.replace(/[Α-Ωα-ω]/g, match => reverseMap[match] || match);
+        }
+    },
+
+    wingdings: {
+        name: 'Wingdings Style',
+        map: {
+            'a': '📧', 'b': '📎', 'c': '💿', 'd': '📁', 'e': '✉️',
+            'f': '📂', 'g': '✂️', 'h': '🔨', 'i': '💡', 'j': '🔑',
+            'k': '🔒', 'l': '🔓', 'm': '🖱️', 'n': '💻', 'o': '⭕',
+            'p': '📱', 'q': '❓', 'r': '🌹', 's': '⭐', 't': '📌',
+            'u': '☂️', 'v': '✌️', 'w': '🌊', 'x': '❌', 'y': '☯️',
+            'z': '💤', '1': '☝️', '2': '✌️', '3': '🤟', '4': '4️⃣',
+            '5': '5️⃣', '6': '6️⃣', '7': '7️⃣', '8': '8️⃣', '9': '9️⃣',
+            '0': '0️⃣', '!': '❗', '?': '❓', '.': '•', ',': '،',
+            ' ': ' '
+        },
+        func: function(text) {
+            return text.toLowerCase().split('').map(char => this.map[char] || char).join('');
+        },
+        preview: function(text) {
+            return this.func(text);
+        }
+    },
+
     base32: {
         name: 'Base32',
         alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',

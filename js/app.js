@@ -16,8 +16,8 @@ window.app = new Vue({
         transformCategories: {
             encoding: ['Base64', 'Base32', 'Binary', 'Hexadecimal', 'ASCII85', 'URL Encode', 'HTML Entities'],
             cipher: ['Caesar Cipher', 'ROT13', 'ROT47', 'Morse Code'],
-            visual: ['Rainbow Text', 'Strikethrough', 'Underline', 'Reverse Text'],
-            format: ['Pig Latin', 'Leetspeak', 'NATO Phonetic'],
+            visual: ['Rainbow Text', 'Strikethrough', 'Underline', 'Reverse Text', 'Wingdings Style'],
+            format: ['Pig Latin', 'Leetspeak', 'NATO Phonetic', 'Greek Letters'],
             unicode: ['Invisible Text', 'Upside Down', 'Full Width', 'Small Caps', 'Bubble', 'Braille'],
             special: ['Medieval', 'Cursive', 'Monospace', 'Double-Struck', 'Elder Futhark', 'Mirror Text', 'Zalgo']
         },
@@ -119,7 +119,18 @@ window.app = new Vue({
                 
                 // Update active transform and apply it
                 this.activeTransform = transform;
-                this.transformOutput = transform.func(this.transformInput);
+                
+                // Handle text with proper Unicode segmentation
+                const segments = window.emojiLibrary.splitEmojis(this.transformInput);
+                const transformedSegments = segments.map(segment => {
+                    // Skip transformation for emojis and complex Unicode characters
+                    if (segment.length > 1 || /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u.test(segment)) {
+                        return segment;
+                    }
+                    return transform.func(segment);
+                });
+                
+                this.transformOutput = window.emojiLibrary.joinEmojis(transformedSegments);
                 
                 // Set flag to mark this as a transform-initiated copy
                 this.isTransformCopy = true;
@@ -154,8 +165,17 @@ window.app = new Vue({
         autoTransform() {
             // Only proceed if we're in the transforms tab and have an active transform
             if (this.transformInput && this.activeTransform && this.activeTab === 'transforms') {
-                // Update the output without copying
-                this.transformOutput = this.activeTransform.func(this.transformInput);
+                // Handle text with proper Unicode segmentation
+                const segments = window.emojiLibrary.splitEmojis(this.transformInput);
+                const transformedSegments = segments.map(segment => {
+                    // Skip transformation for emojis and complex Unicode characters
+                    if (segment.length > 1 || /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u.test(segment)) {
+                        return segment;
+                    }
+                    return this.activeTransform.func(segment);
+                });
+                
+                this.transformOutput = window.emojiLibrary.joinEmojis(transformedSegments);
             }
         },
         
@@ -171,8 +191,17 @@ window.app = new Vue({
             }
             
             try {
-                // Use the transform's reverse function to decode the input
-                const decodedText = transform.reverse(this.transformInput);
+                // Handle text with proper Unicode segmentation
+                const segments = window.emojiLibrary.splitEmojis(this.transformInput);
+                const decodedSegments = segments.map(segment => {
+                    // Skip decoding for emojis and complex Unicode characters
+                    if (segment.length > 1 || /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u.test(segment)) {
+                        return segment;
+                    }
+                    return transform.reverse(segment);
+                });
+                
+                const decodedText = window.emojiLibrary.joinEmojis(decodedSegments);
                 
                 if (decodedText !== this.transformInput) {
                     // Update the input with the decoded text
@@ -461,35 +490,71 @@ window.app = new Vue({
             try {
                 // Use Clipboard API
                 if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text)
-                        .then(() => {
-                            // Only show notification for transform copies
-                            if (this.isTransformCopy) {
-                                this.showCopiedPopup();
-                                
-                                // Temporarily disable keyboard events
-                                this.ignoreKeyboardEvents = true;
-                                clearTimeout(this.keyboardEventsTimeout);
-                                this.keyboardEventsTimeout = setTimeout(() => {
-                                    this.ignoreKeyboardEvents = false;
-                                }, 1000);
-                            }
-                            
-                            // Reset transform flag
-                            this.isTransformCopy = false;
-                            
-                            // Focus back on input
-                            const inputBox = document.querySelector('#transform-input');
-                            if (inputBox) {
-                                inputBox.focus();
-                                const len = inputBox.value.length;
-                                inputBox.setSelectionRange(len, len);
-                            }
-                        })
-                        .catch(err => {
-                            console.warn('Clipboard API failed:', err);
-                            this.forceFallbackCopy(text);
-                        });
+                    // For emojis and complex characters, use a more robust approach
+                    const processedText = typeof text === 'string' ? text : String(text);
+                    
+                    // Try to use the newer clipboard API methods if available
+                    if (navigator.clipboard.write && processedText.match(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u)) {
+                        const blob = new Blob([processedText], { type: 'text/plain;charset=utf-8' });
+                        const clipboardItem = new ClipboardItem({ 'text/plain': blob });
+                        navigator.clipboard.write([clipboardItem])
+                            .then(() => {
+                                if (this.isTransformCopy) {
+                                    this.showCopiedPopup();
+                                    this.ignoreKeyboardEvents = true;
+                                    clearTimeout(this.keyboardEventsTimeout);
+                                    this.keyboardEventsTimeout = setTimeout(() => {
+                                        this.ignoreKeyboardEvents = false;
+                                    }, 1000);
+                                }
+                                this.isTransformCopy = false;
+                                const inputBox = document.querySelector('#transform-input');
+                                if (inputBox) {
+                                    inputBox.focus();
+                                    const len = inputBox.value.length;
+                                    inputBox.setSelectionRange(len, len);
+                                }
+                            })
+                            .catch(err => {
+                                console.warn('Advanced Clipboard API failed:', err);
+                                // Fall back to basic writeText
+                                navigator.clipboard.writeText(processedText)
+                                    .then(() => {
+                                        if (this.isTransformCopy) {
+                                            this.showCopiedPopup();
+                                        }
+                                        this.isTransformCopy = false;
+                                        const inputBox = document.querySelector('#transform-input');
+                                        if (inputBox) {
+                                            inputBox.focus();
+                                            const len = inputBox.value.length;
+                                            inputBox.setSelectionRange(len, len);
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.warn('Basic Clipboard API failed:', err);
+                                        this.forceFallbackCopy(processedText);
+                                    });
+                            });
+                    } else {
+                        navigator.clipboard.writeText(processedText)
+                            .then(() => {
+                                if (this.isTransformCopy) {
+                                    this.showCopiedPopup();
+                                }
+                                this.isTransformCopy = false;
+                                const inputBox = document.querySelector('#transform-input');
+                                if (inputBox) {
+                                    inputBox.focus();
+                                    const len = inputBox.value.length;
+                                    inputBox.setSelectionRange(len, len);
+                                }
+                            })
+                            .catch(err => {
+                                console.warn('Basic Clipboard API failed:', err);
+                                this.forceFallbackCopy(processedText);
+                            });
+                    }
                 } else {
                     this.forceFallbackCopy(text);
                 }
@@ -514,9 +579,17 @@ window.app = new Vue({
                 // Create temporary textarea for copying
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
+                
+                // Ensure proper emoji rendering
+                textarea.style.fontFamily = "'Segoe UI Emoji', 'Apple Color Emoji', sans-serif";
+                textarea.style.fontSize = '16px';
+                
+                // Position offscreen but with proper dimensions
                 textarea.style.position = 'fixed';
                 textarea.style.left = '-9999px';
                 textarea.style.top = '0';
+                textarea.style.width = '100px';
+                textarea.style.height = '100px';
                 document.body.appendChild(textarea);
                 
                 // Focus and select the text
@@ -666,11 +739,25 @@ window.app = new Vue({
         universalDecode(input) {
             if (!input) return '';
             
-            // Try all decoders in order
+            // If we're in the steganography tab, only try emoji decoding
+            if (this.activeTab === 'steganography') {
+                if (/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}]/u.test(input)) {
+                    console.log('In emoji tab: attempting emoji decode only...');
+                    const decoded = window.steganography.decodeEmoji(input);
+                    if (decoded) {
+                        console.log('Successfully decoded emoji:', decoded);
+                        return { text: decoded, method: 'Emoji Steganography' };
+                    } else {
+                        console.log('No hidden message found in emoji');
+                        return null;
+                    }
+                }
+                return null;
+            }
             
+            // For other tabs, try all decoders in order
             // 1. Try steganography decoders
             // - Check for emoji steganography first
-            // The emoji encoding uses variation selectors which are hard to see
             if (/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}]/u.test(input)) {
                 console.log('Detected emoji, attempting to decode...');
                 const decoded = window.steganography.decodeEmoji(input);
@@ -1074,38 +1161,41 @@ window.app = new Vue({
         },
         
         selectEmoji(emoji) {
-            this.selectedEmoji = emoji;
+            // Directly copy the emoji to clipboard
+            this.forceCopyToClipboard(emoji);
+            this.showNotification(`<i class="fas fa-check"></i> Emoji copied!`, 'success');
+            this.addToCopyHistory('Emoji', emoji);
             
-            // Create a temporary carrier for this emoji
-            const tempCarrier = {
-                name: `${emoji} Carrier`,
-                emoji: emoji,
-                encode: (text) => this.steganography.encode(text, emoji),
-                decode: (text) => this.steganography.decode(text),
-                preview: (text) => `${emoji}${text}${emoji}`
-            };
-            
-            // Use this emoji as carrier
-            this.selectedCarrier = tempCarrier;
-            this.activeSteg = 'emoji';
-            
-            // Encode the message with this emoji
-            if (this.emojiMessage) {
-                this.autoEncode();
+            // Also set up carrier if we're in steganography mode
+            if (this.activeTab === 'steganography') {
+                this.selectedEmoji = emoji;
                 
-                // Wait for encoding to complete, then copy to clipboard
-                this.$nextTick(() => {
-                    if (this.encodedMessage) {
-                        // Force clipboard copy regardless of event source
-                        this.forceCopyToClipboard(this.encodedMessage);
-                        this.showNotification(`<i class="fas fa-check"></i> Copied hidden message with ${emoji}`, 'success');
-                        
-                        // Add to copy history
-                        this.addToCopyHistory(`Emoji: ${emoji}`, this.encodedMessage);
-                    }
-                });
-            } else {
-                this.showNotification(`Select an emoji and enter a message first`, 'info');
+                // Create a temporary carrier for this emoji
+                const tempCarrier = {
+                    name: `${emoji} Carrier`,
+                    emoji: emoji,
+                    encode: (text) => this.steganography.encode(text, emoji),
+                    decode: (text) => this.steganography.decode(text),
+                    preview: (text) => `${emoji}${text}${emoji}`
+                };
+                
+                // Use this emoji as carrier
+                this.selectedCarrier = tempCarrier;
+                this.activeSteg = 'emoji';
+                
+                // Encode the message with this emoji if we have one
+                if (this.emojiMessage) {
+                    this.autoEncode();
+                    
+                    // Wait for encoding to complete, then copy to clipboard
+                    this.$nextTick(() => {
+                        if (this.encodedMessage) {
+                            this.forceCopyToClipboard(this.encodedMessage);
+                            this.showNotification(`<i class="fas fa-check"></i> Hidden message copied with ${emoji}`, 'success');
+                            this.addToCopyHistory(`Hidden Message with ${emoji}`, this.encodedMessage);
+                        }
+                    });
+                }
             }
         },
         
