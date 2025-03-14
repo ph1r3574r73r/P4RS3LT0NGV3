@@ -219,6 +219,7 @@ window.emojiLibrary.EMOJI_LIST = [
     // Animals
     "🐱", // Cat Face
     "🐶", // Dog Face
+    "🪱", // Worm
     "🦊", // Fox
     "🐼", // Panda
     "🦁", // Lion
@@ -227,6 +228,7 @@ window.emojiLibrary.EMOJI_LIST = [
     
     // Symbols & Special
     "❤️", // Red Heart
+    "🩸", // Blood Drop
     "🧡", // Orange Heart
     "💚", // Green Heart
     "💙", // Blue Heart
