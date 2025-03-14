@@ -51,6 +51,17 @@ window.emojiLibrary.ADDITIONAL_EMOJIS = [
 
 // Make emoji list globally available
 window.emojiLibrary.EMOJI_LIST = [
+    // Blood drop, worm, and moon emojis
+    "🩸", // Blood Drop
+    "🪱", // Worm
+    "🌑", // New Moon
+    "🌒", // Waxing Crescent Moon
+    "🌓", // First Quarter Moon
+    "🌔", // Waxing Gibbous Moon
+    "🌕", // Full Moon
+    "🌖", // Waning Gibbous Moon
+    "🌗", // Last Quarter Moon
+    "🌘", // Waning Crescent Moon
     // Faces and People
     "😀", // Grinning Face
     "😁", // Beaming Face with Smiling Eyes
