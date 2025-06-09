@@ -228,6 +228,7 @@ window.emojiLibrary.EMOJI_LIST = [
     "🌊", // Water Wave
     
     // Animals
+    "🐇", // Follow The
     "🐱", // Cat Face
     "🐶", // Dog Face
     "🪱", // Worm
