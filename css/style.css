@@ -1848,3 +1848,96 @@ button:hover {
     30% { box-shadow: 0 0 18px rgba(156,39,176,0.6); }
     100% { box-shadow: 0 0 0 rgba(156,39,176,0); }
 }
+
+/* Steganography split layout */
+.steg-split-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 16px;
+}
+
+.steg-advanced-sidebar {
+    position: sticky;
+    top: 8px;
+    height: max-content;
+    background: var(--main-bg-color);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.steg-adv-panel label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.steg-adv-panel select, .steg-adv-panel input[type=number] {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    padding: 6px 8px;
+}
+
+.steg-note {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+@media (max-width: 900px) {
+    .steg-split-layout { grid-template-columns: 1fr; }
+    .steg-advanced-sidebar { position: relative; top: 0; }
+}
+
+/* Global Unicode options panel (subtle, like copy history) */
+.unicode-options-panel {
+    position: fixed;
+    right: -360px;
+    top: 0;
+    width: 340px;
+    height: 100vh;
+    background: var(--secondary-bg);
+    border-left: 1px solid var(--input-border);
+    z-index: 200;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+    transition: right 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.unicode-options-panel.active { right: 0; }
+
+.unicode-panel-header {
+    padding: 12px;
+    border-bottom: 1px solid var(--input-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.unicode-panel-header h3 { margin: 0; color: var(--accent-color); font-size: 1rem; }
+
+.unicode-panel-content { padding: 12px; overflow-y: auto; }
+
+/* Fluid UX: reduce scroll fatigue during repeated actions */
+html {
+    scroll-behavior: smooth;
+}
+
+.transform-layout {
+    position: relative;
+}
+
+/* Keep the transform input visible while scrolling */
+.transform-layout .input-section {
+    position: sticky;
+    top: 8px;
+    z-index: 20;
+    background: var(--secondary-bg);
+    border: 1px solid var(--input-border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}

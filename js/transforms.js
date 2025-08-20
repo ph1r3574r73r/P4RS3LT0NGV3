@@ -263,6 +263,26 @@ const transforms = {
         }
     },
     
+    base64url: {
+        name: 'Base64 URL',
+        func: function(text) {
+            if (!text) return '';
+            const std = btoa(text);
+            return std.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/,'');
+        },
+        preview: function(text) {
+            if (!text) return '[b64url]';
+            return this.func(text.slice(0,3)) + '...';
+        },
+        reverse: function(text) {
+            if (!text) return '';
+            let std = text.replace(/-/g, '+').replace(/_/g, '/');
+            // pad
+            while (std.length % 4 !== 0) std += '=';
+            try { return atob(std); } catch (e) { return text; }
+        }
+    },
+    
     hex: {
         name: 'Hexadecimal',
         func: function(text) {
@@ -1229,6 +1249,329 @@ const transforms = {
         }
     },
 
+    // Base58 (Bitcoin alphabet)
+    base58: {
+        name: 'Base58',
+        alphabet: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
+        func: function(text) {
+            if (!text) return '';
+            const bytes = new TextEncoder().encode(text);
+            // Count leading zeros
+            let zeros = 0;
+            for (let b of bytes) { if (b === 0) zeros++; else break; }
+            // Convert to BigInt
+            let n = 0n;
+            for (let b of bytes) { n = (n << 8n) + BigInt(b); }
+            // Encode
+            let out = '';
+            while (n > 0n) {
+                const rem = n % 58n;
+                n = n / 58n;
+                out = this.alphabet[Number(rem)] + out;
+            }
+            // Add leading zeros as '1'
+            for (let i = 0; i < zeros; i++) out = '1' + out;
+            return out || '1';
+        },
+        preview: function(text) {
+            if (!text) return '[base58]';
+            return this.func(text.slice(0, 3)) + '...';
+        },
+        reverse: function(text) {
+            if (!text) return '';
+            // Count leading '1's
+            let zeros = 0;
+            for (let c of text) { if (c === '1') zeros++; else break; }
+            // Convert to BigInt
+            let n = 0n;
+            for (let c of text) {
+                const i = this.alphabet.indexOf(c);
+                if (i < 0) continue;
+                n = n * 58n + BigInt(i);
+            }
+            // Convert BigInt to bytes
+            const bytes = [];
+            while (n > 0n) {
+                bytes.unshift(Number(n % 256n));
+                n = n / 256n;
+            }
+            for (let i = 0; i < zeros; i++) bytes.unshift(0);
+            return new TextDecoder().decode(Uint8Array.from(bytes));
+        }
+    },
+
+    // Base62 (0-9A-Za-z)
+    base62: {
+        name: 'Base62',
+        alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+        func: function(text) {
+            if (!text) return '';
+            const bytes = new TextEncoder().encode(text);
+            let n = 0n;
+            for (let b of bytes) { n = (n << 8n) + BigInt(b); }
+            if (n === 0n) return '0';
+            let out = '';
+            while (n > 0n) {
+                const rem = n % 62n;
+                n = n / 62n;
+                out = this.alphabet[Number(rem)] + out;
+            }
+            return out;
+        },
+        preview: function(text) {
+            if (!text) return '[base62]';
+            return this.func(text.slice(0, 3)) + '...';
+        },
+        reverse: function(text) {
+            if (!text) return '';
+            let n = 0n;
+            for (let c of text) {
+                const i = this.alphabet.indexOf(c);
+                if (i < 0) continue;
+                n = n * 62n + BigInt(i);
+            }
+            const bytes = [];
+            while (n > 0n) {
+                bytes.unshift(Number(n % 256n));
+                n = n / 256n;
+            }
+            if (bytes.length === 0) bytes.push(0);
+            return new TextDecoder().decode(Uint8Array.from(bytes));
+        }
+    },
+
+    // Roman Numerals (1..3999)
+    roman_numerals: {
+        name: 'Roman Numerals',
+        numerals: [
+            ['M',1000],['CM',900],['D',500],['CD',400],
+            ['C',100],['XC',90],['L',50],['XL',40],
+            ['X',10],['IX',9],['V',5],['IV',4],['I',1]
+        ],
+        func: function(text) {
+            return text.replace(/\b\d+\b/g, m => {
+                let num = parseInt(m,10);
+                if (num <= 0 || num > 3999 || isNaN(num)) return m;
+                let out = '';
+                for (const [sym,val] of this.numerals) {
+                    while (num >= val) { out += sym; num -= val; }
+                }
+                return out;
+            });
+        },
+        preview: function(text) {
+            return this.func(text || '2024');
+        },
+        reverse: function(text) {
+            // Greedy parse roman numerals to digits
+            const map = {I:1,V:5,X:10,L:50,C:100,D:500,M:1000};
+            const tokenize = s => s.match(/[IVXLCDM]+|[^IVXLCDM]+/gi) || [s];
+            return tokenize(text).map(tok => {
+                if (!/^[IVXLCDM]+$/i.test(tok)) return tok;
+                const s = tok.toUpperCase();
+                let total = 0;
+                for (let i=0;i<s.length;i++) {
+                    const v = map[s[i]] || 0;
+                    const n = map[s[i+1]] || 0;
+                    total += v < n ? -v : v;
+                }
+                return String(total);
+            }).join('');
+        }
+    },
+
+    // Vigenère Cipher (default key: KEY)
+    vigenere: {
+        name: 'Vigenère Cipher',
+        key: 'KEY',
+        func: function(text) {
+            const key = this.key;
+            let out = '';
+            let j = 0;
+            for (let i=0;i<text.length;i++) {
+                const c = text[i];
+                const code = c.charCodeAt(0);
+                const k = key[j % key.length].toUpperCase().charCodeAt(0) - 65;
+                if (code >= 65 && code <= 90) { out += String.fromCharCode(65 + ((code-65 + k)%26)); j++; }
+                else if (code >= 97 && code <= 122) { out += String.fromCharCode(97 + ((code-97 + k)%26)); j++; }
+                else out += c;
+            }
+            return out;
+        },
+        preview: function(text) {
+            if (!text) return '[Vigenère]';
+            return this.func(text.slice(0,8)) + (text.length>8?'...':'');
+        },
+        reverse: function(text) {
+            const key = this.key;
+            let out = '';
+            let j = 0;
+            for (let i=0;i<text.length;i++) {
+                const c = text[i];
+                const code = c.charCodeAt(0);
+                const k = key[j % key.length].toUpperCase().charCodeAt(0) - 65;
+                if (code >= 65 && code <= 90) { out += String.fromCharCode(65 + ((code-65 + 26 - (k%26))%26)); j++; }
+                else if (code >= 97 && code <= 122) { out += String.fromCharCode(97 + ((code-97 + 26 - (k%26))%26)); j++; }
+                else out += c;
+            }
+            return out;
+        }
+    },
+
+    // Rail Fence Cipher (3 rails)
+    rail_fence: {
+        name: 'Rail Fence (3 Rails)',
+        rails: 3,
+        func: function(text) {
+            const rails = Array.from({length: this.rails}, () => []);
+            let rail = 0, dir = 1;
+            for (const ch of text) {
+                rails[rail].push(ch);
+                rail += dir;
+                if (rail === 0 || rail === this.rails-1) dir *= -1;
+            }
+            return rails.flat().join('');
+        },
+        preview: function(text) {
+            if (!text) return '[rail]';
+            return this.func(text.slice(0,12)) + (text.length>12?'...':'');
+        },
+        reverse: function(text) {
+            const len = text.length;
+            const pattern = [];
+            let rail = 0, dir = 1;
+            for (let i=0;i<len;i++) {
+                pattern.push(rail);
+                rail += dir;
+                if (rail === 0 || rail === this.rails-1) dir *= -1;
+            }
+            const counts = Array(this.rails).fill(0);
+            for (const r of pattern) counts[r]++;
+            const railsArr = [];
+            let idx = 0;
+            for (let r=0;r<this.rails;r++) {
+                railsArr[r] = text.slice(idx, idx+counts[r]).split('');
+                idx += counts[r];
+            }
+            const positions = Array(this.rails).fill(0);
+            let out = '';
+            for (const r of pattern) {
+                out += railsArr[r][positions[r]++];
+            }
+            return out;
+        }
+    },
+
+    // ROT18 (ROT13 letters + ROT5 digits)
+    rot18: {
+        name: 'ROT18',
+        func: function(text) {
+            const rot13 = c => {
+                const code = c.charCodeAt(0);
+                if (code >= 65 && code <= 90) return String.fromCharCode(65 + ((code-65 + 13)%26));
+                if (code >= 97 && code <= 122) return String.fromCharCode(97 + ((code-97 + 13)%26));
+                return c;
+            };
+            const rot5 = c => {
+                if (c >= '0' && c <= '9') return String.fromCharCode(48 + (((c.charCodeAt(0)-48)+5)%10));
+                return c;
+            };
+            return [...text].map(c => rot5(rot13(c))).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[rot18]';
+            return this.func(text.slice(0, 8)) + (text.length>8?'...':'');
+        },
+        reverse: function(text) { return this.func(text); }
+    },
+
+    // A1Z26 (letters to 1-26, separated by hyphens)
+    a1z26: {
+        name: 'A1Z26',
+        func: function(text) {
+            return text.replace(/[A-Za-z]/g, c => {
+                const n = (c.toUpperCase().charCodeAt(0) - 64);
+                return String(n) + '-';
+            }).replace(/-+(?!\d)/g,'-').replace(/-+$/,'');
+        },
+        preview: function(text) {
+            if (!text) return '[1-26]';
+            return this.func(text.slice(0, 5)) + '...';
+        },
+        reverse: function(text) {
+            return text.split(/([^0-9]+)/).map(tok => {
+                if (!/^\d+$/.test(tok)) return tok;
+                const n = parseInt(tok,10);
+                if (n>=1 && n<=26) return String.fromCharCode(64+n).toLowerCase();
+                return tok;
+            }).join('');
+        }
+    },
+
+    // Affine Cipher (a=5, b=8)
+    affine: {
+        name: 'Affine Cipher (a=5,b=8)',
+        a: 5, b: 8, m: 26, invA: 21, // 5*21 ≡ 1 (mod 26)
+        func: function(text) {
+            const {a,b,m} = this;
+            return [...text].map(c => {
+                const code = c.charCodeAt(0);
+                if (code>=65 && code<=90) return String.fromCharCode(65 + ((a*(code-65)+b)%m));
+                if (code>=97 && code<=122) return String.fromCharCode(97 + ((a*(code-97)+b)%m));
+                return c;
+            }).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[affine]';
+            return this.func(text.slice(0,8)) + (text.length>8?'...':'');
+        },
+        reverse: function(text) {
+            const {invA,b,m} = this;
+            return [...text].map(c => {
+                const code = c.charCodeAt(0);
+                if (code>=65 && code<=90) return String.fromCharCode(65 + ((invA*((code-65 - b + m)%m))%m));
+                if (code>=97 && code<=122) return String.fromCharCode(97 + ((invA*((code-97 - b + m)%m))%m));
+                return c;
+            }).join('');
+        }
+    },
+
+    // QWERTY Right-Shift (maps to next key on same row)
+    qwerty_shift: {
+        name: 'QWERTY Right Shift',
+        rows: [
+            'qwertyuiop',
+            'asdfghjkl',
+            'zxcvbnm'
+        ],
+        buildMap: function() {
+            if (this._map) return this._map;
+            const map = {};
+            for (const row of this.rows) {
+                for (let i=0;i<row.length;i++) {
+                    const from = row[i], to = row[(i+1)%row.length];
+                    map[from] = to;
+                    map[from.toUpperCase()] = to.toUpperCase();
+                }
+            }
+            this._map = map; return map;
+        },
+        func: function(text) {
+            const m = this.buildMap();
+            return [...text].map(c => m[c] || c).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[qwerty]';
+            return this.func(text.slice(0,8)) + (text.length>8?'...':'');
+        },
+        reverse: function(text) {
+            const m = this.buildMap();
+            const inv = {};
+            Object.keys(m).forEach(k => inv[m[k]] = k);
+            return [...text].map(c => inv[c] || c).join('');
+        }
+    },
+
     // Case/formatting transforms
     title_case: {
         name: 'Title Case',
@@ -1711,7 +2054,8 @@ const transforms = {
                 'hieroglyphics', 'ogham', 'mathematical', 'cursive', 'medieval',
                 'monospace', 'greek', 'braille', 'alternating_case', 'reverse_words',
                 'title_case', 'sentence_case', 'camel_case', 'snake_case', 'kebab_case', 'random_case',
-                'regional_indicator', 'fraktur', 'cyrillic_stylized', 'katakana', 'hiragana', 'emoji_speak'
+                'regional_indicator', 'fraktur', 'cyrillic_stylized', 'katakana', 'hiragana', 'emoji_speak',
+                'base58', 'base62', 'roman_numerals', 'vigenere', 'rail_fence', 'base64url'
             ];
             return suitable.filter(name => window.transforms[name]);
         },

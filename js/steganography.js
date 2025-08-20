@@ -1,4 +1,19 @@
 // Steganography carriers
+// Global adjustable options for selectors/zero-width usage
+const __STEG_DEFAULTS__ = {
+    bitZeroVS: '\ufe0e', // VS15 as 0
+    bitOneVS: '\ufe0f',  // VS16 as 1
+    initialPresentation: 'emoji', // 'emoji' -> VS16, 'text' -> VS15, 'none'
+    trailingZW: '\u200B', // e.g., ZWSP; set to null to disable
+    interBitZW: null,      // e.g., '\u200C' ZWNJ, '\u200D' ZWJ; null disables
+    interBitEvery: 1,      // insert interBitZW every N bits (1 = after each bit)
+    bitOrder: 'msb'        // 'msb' or 'lsb' within each byte
+};
+let __stegOptions__ = Object.assign({}, __STEG_DEFAULTS__);
+function setStegOptions(opts) {
+    if (!opts) return;
+    __stegOptions__ = Object.assign({}, __stegOptions__, opts);
+}
 // First define encoding function for preview usage
 function encodeForPreview(emoji, text) {
     if (!text) return emoji;
@@ -9,20 +24,28 @@ function encodeForPreview(emoji, text) {
         .join('');
     
     // Use variation selectors to encode binary
-    const vs15 = '\ufe0e';  // text variation selector (0)
-    const vs16 = '\ufe0f';  // emoji variation selector (1)
+    const vs0 = __stegOptions__.bitZeroVS || '\ufe0e';
+    const vs1 = __stegOptions__.bitOneVS || '\ufe0f';
     
     // Start with the emoji character
     // Ensure the emoji has a presentation selector first to standardize it
-    let result = emoji + vs16; // Add emoji presentation selector first
+    let result = emoji;
+    if (__stegOptions__.initialPresentation === 'emoji') result += '\ufe0f';
+    else if (__stegOptions__.initialPresentation === 'text') result += '\ufe0e';
     
     // Add variation selectors based on binary representation
-    for (const bit of binary) {
-        result += bit === '0' ? vs15 : vs16;
+    for (let i=0;i<binary.length;i++) {
+        const bit = binary[i];
+        result += bit === '0' ? vs0 : vs1;
+        if (__stegOptions__.interBitZW && i < binary.length-1 && ((i+1) % Math.max(1, __stegOptions__.interBitEvery)) === 0) {
+            result += __stegOptions__.interBitZW;
+        }
     }
     
-    // Ensure there's a zero-width space after the encoded content
-    result += '\u200B';
+    // Optional trailing zero-width character
+    if (__stegOptions__.trailingZW) {
+        try { result += eval(`'${__stegOptions__.trailingZW}'`); } catch (_) { result += '\u200B'; }
+    }
     
     return result;
 }
@@ -73,21 +96,28 @@ function encodeEmoji(emoji, text) {
         .join('');
     
     // Use variation selectors to encode binary
-    const vs15 = '\ufe0e';  // text variation selector (0)
-    const vs16 = '\ufe0f';  // emoji variation selector (1)
+    const vs0 = __stegOptions__.bitZeroVS || '\ufe0e';
+    const vs1 = __stegOptions__.bitOneVS || '\ufe0f';
     
     // Start with the emoji character
     // Ensure the emoji has a presentation selector first to standardize it
-    let result = emoji + vs16; // Add emoji presentation selector first
+    let result = emoji;
+    if (__stegOptions__.initialPresentation === 'emoji') result += '\ufe0f';
+    else if (__stegOptions__.initialPresentation === 'text') result += '\ufe0e';
     
     // Add variation selectors based on binary representation
-    for (const bit of binary) {
-        result += bit === '0' ? vs15 : vs16;
+    for (let i=0;i<binary.length;i++) {
+        const bit = binary[i];
+        result += bit === '0' ? vs0 : vs1;
+        if (__stegOptions__.interBitZW && i < binary.length-1 && ((i+1) % Math.max(1, __stegOptions__.interBitEvery)) === 0) {
+            result += __stegOptions__.interBitZW;
+        }
     }
     
-    // Ensure there's a zero-width space after the encoded content
-    // This helps with browser rendering
-    result += '\u200B';
+    // Optional trailing zero-width character (helps with rendering in many browsers)
+    if (__stegOptions__.trailingZW) {
+        try { result += eval(`'${__stegOptions__.trailingZW}'`); } catch (_) { result += '\u200B'; }
+    }
     
     return result;
 }
@@ -105,27 +135,33 @@ function decodeEmoji(text) {
     // Only extract the emoji and its variation selectors, ignoring other content
     // This prevents random characters from being included in the decoded result
     const emojiChar = emojiMatch[1];
-    const pattern = new RegExp(`^${emojiChar}([\ufe0e\ufe0f]+)`, 'u');
+    // Allow zero-width chars interleaved, but capture only variation selectors
+    const pattern = new RegExp(`^${emojiChar}([\ufe0e\ufe0f\u200B\u200C\u200D\ufeff]+)`, 'u');
     const emojiData = text.match(pattern);
     
     if (!emojiData || !emojiData[1]) return '';
     
-    // Get only the variation selectors that follow the emoji directly
-    const varSelectors = emojiData[1];
-    // Skip the first variation selector as it's used for presentation
-    const matches = [...varSelectors.matchAll(/[\ufe0e\ufe0f]/g)];
-    if (matches.length <= 1) return ''; // Need at least one bit after the presentation selector
-    
-    // Convert variation selectors to binary, skipping the first one (presentation selector)
-    const binary = matches.slice(1).map(m => m[0] === '\ufe0e' ? '0' : '1').join('');
+    // Extract variation selectors only
+    const rawSeq = emojiData[1];
+    const matches = [...rawSeq.matchAll(/[\ufe0e\ufe0f]/g)];
+    if (matches.length === 0) return '';
+    // Decide if the first selector is presentation
+    const skip = (__stegOptions__.initialPresentation === 'none') ? 0 : 1;
+    if (matches.length <= skip) return '';
+    const zeroSel = __stegOptions__.bitZeroVS || '\ufe0e';
+    const oneSel  = __stegOptions__.bitOneVS || '\ufe0f';
+    let binary = matches.slice(skip).map(m => m[0] === zeroSel ? '0' : (m[0] === oneSel ? '1' : '')).join('');
     
     // Make sure we have complete bytes (multiples of 8 bits)
     const validBinaryLength = Math.floor(binary.length / 8) * 8;
     
-    // Convert binary to text
+    // Convert binary to text (respect bitOrder)
     let decoded = '';
     for (let i = 0; i < validBinaryLength; i += 8) {
-        const byte = binary.slice(i, i + 8);
+        let byte = binary.slice(i, i + 8);
+        if (__stegOptions__.bitOrder === 'lsb') {
+            byte = byte.split('').reverse().join('');
+        }
         if (byte.length === 8) {
             const charCode = parseInt(byte, 2);
             // Only include printable ASCII characters
@@ -191,5 +227,6 @@ window.steganography = {
     encodeEmoji,
     decodeEmoji,
     encodeInvisible,
-    decodeInvisible
+    decodeInvisible,
+    setStegOptions
 };

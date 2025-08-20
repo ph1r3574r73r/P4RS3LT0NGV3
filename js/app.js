@@ -14,11 +14,11 @@ window.app = new Vue({
         activeTransform: null,
         // Transform categories for styling
         transformCategories: {
-            encoding: ['Base64', 'Base32', 'Binary', 'Hexadecimal', 'ASCII85', 'URL Encode', 'HTML Entities'],
-            cipher: ['Caesar Cipher', 'ROT13', 'ROT47', 'Morse Code', 'Atbash Cipher', 'ROT5'],
+            encoding: ['Base64', 'Base64 URL', 'Base32', 'Base58', 'Base62', 'Binary', 'Hexadecimal', 'ASCII85', 'URL Encode', 'HTML Entities'],
+            cipher: ['Caesar Cipher', 'ROT13', 'ROT47', 'Morse Code', 'Atbash Cipher', 'ROT5', 'Vigenère Cipher', 'Rail Fence (3 Rails)'],
             visual: ['Rainbow Text', 'Strikethrough', 'Underline', 'Reverse Text', 'Alternating Case', 'Reverse Words', 'Random Case', 'Title Case', 'Sentence Case', 'Emoji Speak'],
             format: ['Pig Latin', 'Leetspeak', 'NATO Phonetic', 'camelCase', 'snake_case', 'kebab-case'],
-            unicode: ['Invisible Text', 'Upside Down', 'Full Width', 'Small Caps', 'Bubble', 'Braille', 'Greek Letters', 'Wingdings', 'Superscript', 'Subscript', 'Regional Indicator Letters', 'Fraktur', 'Cyrillic Stylized', 'Katakana', 'Hiragana'],
+            unicode: ['Invisible Text', 'Upside Down', 'Full Width', 'Small Caps', 'Bubble', 'Braille', 'Greek Letters', 'Wingdings', 'Superscript', 'Subscript', 'Regional Indicator Letters', 'Fraktur', 'Cyrillic Stylized', 'Katakana', 'Hiragana', 'Roman Numerals'],
             special: ['Medieval', 'Cursive', 'Monospace', 'Double-Struck', 'Elder Futhark', 'Mirror Text', 'Zalgo'],
             fantasy: ['Quenya (Tolkien Elvish)', 'Tengwar Script', 'Klingon', 'Aurebesh (Star Wars)', 'Dovahzul (Dragon)'],
             ancient: ['Hieroglyphics', 'Ogham (Celtic)', 'Semaphore Flags'],
@@ -56,9 +56,18 @@ window.app = new Vue({
         // History of copied content
         copyHistory: [],
         maxHistoryItems: 10,
-        showCopyHistory: false
+        showCopyHistory: false,
+        showUnicodePanel: false
     },
     methods: {
+        toggleUnicodePanel() {
+            this.showUnicodePanel = !this.showUnicodePanel;
+            const panel = document.getElementById('unicode-options-panel');
+            if (panel) {
+                if (this.showUnicodePanel) panel.classList.add('active');
+                else panel.classList.remove('active');
+            }
+        },
         // Focus an element without causing the page to scroll
         focusWithoutScroll(el) {
             if (!el) return;
@@ -1027,6 +1036,34 @@ window.app = new Vue({
                 } catch (e) {
                     // Not valid base64, continue to next decoder
                     console.error('Base64 decode error:', e);
+                }
+            }
+
+            // - Base58
+            if (/^[1-9A-HJ-NP-Za-km-z]+$/.test(input.trim())) {
+                try {
+                    if (window.transforms.base58 && window.transforms.base58.reverse) {
+                        const result = window.transforms.base58.reverse(input.trim());
+                        if (result && /[\x20-\x7E]{3,}/.test(result)) {
+                            return { text: result, method: 'Base58' };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Base58 decode error:', e);
+                }
+            }
+
+            // - Base62
+            if (/^[0-9A-Za-z]+$/.test(input.trim())) {
+                try {
+                    if (window.transforms.base62 && window.transforms.base62.reverse) {
+                        const result = window.transforms.base62.reverse(input.trim());
+                        if (result && /[\x20-\x7E]{3,}/.test(result)) {
+                            return { text: result, method: 'Base62' };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Base62 decode error:', e);
                 }
             }
 

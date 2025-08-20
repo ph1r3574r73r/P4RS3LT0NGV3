@@ -14,6 +14,8 @@ A powerful web-based text transformation and steganography tool that can encode/
 #### **Encoding & Decoding**
 - **Base64** - Standard base64 encoding/decoding
 - **Base32** - RFC 4648 compliant base32 encoding/decoding  
+- **Base58** - Bitcoin alphabet encoding/decoding
+- **Base62** - 0-9A-Za-z compact encoding/decoding
 - **Binary** - Convert text to/from binary representation
 - **Hexadecimal** - Convert text to/from hex format
 - **ASCII85** - Advanced ASCII85 encoding/decoding
@@ -26,6 +28,8 @@ A powerful web-based text transformation and steganography tool that can encode/
 - **ROT47** - Extended rotation cipher for ASCII 33-126
 - **Morse Code** - International Morse code with proper spacing
 - **NATO Phonetic** - NATO phonetic alphabet
+- **Vigenère Cipher** - Polyalphabetic cipher (default key "KEY")
+- **Rail Fence (3 Rails)** - Zig-zag transposition cipher
 
 #### **Visual Transformations**
 - **Upside Down** - Flip text upside down using Unicode characters
@@ -43,6 +47,11 @@ A powerful web-based text transformation and steganography tool that can encode/
 - **Double-Struck** - Mathematical double-struck characters
 - **Greek Letters** - Greek alphabet characters
 - **Wingdings** - Symbol font characters
+- **Fraktur** - Mathematical Fraktur alphabet
+- **Cyrillic Stylized** - Latin letters mapped to similar Cyrillic glyphs
+- **Katakana** - Romaji to Katakana (approximate, reversible)
+- **Hiragana** - Romaji to Hiragana (approximate, reversible)
+- **Roman Numerals** - Numbers to Roman numerals (reversible)
 
 #### **Fantasy Languages** 🧙‍♂️
 - **Quenya (Tolkien Elvish)** - High Elvish language from Lord of the Rings
@@ -128,6 +137,7 @@ streamlit run parsel_app.py
 
 ### **New Features**
 - 🆕 **50+ New Languages**: Added fantasy, ancient, and technical scripts
+- 🆕 **More Encodings/Ciphers**: Base58, Base62, Vigenère, Rail Fence, Roman Numerals
 - 🆕 **Category Organization**: Better organized transform categories
 - 🆕 **Enhanced Styling**: New color schemes for each category
 - 🆕 **Improved Decoder**: Better detection and fallback mechanisms

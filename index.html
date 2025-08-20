@@ -44,6 +44,14 @@
                 >
                     <i class="fab fa-github"></i>
                 </a>
+                <button 
+                    @click="toggleUnicodePanel"
+                    class="history-button" 
+                    title="Advanced Unicode options"
+                    aria-label="Advanced Unicode options"
+                >
+                    <i class="fas fa-sliders-h"></i>
+                </button>
             </div>
         </header>
 
@@ -141,6 +149,7 @@
                             </p>
                             <p v-else>Paste any encoded text to try all decoding methods at once</p>
                         </div>
+                        
                         <div class="input-container">
                             <textarea 
                                 id="universal-decode-input-steg" 
@@ -590,6 +599,71 @@
         </div>
     </div>
 
+    <!-- Global Advanced Unicode / Steg Options Panel -->
+    <div id="unicode-options-panel" class="unicode-options-panel">
+        <div class="unicode-panel-header">
+            <h3><i class="fas fa-sliders-h"></i> Advanced Unicode Encoding</h3>
+            <button class="close-button" @click="toggleUnicodePanel" title="Close options"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="unicode-panel-content options-grid steg-adv-panel">
+            <label>
+                Initial Presentation
+                <select class="steg-initial-presentation">
+                    <option value="emoji">Emoji (VS16)</option>
+                    <option value="text">Text (VS15)</option>
+                    <option value="none">None</option>
+                </select>
+            </label>
+            <label>
+                Bit-0 Selector
+                <select class="steg-vs-zero">
+                    <option value="\ufe0e">VS15 (\ufe0e)</option>
+                    <option value="\ufe0f">VS16 (\ufe0f)</option>
+                </select>
+            </label>
+            <label>
+                Bit-1 Selector
+                <select class="steg-vs-one">
+                    <option value="\ufe0f">VS16 (\ufe0f)</option>
+                    <option value="\ufe0e">VS15 (\ufe0e)</option>
+                </select>
+            </label>
+            <label>
+                Inter-bit Zero-Width
+                <select class="steg-inter-zw">
+                    <option value="">None</option>
+                    <option value="\u200C">ZWNJ (\u200C)</option>
+                    <option value="\u200D">ZWJ (\u200D)</option>
+                    <option value="\u200B">ZWSP (\u200B)</option>
+                    <option value="\ufeff">BOM (\ufeff)</option>
+                </select>
+            </label>
+            <label>
+                Inter-bit Every N bits
+                <input class="steg-inter-every" type="number" min="1" max="8" value="1" />
+            </label>
+            <label>
+                Bit Order
+                <select class="steg-bit-order">
+                    <option value="msb">MSB First</option>
+                    <option value="lsb">LSB First</option>
+                </select>
+            </label>
+            <label>
+                Trailing Zero-Width
+                <select class="steg-trailing-zw">
+                    <option value="\u200B">ZWSP (\u200B)</option>
+                    <option value="\u200C">ZWNJ (\u200C)</option>
+                    <option value="\u200D">ZWJ (\u200D)</option>
+                    <option value="\ufeff">BOM (\ufeff)</option>
+                    <option value="">None</option>
+                </select>
+            </label>
+            <button class="apply-steg-options">Apply</button>
+            <small class="steg-note">These options affect Unicode-based steganography encoding/decoding.</small>
+        </div>
+    </div>
+
     <script src="js/transforms.js"></script>
     <script src="js/steganography.js"></script>
     <script src="js/emojiLibrary.js"></script>
@@ -627,6 +701,35 @@
                 }
             }, true);
         })();
+
+        // Wire up advanced steg options to steganography engine
+        document.addEventListener('DOMContentLoaded', function(){
+            document.querySelectorAll('.apply-steg-options').forEach(btn => {
+                btn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    const panel = btn.closest('.steg-adv-panel');
+                    if (!panel) return;
+                    const initSel = panel.querySelector('.steg-initial-presentation')?.value || 'emoji';
+                    const vs0 = panel.querySelector('.steg-vs-zero')?.value || '\\ufe0e';
+                    const vs1 = panel.querySelector('.steg-vs-one')?.value || '\\ufe0f';
+                    const inter = panel.querySelector('.steg-inter-zw')?.value || null;
+                    const trailing = panel.querySelector('.steg-trailing-zw')?.value || null;
+                    const every = parseInt(panel.querySelector('.steg-inter-every')?.value || '1', 10);
+                    const order = panel.querySelector('.steg-bit-order')?.value || 'msb';
+                    if (window.steganography && window.steganography.setStegOptions) {
+                        window.steganography.setStegOptions({
+                            initialPresentation: initSel,
+                            bitZeroVS: vs0,
+                            bitOneVS: vs1,
+                            interBitZW: inter,
+                            interBitEvery: isNaN(every) ? 1 : Math.max(1, Math.min(8, every)),
+                            trailingZW: trailing,
+                            bitOrder: order
+                        });
+                    }
+                });
+            });
+        });
 
         // Function to initialize emoji grid with retries
         function initEmojiGrid(retryCount) {
