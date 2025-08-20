@@ -116,6 +116,65 @@
                         </div>
                     </div>
 
+                    <!-- Token Bomb Generator -->
+                    <div class="token-bomb-section">
+                        <div class="section-header">
+                            <h3>
+                                <i class="fas fa-bomb"></i> Token Bomb Generator
+                                <small>Create dense token sequences using nested emojis</small>
+                            </h3>
+                        </div>
+                        <div class="token-bomb-controls options-grid">
+                            <label>
+                                Depth
+                                <input type="number" v-model.number="tbDepth" min="1" max="8" />
+                            </label>
+                            <label>
+                                Breadth per level
+                                <input type="number" v-model.number="tbBreadth" min="1" max="12" />
+                            </label>
+                            <label>
+                                Repeats
+                                <input type="number" v-model.number="tbRepeats" min="1" max="100" />
+                            </label>
+                            <label>
+                                Separator
+                                <select v-model="tbSeparator">
+                                    <option value="zwj">Zero-Width Joiner (\u200D)</option>
+                                    <option value="zwnj">Zero-Width Non-Joiner (\u200C)</option>
+                                    <option value="zwsp">Zero-Width Space (\u200B)</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </label>
+                            <label>
+                                Include Variation Selectors
+                                <input type="checkbox" v-model="tbIncludeVS" />
+                            </label>
+                            <label>
+                                Include Invisible Noise
+                                <input type="checkbox" v-model="tbIncludeNoise" />
+                            </label>
+                            <label>
+                                Randomize Emojis
+                                <input type="checkbox" v-model="tbRandomizeEmojis" />
+                            </label>
+                        </div>
+                        <div class="token-bomb-actions">
+                            <button class="transform-button" @click="generateTokenBomb">
+                                <i class="fas fa-hammer"></i> Generate
+                            </button>
+                            <button class="copy-button" v-if="tokenBombOutput" @click="copyToClipboard(tokenBombOutput)">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                            <small v-if="tokenBombOutput">
+                                Length: {{ tokenBombOutput.length.toLocaleString() }} chars
+                            </small>
+                        </div>
+                        <div class="output-container" v-if="tokenBombOutput">
+                            <textarea readonly v-model="tokenBombOutput" aria-label="Token bomb output"></textarea>
+                        </div>
+                    </div>
+
                     <div class="output-section" v-if="encodedMessage">
                         <div class="output-heading">
                             <h4>

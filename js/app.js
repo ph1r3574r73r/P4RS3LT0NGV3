@@ -52,6 +52,15 @@ window.app = new Vue({
         // Emoji Library
         filteredEmojis: [...window.emojiLibrary.EMOJI_LIST],
         selectedEmoji: null,
+        // Token Bomb Generator
+        tbDepth: 3,
+        tbBreadth: 4,
+        tbRepeats: 5,
+        tbSeparator: 'zwj',
+        tbIncludeVS: true,
+        tbIncludeNoise: true,
+        tbRandomizeEmojis: true,
+        tokenBombOutput: '',
         
         // History of copied content
         copyHistory: [],
@@ -1664,6 +1673,74 @@ window.app = new Vue({
                     });
                 });
             });
+        }
+        ,
+        // Token Bomb Generator Logic
+        generateTokenBomb() {
+            const depth = Math.max(1, Math.min(8, Number(this.tbDepth) || 1));
+            const breadth = Math.max(1, Math.min(12, Number(this.tbBreadth) || 1));
+            const repeats = Math.max(1, Math.min(100, Number(this.tbRepeats) || 1));
+            const sep = this.tbSeparator === 'zwj' ? '\u200D' : this.tbSeparator === 'zwnj' ? '\u200C' : this.tbSeparator === 'zwsp' ? '\u200B' : '';
+            const includeVS = !!this.tbIncludeVS;
+            const includeNoise = !!this.tbIncludeNoise;
+            const randomize = !!this.tbRandomizeEmojis;
+
+            const emojiList = this.filteredEmojis && this.filteredEmojis.length ? this.filteredEmojis : window.emojiLibrary.EMOJI_LIST;
+
+            function pickEmojis(count) {
+                const out = [];
+                for (let i = 0; i < count; i++) {
+                    const idx = randomize ? Math.floor(Math.random() * emojiList.length) : (i % emojiList.length);
+                    out.push(String(emojiList[idx]));
+                }
+                return out;
+            }
+
+            function addVS(str) {
+                if (!includeVS) return str;
+                // Alternate VS16/VS15 to maximize tokenization churn
+                const vs16 = '\uFE0F';
+                const vs15 = '\uFE0E';
+                let out = '';
+                for (let i = 0; i < str.length; i++) {
+                    const ch = str[i];
+                    out += ch + (i % 2 === 0 ? vs16 : vs15);
+                }
+                return out;
+            }
+
+            function noise() {
+                if (!includeNoise) return '';
+                const parts = ['\u200B','\u200C','\u200D','\u2060','\u2062','\u2063'];
+                let s = '';
+                const n = 1 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < n; i++) s += parts[Math.floor(Math.random() * parts.length)];
+                return s;
+            }
+
+            function buildLevel(level) {
+                if (level === 0) {
+                    const base = pickEmojis(breadth).join('');
+                    return addVS(base);
+                }
+                const items = [];
+                for (let i = 0; i < breadth; i++) {
+                    const inner = buildLevel(level - 1);
+                    items.push(inner + noise());
+                }
+                return items.join(sep);
+            }
+
+            let block = buildLevel(depth - 1);
+            // Repeat the block to increase token length
+            const blocks = [];
+            for (let i = 0; i < repeats; i++) {
+                blocks.push(block + noise());
+            }
+            this.tokenBombOutput = blocks.join(sep);
+
+            // Provide a quick visual confirmation
+            this.showNotification('<i class="fas fa-bomb"></i> Token bomb generated', 'success');
         }
     },
     // Initialize theme and components
