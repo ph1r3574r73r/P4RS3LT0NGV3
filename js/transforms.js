@@ -23,29 +23,6 @@ const transforms = {
                 .join('');
         }
     },
-    // Invisible Text transform
-    invisible_text: {
-        name: 'Invisible Text',
-        func: function(text) {
-            if (!text) return '';
-            const bytes = new TextEncoder().encode(text);
-            return Array.from(bytes)
-                .map(byte => String.fromCodePoint(0xE0000 + byte))
-                .join('');
-        },
-        preview: function(text) {
-            return '[invisible]';
-        },
-        reverse: function(text) {
-            if (!text) return '';
-            const matches = [...text.matchAll(/[\uE0000-\uE007F]/g)];
-            if (!matches.length) return '';
-            
-            return matches
-                .map(match => String.fromCharCode(match[0].codePointAt(0) - 0xE0000))
-                .join('');
-        }
-    },
 
     // Basic transforms
     upside_down: {
@@ -74,7 +51,9 @@ const transforms = {
             return [...text].map(c => this.map[c] || c).reverse().join('');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[binary]';
+            const firstChar = text.charAt(0);
+            return firstChar.charCodeAt(0).toString(2).padStart(8, '0') + '...';
         },
         reverse: function(text) {
             const revMap = this.reverseMap();
@@ -101,7 +80,9 @@ const transforms = {
             return [...text.toLowerCase()].map(c => this.map[c] || c).join('');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[hex]';
+            const firstChar = text.charAt(0);
+            return firstChar.charCodeAt(0).toString(16).padStart(2, '0') + '...';
         },
         reverse: function(text) {
             const revMap = this.reverseMap();
@@ -115,7 +96,8 @@ const transforms = {
             return [...text].join(' ');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[base64]';
+            return btoa(text.slice(0, 3)) + '...';
         },
         reverse: function(text) {
             // Remove spaces between characters
@@ -224,7 +206,9 @@ const transforms = {
             }
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[base32]';
+            const result = this.func(text.slice(0, 2));
+            return result + '...';
         },
         reverse: function(text) {
             return this.func(text, true);
@@ -237,7 +221,9 @@ const transforms = {
             return [...text].map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[binary]';
+            const firstChar = text.charAt(0);
+            return firstChar.charCodeAt(0).toString(2).padStart(8, '0') + '...';
         },
         reverse: function(text) {
             // Remove spaces and ensure we have valid binary
@@ -265,7 +251,8 @@ const transforms = {
             return btoa(text);
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[base64]';
+            return btoa(text.slice(0, 3)) + '...';
         },
         reverse: function(text) {
             try {
@@ -282,7 +269,9 @@ const transforms = {
             return [...text].map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(' ');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[hex]';
+            const firstChar = text.charAt(0);
+            return firstChar.charCodeAt(0).toString(16).padStart(2, '0') + '...';
         },
         reverse: function(text) {
             const hexText = text.replace(/\s+/g, '');
@@ -315,7 +304,8 @@ const transforms = {
             }).join('');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[cursive]';
+            return this.func(text.slice(0, 3)) + '...';
         },
         reverse: function(text) {
             // For decoding, shift in the opposite direction
@@ -342,7 +332,8 @@ const transforms = {
             }).join('');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[monospace]';
+            return this.func(text.slice(0, 3)) + '...';
         },
         reverse: function(text) {
             // ROT13 is its own inverse
@@ -360,7 +351,8 @@ const transforms = {
             return [...text].map(c => this.map[c] || c).join('');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[double-struck]';
+            return this.func(text.slice(0, 3)) + '...';
         },
         // Create reverse map for decoding
         reverseMap: function() {
@@ -382,7 +374,8 @@ const transforms = {
             return [...text].reverse().join('');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[math]';
+            return this.func(text.slice(0, 3)) + '...';
         },
         reverse: function(text) {
             return this.func(text); // Mirror is its own inverse
@@ -404,7 +397,8 @@ const transforms = {
             return [...text.toLowerCase()].map(c => this.map[c] || c).join(' ');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[quenya]';
+            return this.func(text.slice(0, 3)) + '...';
         },
         // Create reverse map for decoding
         reverseMap: function() {
@@ -436,7 +430,8 @@ const transforms = {
             }).join('');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[tengwar]';
+            return this.func(text.slice(0, 3)) + '...';
         },
         reverse: function(text) {
             return [...text].map(c => {
@@ -461,7 +456,8 @@ const transforms = {
             return segments.map(c => c + '\u0336').join('');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[hieroglyphics]';
+            return this.func(text.slice(0, 3)) + '...';
         },
         reverse: function(text) {
             // Remove combining strikethrough characters
@@ -477,7 +473,8 @@ const transforms = {
             return segments.map(c => c + '\u0332').join('');
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[ogham]';
+            return this.func(text.slice(0, 3)) + '...';
         },
         reverse: function(text) {
             // Remove combining underline characters
@@ -602,7 +599,8 @@ const transforms = {
             return result + '~>';
         },
         preview: function(text) {
-            return this.func(text);
+            if (!text) return '[runes]';
+            return this.func(text.slice(0, 3)) + '...';
         },
         reverse: function(text) {
             // Check if it's a valid ASCII85 string
@@ -808,12 +806,16 @@ const transforms = {
         name: 'Base32',
         alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
         func: function(text) {
+            if (!text) return '';
+            
+            // Convert text to bytes
+            const bytes = new TextEncoder().encode(text);
             let result = '';
             let bits = 0;
             let value = 0;
             
-            for (let i = 0; i < text.length; i++) {
-                value = (value << 8) | text.charCodeAt(i);
+            for (let i = 0; i < bytes.length; i++) {
+                value = (value << 8) | bytes[i];
                 bits += 8;
                 
                 while (bits >= 5) {
@@ -835,23 +837,24 @@ const transforms = {
             return result;
         },
         preview: function(text) {
-            return this.func(text);
-        },
-        // Create reverse map for decoding
-        reverseMap: function() {
-            const revMap = {};
-            for (let i = 0; i < this.alphabet.length; i++) {
-                revMap[this.alphabet[i]] = i;
-            }
-            return revMap;
+            if (!text) return '[base32]';
+            const result = this.func(text.slice(0, 2));
+            return result + '...';
         },
         reverse: function(text) {
+            if (!text) return '';
+            
             // Remove padding and whitespace
             text = text.replace(/\s+/g, '').replace(/=+$/, '');
             
             if (text.length === 0) return '';
             
-            const revMap = this.reverseMap();
+            // Create reverse map
+            const revMap = {};
+            for (let i = 0; i < this.alphabet.length; i++) {
+                revMap[this.alphabet[i]] = i;
+            }
+            
             let result = '';
             let bits = 0;
             let value = 0;
@@ -942,6 +945,906 @@ const transforms = {
         reverse: function(text) {
             const revMap = this.reverseMap();
             return text.split('').map(char => revMap[char] || char).join('');
+        }
+    },
+    
+    // Fantasy and Fictional Languages
+    
+    quenya: {
+        name: 'Quenya (Tolkien Elvish)',
+        map: {
+            'a': 'a', 'b': 'v', 'c': 'k', 'd': 'd', 'e': 'e', 'f': 'f', 'g': 'g', 'h': 'h', 'i': 'i',
+            'j': 'y', 'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o', 'p': 'p', 'q': 'kw', 'r': 'r',
+            's': 's', 't': 't', 'u': 'u', 'v': 'v', 'w': 'w', 'x': 'ks', 'y': 'y', 'z': 'z',
+            'A': 'A', 'B': 'V', 'C': 'K', 'D': 'D', 'E': 'E', 'F': 'F', 'G': 'G', 'H': 'H', 'I': 'I',
+            'J': 'Y', 'K': 'K', 'L': 'L', 'M': 'M', 'N': 'N', 'O': 'O', 'P': 'P', 'Q': 'KW', 'R': 'R',
+            'S': 'S', 'T': 'T', 'U': 'U', 'V': 'V', 'W': 'W', 'X': 'KS', 'Y': 'Y', 'Z': 'Z'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            // Create reverse map
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+    
+    tengwar: {
+        name: 'Tengwar Script',
+        map: {
+            'a': 'ᚪ', 'b': 'ᛒ', 'c': 'ᛣ', 'd': 'ᛞ', 'e': 'ᛖ', 'f': 'ᚠ', 'g': 'ᚷ', 'h': 'ᚺ', 'i': 'ᛁ',
+            'j': 'ᛃ', 'k': 'ᛣ', 'l': 'ᛚ', 'm': 'ᛗ', 'n': 'ᚾ', 'o': 'ᚩ', 'p': 'ᛈ', 'q': 'ᛩ', 'r': 'ᚱ',
+            's': 'ᛋ', 't': 'ᛏ', 'u': 'ᚢ', 'v': 'ᚡ', 'w': 'ᚹ', 'x': 'ᛉ', 'y': 'ᚣ', 'z': 'ᛉ',
+            'A': 'ᚪ', 'B': 'ᛒ', 'C': 'ᛣ', 'D': 'ᛞ', 'E': 'ᛖ', 'F': 'ᚠ', 'G': 'ᚷ', 'H': 'ᚺ', 'I': 'ᛁ',
+            'J': 'ᛃ', 'K': 'ᛣ', 'L': 'ᛚ', 'M': 'ᛗ', 'N': 'ᚾ', 'O': 'ᚩ', 'P': 'ᛈ', 'Q': 'ᛩ', 'R': 'ᚱ',
+            'S': 'ᛋ', 'T': 'ᛏ', 'U': 'ᚢ', 'V': 'ᚡ', 'W': 'ᚹ', 'X': 'ᛉ', 'Y': 'ᚣ', 'Z': 'ᛉ'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+    
+    klingon: {
+        name: 'Klingon',
+        map: {
+            'a': 'a', 'b': 'b', 'c': 'ch', 'd': 'D', 'e': 'e', 'f': 'f', 'g': 'gh', 'h': 'H', 'i': 'I',
+            'j': 'j', 'k': 'q', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o', 'p': 'p', 'q': 'Q', 'r': 'r',
+            's': 'S', 't': 't', 'u': 'u', 'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y', 'z': 'z',
+            'A': 'A', 'B': 'B', 'C': 'CH', 'D': 'D', 'E': 'E', 'F': 'F', 'G': 'GH', 'H': 'H', 'I': 'I',
+            'J': 'J', 'K': 'Q', 'L': 'L', 'M': 'M', 'N': 'N', 'O': 'O', 'P': 'P', 'Q': 'Q', 'R': 'R',
+            'S': 'S', 'T': 'T', 'U': 'U', 'V': 'V', 'W': 'W', 'X': 'X', 'Y': 'Y', 'Z': 'Z'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+    
+    aurebesh: {
+        name: 'Aurebesh (Star Wars)',
+        map: {
+            'a': 'Aurek', 'b': 'Besh', 'c': 'Cresh', 'd': 'Dorn', 'e': 'Esk', 'f': 'Forn', 'g': 'Grek', 'h': 'Herf', 'i': 'Isk',
+            'j': 'Jenth', 'k': 'Krill', 'l': 'Leth', 'm': 'Mern', 'n': 'Nern', 'o': 'Osk', 'p': 'Peth', 'q': 'Qek', 'r': 'Resh',
+            's': 'Senth', 't': 'Trill', 'u': 'Usk', 'v': 'Vev', 'w': 'Wesk', 'x': 'Xesh', 'y': 'Yirt', 'z': 'Zerek',
+            'A': 'AUREK', 'B': 'BESH', 'C': 'CRESH', 'D': 'DORN', 'E': 'ESK', 'F': 'FORN', 'G': 'GREK', 'H': 'HERF', 'I': 'ISK',
+            'J': 'JENTH', 'K': 'KRILL', 'L': 'LETH', 'M': 'MERN', 'N': 'NERN', 'O': 'OSK', 'P': 'PETH', 'Q': 'QEK', 'R': 'RESH',
+            'S': 'SENTH', 'T': 'TRILL', 'U': 'USK', 'V': 'VEV', 'W': 'WESK', 'X': 'XESH', 'Y': 'YIRT', 'Z': 'ZEREK'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join(' ');
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value.toLowerCase()] = key;
+            }
+            return text.split(/\s+/).map(word => revMap[word.toLowerCase()] || word).join('');
+        }
+    },
+    
+    dovahzul: {
+        name: 'Dovahzul (Dragon)',
+        map: {
+            'a': 'ah', 'b': 'b', 'c': 'k', 'd': 'd', 'e': 'eh', 'f': 'f', 'g': 'g', 'h': 'h', 'i': 'ii',
+            'j': 'j', 'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n', 'o': 'o', 'p': 'p', 'q': 'kw', 'r': 'r',
+            's': 's', 't': 't', 'u': 'u', 'v': 'v', 'w': 'w', 'x': 'ks', 'y': 'y', 'z': 'z',
+            'A': 'AH', 'B': 'B', 'C': 'K', 'D': 'D', 'E': 'EH', 'F': 'F', 'G': 'G', 'H': 'H', 'I': 'II',
+            'J': 'J', 'K': 'K', 'L': 'L', 'M': 'M', 'N': 'N', 'O': 'O', 'P': 'P', 'Q': 'KW', 'R': 'R',
+            'S': 'S', 'T': 'T', 'U': 'U', 'V': 'V', 'W': 'W', 'X': 'KS', 'Y': 'Y', 'Z': 'Z'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+    
+    hieroglyphics: {
+        name: 'Hieroglyphics',
+        map: {
+            'a': '𓃭', 'b': '𓃮', 'c': '𓃯', 'd': '𓃰', 'e': '𓃱', 'f': '𓃲', 'g': '𓃳', 'h': '𓃴', 'i': '𓃵',
+            'j': '𓃶', 'k': '𓃷', 'l': '𓃸', 'm': '𓃹', 'n': '𓃺', 'o': '𓃻', 'p': '𓃼', 'q': '𓃽', 'r': '𓃾',
+            's': '𓃿', 't': '𓄀', 'u': '𓄁', 'v': '𓄂', 'w': '𓄃', 'x': '𓄄', 'y': '𓄅', 'z': '𓄆',
+            'A': '𓄇', 'B': '𓄈', 'C': '𓄉', 'D': '𓄊', 'E': '𓄋', 'F': '𓄌', 'G': '𓄍', 'H': '𓄎', 'I': '𓄏',
+            'J': '𓄐', 'K': '𓄑', 'L': '𓄒', 'M': '𓄓', 'N': '𓄔', 'O': '𓄕', 'P': '𓄖', 'Q': '𓄗', 'R': '𓄘',
+            'S': '𓄙', 'T': '𓄚', 'U': '𓄛', 'V': '𓄜', 'W': '𓄝', 'X': '𓄞', 'Y': '𓄟', 'Z': '𓄠'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+    
+    ogham: {
+        name: 'Ogham (Celtic)',
+        map: {
+            'a': 'ᚐ', 'b': 'ᚁ', 'c': 'ᚉ', 'd': 'ᚇ', 'e': 'ᚓ', 'f': 'ᚃ', 'g': 'ᚌ', 'h': 'ᚆ', 'i': 'ᚔ',
+            'j': 'ᚈ', 'k': 'ᚊ', 'l': 'ᚂ', 'm': 'ᚋ', 'n': 'ᚅ', 'o': 'ᚑ', 'p': 'ᚚ', 'q': 'ᚊ', 'r': 'ᚏ',
+            's': 'ᚄ', 't': 'ᚈ', 'u': 'ᚒ', 'v': 'ᚃ', 'w': 'ᚃ', 'x': 'ᚊ', 'y': 'ᚔ', 'z': 'ᚎ',
+            'A': 'ᚐ', 'B': 'ᚁ', 'C': 'ᚉ', 'D': 'ᚇ', 'E': 'ᚓ', 'F': 'ᚃ', 'G': 'ᚌ', 'H': 'ᚆ', 'I': 'ᚔ',
+            'J': 'ᚈ', 'K': 'ᚊ', 'L': 'ᚂ', 'M': 'ᚋ', 'N': 'ᚅ', 'O': 'ᚑ', 'P': 'ᚚ', 'Q': 'ᚊ', 'R': 'ᚏ',
+            'S': 'ᚄ', 'T': 'ᚈ', 'U': 'ᚒ', 'V': 'ᚃ', 'W': 'ᚃ', 'X': 'ᚊ', 'Y': 'ᚔ', 'Z': 'ᚎ'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+    
+    semaphore: {
+        name: 'Semaphore Flags',
+        map: {
+            'a': '🔄', 'b': '🔄', 'c': '🔄', 'd': '🔄', 'e': '🔄', 'f': '🔄', 'g': '🔄', 'h': '🔄', 'i': '🔄',
+            'j': '🔄', 'k': '🔄', 'l': '🔄', 'm': '🔄', 'n': '🔄', 'o': '🔄', 'p': '🔄', 'q': '🔄', 'r': '🔄',
+            's': '🔄', 't': '🔄', 'u': '🔄', 'v': '🔄', 'w': '🔄', 'x': '🔄', 'y': '🔄', 'z': '🔄'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join(' ');
+        },
+        preview: function(text) {
+            return this.func(text);
+        }
+    },
+    
+    brainfuck: {
+        name: 'Brainfuck',
+        map: {
+            'a': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'b': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'c': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'd': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'e': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'f': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'g': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'h': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'i': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'j': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'k': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'l': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'm': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'n': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'o': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'p': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'q': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'r': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            's': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            't': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'u': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'v': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'w': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'x': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'y': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+            'z': '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            return '[brainfuck]';
+        }
+    },
+    
+    mathematical: {
+        name: 'Mathematical Notation',
+        map: {
+            'a': '𝒶', 'b': '𝒷', 'c': '𝒸', 'd': '𝒹', 'e': '𝑒', 'f': '𝒻', 'g': '𝑔', 'h': '𝒽', 'i': '𝒾',
+            'j': '𝒿', 'k': '𝓀', 'l': '𝓁', 'm': '𝓂', 'n': '𝓃', 'o': '𝑜', 'p': '𝓅', 'q': '𝓆', 'r': '𝓇',
+            's': '𝓈', 't': '𝓉', 'u': '𝓊', 'v': '𝓋', 'w': '𝓌', 'x': '𝓍', 'y': '𝓎', 'z': '𝓏',
+            'A': '𝒜', 'B': 'ℬ', 'C': '𝒞', 'D': '𝒟', 'E': 'ℰ', 'F': 'ℱ', 'G': '𝒢', 'H': 'ℋ', 'I': 'ℐ',
+            'J': '𝒥', 'K': '𝒦', 'L': 'ℒ', 'M': 'ℳ', 'N': '𝒩', 'O': '𝒪', 'P': '𝒫', 'Q': '𝒬', 'R': 'ℛ',
+            'S': '𝒮', 'T': '𝒯', 'U': '𝒰', 'V': '𝒱', 'W': '𝒲', 'X': '𝒳', 'Y': '𝒴', 'Z': '𝒵'
+        },
+        func: function(text) {
+            return [...text].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+    
+    chemical: {
+        name: 'Chemical Symbols',
+        map: {
+            'a': 'Ac', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'Es', 'f': 'F', 'g': 'Ge', 'h': 'H', 'i': 'I',
+            'j': 'J', 'k': 'K', 'l': 'L', 'm': 'Mn', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R',
+            's': 'S', 't': 'Ti', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'Xe', 'y': 'Y', 'z': 'Zn',
+            'A': 'AC', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'ES', 'F': 'F', 'G': 'GE', 'H': 'H', 'I': 'I',
+            'J': 'J', 'K': 'K', 'L': 'L', 'M': 'MN', 'N': 'N', 'O': 'O', 'P': 'P', 'Q': 'Q', 'R': 'R',
+            'S': 'S', 'T': 'TI', 'U': 'U', 'V': 'V', 'W': 'W', 'X': 'XE', 'Y': 'Y', 'Z': 'ZN'
+        },
+        func: function(text) {
+            return [...text.toLowerCase()].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            return this.func(text);
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [key, value] of Object.entries(this.map)) {
+                revMap[value] = key;
+            }
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+
+    // Case/formatting transforms
+    title_case: {
+        name: 'Title Case',
+        func: function(text) {
+            return text.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+        },
+        preview: function(text) {
+            if (!text) return '[Title Case]';
+            return this.func(text.slice(0, 12)) + (text.length > 12 ? '...' : '');
+        }
+    },
+
+    sentence_case: {
+        name: 'Sentence Case',
+        func: function(text) {
+            if (!text) return '';
+            const lower = text.toLowerCase();
+            return lower.charAt(0).toUpperCase() + lower.slice(1);
+        },
+        preview: function(text) {
+            if (!text) return '[Sentence]';
+            return this.func(text.slice(0, 12)) + (text.length > 12 ? '...' : '');
+        }
+    },
+
+    camel_case: {
+        name: 'camelCase',
+        func: function(text) {
+            const parts = text.split(/[^a-zA-Z0-9]+/).filter(Boolean);
+            if (parts.length === 0) return '';
+            const first = parts[0].toLowerCase();
+            const rest = parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join('');
+            return first + rest;
+        },
+        preview: function(text) {
+            if (!text) return '[camel]';
+            return this.func(text);
+        }
+    },
+
+    snake_case: {
+        name: 'snake_case',
+        func: function(text) {
+            return text.trim().split(/[^a-zA-Z0-9]+/).filter(Boolean).map(s => s.toLowerCase()).join('_');
+        },
+        preview: function(text) {
+            if (!text) return '[snake]';
+            return this.func(text);
+        }
+    },
+
+    kebab_case: {
+        name: 'kebab-case',
+        func: function(text) {
+            return text.trim().split(/[^a-zA-Z0-9]+/).filter(Boolean).map(s => s.toLowerCase()).join('-');
+        },
+        preview: function(text) {
+            if (!text) return '[kebab]';
+            return this.func(text);
+        }
+    },
+
+    random_case: {
+        name: 'Random Case',
+        func: function(text) {
+            return [...text].map(c => /[a-z]/i.test(c) ? (Math.random() < 0.5 ? c.toLowerCase() : c.toUpperCase()) : c).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[RaNdOm]';
+            return this.func(text.slice(0, 8)) + (text.length > 8 ? '...' : '');
+        }
+    },
+
+    disemvowel: {
+        name: 'Disemvowel',
+        func: function(text) {
+            return text.replace(/[aeiouAEIOU]/g, '');
+        },
+        preview: function(text) {
+            if (!text) return '[dsmvwl]';
+            return this.func(text.slice(0, 12)) + (text.length > 12 ? '...' : '');
+        }
+    },
+
+    // Emoji letters (Regional Indicator Letters)
+    regional_indicator: {
+        name: 'Regional Indicator Letters',
+        func: function(text) {
+            const base = 0x1F1E6;
+            return [...text].map(c => {
+                const up = c.toUpperCase();
+                if (up >= 'A' && up <= 'Z') {
+                    const code = base + (up.charCodeAt(0) - 65);
+                    return String.fromCodePoint(code);
+                }
+                return c;
+            }).join('');
+        },
+        preview: function(text) {
+            if (!text) return '🇦🇧🇨';
+            return this.func(text.slice(0, 4)) + (text.length > 4 ? '...' : '');
+        },
+        reverse: function(text) {
+            const base = 0x1F1E6;
+            return [...text].map(ch => {
+                const cp = ch.codePointAt(0);
+                if (cp >= base && cp <= base + 25) {
+                    return String.fromCharCode(65 + (cp - base));
+                }
+                return ch;
+            }).join('');
+        }
+    },
+
+    // Fraktur (Mathematical Fraktur letters)
+    fraktur: {
+        name: 'Fraktur',
+        func: function(text) {
+            const capMap = {
+                'A': 0x1D504, 'B': 0x1D505, 'C': 0x212D, 'D': 0x1D507, 'E': 0x1D508, 'F': 0x1D509, 'G': 0x1D50A,
+                'H': 0x210C, 'I': 0x2111, 'J': 0x1D50D, 'K': 0x1D50E, 'L': 0x1D50F, 'M': 0x1D510, 'N': 0x1D511,
+                'O': 0x1D512, 'P': 0x1D513, 'Q': 0x1D514, 'R': 0x211C, 'S': 0x1D516, 'T': 0x1D517, 'U': 0x1D518,
+                'V': 0x1D519, 'W': 0x1D51A, 'X': 0x1D51B, 'Y': 0x1D51C, 'Z': 0x2128
+            };
+            const lowerBase = 0x1D51E; // 'a'
+            return [...text].map(c => {
+                const code = c.charCodeAt(0);
+                if (c >= 'A' && c <= 'Z') {
+                    const fr = capMap[c];
+                    return fr ? String.fromCodePoint(fr) : c;
+                }
+                if (c >= 'a' && c <= 'z') {
+                    return String.fromCodePoint(lowerBase + (code - 97));
+                }
+                return c;
+            }).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[fraktur]';
+            return this.func(text.slice(0, 6)) + (text.length > 6 ? '...' : '');
+        },
+        reverse: function(text) {
+            const capMap = {
+                0x1D504:'A',0x1D505:'B',0x212D:'C',0x1D507:'D',0x1D508:'E',0x1D509:'F',0x1D50A:'G',
+                0x210C:'H',0x2111:'I',0x1D50D:'J',0x1D50E:'K',0x1D50F:'L',0x1D510:'M',0x1D511:'N',
+                0x1D512:'O',0x1D513:'P',0x1D514:'Q',0x211C:'R',0x1D516:'S',0x1D517:'T',0x1D518:'U',
+                0x1D519:'V',0x1D51A:'W',0x1D51B:'X',0x1D51C:'Y',0x2128:'Z'
+            };
+            const lowerBase = 0x1D51E;
+            return Array.from(text).map(ch => {
+                const cp = ch.codePointAt(0);
+                if (cp in capMap) return capMap[cp];
+                if (cp >= lowerBase && cp < lowerBase + 26) return String.fromCharCode(97 + (cp - lowerBase));
+                return ch;
+            }).join('');
+        }
+    },
+
+    // Cyrillic lookalike stylization
+    cyrillic_stylized: {
+        name: 'Cyrillic Stylized',
+        map: {
+            'A':'А','B':'В','C':'С','E':'Е','H':'Н','K':'К','M':'М','O':'О','P':'Р','T':'Т','X':'Х','Y':'У',
+            'a':'а','e':'е','o':'о','p':'р','c':'с','y':'у','x':'х','k':'к','h':'һ','m':'м','t':'т','b':'Ь'
+        },
+        func: function(text) {
+            return [...text].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[cyrillic]';
+            return this.func(text.slice(0, 8)) + (text.length > 8 ? '...' : '');
+        },
+        reverse: function(text) {
+            const rev = {};
+            for (const [k,v] of Object.entries(this.map)) rev[v] = k;
+            return [...text].map(c => rev[c] || c).join('');
+        }
+    },
+
+    // Simple romaji <-> Katakana converter (approximate)
+    katakana: {
+        name: 'Katakana',
+        table: [
+            ['kyo','キョ'],['kyu','キュ'],['kya','キャ'],
+            ['sho','ショ'],['shu','シュ'],['sha','シャ'],['shi','シ'],
+            ['cho','チョ'],['chu','チュ'],['cha','チャ'],['chi','チ'],
+            ['tsu','ツ'],['fu','フ'],
+            ['ryo','リョ'],['ryu','リュ'],['rya','リャ'],
+            ['nyo','ニョ'],['nyu','ニュ'],['nya','ニャ'],
+            ['gya','ギャ'],['gyu','ギュ'],['gyo','ギョ'],
+            ['hya','ヒャ'],['hyu','ヒュ'],['hyo','ヒョ'],
+            ['mya','ミャ'],['myu','ミュ'],['myo','ミョ'],
+            ['pya','ピャ'],['pyu','ピュ'],['pyo','ピョ'],
+            ['bya','ビャ'],['byu','ビュ'],['byo','ビョ'],
+            ['ja','ジャ'],['ju','ジュ'],['jo','ジョ'],
+            ['ka','カ'],['ki','キ'],['ku','ク'],['ke','ケ'],['ko','コ'],
+            ['ga','ガ'],['gi','ギ'],['gu','グ'],['ge','ゲ'],['go','ゴ'],
+            ['sa','サ'],['su','ス'],['se','セ'],['so','ソ'],
+            ['za','ザ'],['zu','ズ'],['ze','ゼ'],['zo','ゾ'],
+            ['ta','タ'],['te','テ'],['to','ト'],
+            ['da','ダ'],['de','デ'],['do','ド'],
+            ['na','ナ'],['ni','ニ'],['nu','ヌ'],['ne','ネ'],['no','ノ'],
+            ['ha','ハ'],['hi','ヒ'],['he','ヘ'],['ho','ホ'],
+            ['ba','バ'],['bi','ビ'],['bu','ブ'],['be','ベ'],['bo','ボ'],
+            ['pa','パ'],['pi','ピ'],['pu','プ'],['pe','ペ'],['po','ポ'],
+            ['ma','マ'],['mi','ミ'],['mu','ム'],['me','メ'],['mo','モ'],
+            ['ra','ラ'],['ri','リ'],['ru','ル'],['re','レ'],['ro','ロ'],
+            ['wa','ワ'],['wo','ヲ'],['n','ン'],
+            ['a','ア'],['i','イ'],['u','ウ'],['e','エ'],['o','オ']
+        ],
+        func: function(text) {
+            let i = 0, out = '';
+            const lower = text.toLowerCase();
+            const sorted = [...this.table].sort((a,b)=>b[0].length-a[0].length);
+            while (i < lower.length) {
+                let matched = false;
+                for (const [rom,kana] of sorted) {
+                    if (lower.startsWith(rom, i)) {
+                        out += kana;
+                        i += rom.length;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) {
+                    out += text[i];
+                    i += 1;
+                }
+            }
+            return out;
+        },
+        preview: function(text) {
+            if (!text) return '[カタカナ]';
+            return this.func(text.slice(0, 6)) + (text.length > 6 ? '...' : '');
+        },
+        reverse: function(text) {
+            const rev = {};
+            for (const [rom,kana] of this.table) rev[kana] = rom;
+            let out = '';
+            for (const ch of text) out += (rev[ch] || ch);
+            return out;
+        }
+    },
+
+    // Romaji <-> Hiragana (approximate)
+    hiragana: {
+        name: 'Hiragana',
+        table: [
+            ['kyo','きょ'],['kyu','きゅ'],['kya','きゃ'],
+            ['sho','しょ'],['shu','しゅ'],['sha','しゃ'],['shi','し'],
+            ['cho','ちょ'],['chu','ちゅ'],['cha','ちゃ'],['chi','ち'],
+            ['tsu','つ'],['fu','ふ'],
+            ['ryo','りょ'],['ryu','りゅ'],['rya','りゃ'],
+            ['nyo','にょ'],['nyu','にゅ'],['nya','にゃ'],
+            ['gya','ぎゃ'],['gyu','ぎゅ'],['gyo','ぎょ'],
+            ['hya','ひゃ'],['hyu','ひゅ'],['hyo','ひょ'],
+            ['mya','みゃ'],['myu','みゅ'],['myo','みょ'],
+            ['pya','ぴゃ'],['pyu','ぴゅ'],['pyo','ぴょ'],
+            ['bya','びゃ'],['byu','びゅ'],['byo','びょ'],
+            ['ja','じゃ'],['ju','じゅ'],['jo','じょ'],
+            ['ka','か'],['ki','き'],['ku','く'],['ke','け'],['ko','こ'],
+            ['ga','が'],['gi','ぎ'],['gu','ぐ'],['ge','げ'],['go','ご'],
+            ['sa','さ'],['su','す'],['se','せ'],['so','そ'],
+            ['za','ざ'],['zu','ず'],['ze','ぜ'],['zo','ぞ'],
+            ['ta','た'],['te','て'],['to','と'],
+            ['da','だ'],['de','で'],['do','ど'],
+            ['na','な'],['ni','に'],['nu','ぬ'],['ne','ね'],['no','の'],
+            ['ha','は'],['hi','ひ'],['he','へ'],['ho','ほ'],
+            ['ba','ば'],['bi','び'],['bu','ぶ'],['be','べ'],['bo','ぼ'],
+            ['pa','ぱ'],['pi','ぴ'],['pu','ぷ'],['pe','ぺ'],['po','ぽ'],
+            ['ma','ま'],['mi','み'],['mu','む'],['me','め'],['mo','も'],
+            ['ra','ら'],['ri','り'],['ru','る'],['re','れ'],['ro','ろ'],
+            ['wa','わ'],['wo','を'],['n','ん'],
+            ['a','あ'],['i','い'],['u','う'],['e','え'],['o','お']
+        ],
+        func: function(text) {
+            // reuse katakana logic with different table
+            let i = 0, out = '';
+            const lower = text.toLowerCase();
+            const sorted = [...this.table].sort((a,b)=>b[0].length-a[0].length);
+            while (i < lower.length) {
+                let matched = false;
+                for (const [rom,kana] of sorted) {
+                    if (lower.startsWith(rom, i)) {
+                        out += kana;
+                        i += rom.length;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) {
+                    out += text[i];
+                    i += 1;
+                }
+            }
+            return out;
+        },
+        preview: function(text) {
+            if (!text) return '[ひらがな]';
+            return this.func(text.slice(0, 6)) + (text.length > 6 ? '...' : '');
+        },
+        reverse: function(text) {
+            const rev = {};
+            for (const [rom,kana] of this.table) rev[kana] = rom;
+            let out = '';
+            for (const ch of text) out += (rev[ch] || ch);
+            return out;
+        }
+    },
+
+    // Emoji Speak (word → emoji, digits → keycaps)
+    emoji_speak: {
+        name: 'Emoji Speak',
+        wordMap: {
+            'love':'❤️','heart':'❤️','fire':'🔥','cool':'😎','ok':'👌','star':'⭐','poop':'💩','yes':'✅','no':'❌',
+            'up':'⬆️','down':'⬇️','left':'⬅️','right':'➡️','question':'❓','exclamation':'❗'
+        },
+        digitMap: {'0':'0️⃣','1':'1️⃣','2':'2️⃣','3':'3️⃣','4':'4️⃣','5':'5️⃣','6':'6️⃣','7':'7️⃣','8':'8️⃣','9':'9️⃣'},
+        func: function(text) {
+            // replace digits
+            let out = [...text].map(c => this.digitMap[c] || c).join('');
+            // replace words (case-insensitive)
+            for (const [word, emoji] of Object.entries(this.wordMap)) {
+                const re = new RegExp(`\\b${word}\\b`, 'gi');
+                out = out.replace(re, emoji);
+            }
+            return out;
+        },
+        preview: function(text) {
+            if (!text) return '1️⃣2️⃣3️⃣ ✅';
+            return this.func(text.slice(0, 12)) + (text.length > 12 ? '...' : '');
+        },
+        reverse: function(text) {
+            let out = text;
+            // reverse digits
+            for (const [d, em] of Object.entries(this.digitMap)) {
+                const re = new RegExp(em.replace(/([.*+?^${}()|\[\]\\])/g, '\\$1'), 'g');
+                out = out.replace(re, d);
+            }
+            // reverse words
+            for (const [word, emoji] of Object.entries(this.wordMap)) {
+                const re = new RegExp(emoji.replace(/([.*+?^${}()|\[\]\\])/g, '\\$1'), 'g');
+                out = out.replace(re, word);
+            }
+            return out;
+        }
+    },
+
+    // Additional Ciphers
+    atbash: {
+        name: 'Atbash Cipher',
+        func: function(text) {
+            const a = 'a'.charCodeAt(0), z = 'z'.charCodeAt(0);
+            const A = 'A'.charCodeAt(0), Z = 'Z'.charCodeAt(0);
+            return [...text].map(c => {
+                const code = c.charCodeAt(0);
+                if (code >= A && code <= Z) return String.fromCharCode(Z - (code - A));
+                if (code >= a && code <= z) return String.fromCharCode(z - (code - a));
+                return c;
+            }).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[atbash]';
+            return this.func(text.slice(0, 6)) + (text.length > 6 ? '...' : '');
+        },
+        reverse: function(text) {
+            // Atbash is its own inverse
+            return this.func(text);
+        }
+    },
+
+    rot5: {
+        name: 'ROT5',
+        func: function(text) {
+            return [...text].map(c => {
+                if (c >= '0' && c <= '9') {
+                    const n = c.charCodeAt(0) - 48;
+                    return String.fromCharCode(48 + ((n + 5) % 10));
+                }
+                return c;
+            }).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[rot5]';
+            return this.func(text.slice(0, 6)) + (text.length > 6 ? '...' : '');
+        },
+        reverse: function(text) {
+            // ROT5 is its own inverse
+            return this.func(text);
+        }
+    },
+
+    // Unicode scripts
+    superscript: {
+        name: 'Superscript',
+        map: {
+            '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹',
+            'a':'ᵃ','b':'ᵇ','c':'ᶜ','d':'ᵈ','e':'ᵉ','f':'ᶠ','g':'ᵍ','h':'ʰ','i':'ⁱ','j':'ʲ','k':'ᵏ','l':'ˡ','m':'ᵐ','n':'ⁿ','o':'ᵒ','p':'ᵖ','q':'ᵠ','r':'ʳ','s':'ˢ','t':'ᵗ','u':'ᵘ','v':'ᵛ','w':'ʷ','x':'ˣ','y':'ʸ','z':'ᶻ',
+            'A':'ᴬ','B':'ᴮ','C':'ᶜ','D':'ᴰ','E':'ᴱ','F':'ᶠ','G':'ᴳ','H':'ᴴ','I':'ᴵ','J':'ᴶ','K':'ᴷ','L':'ᴸ','M':'ᴹ','N':'ᴺ','O':'ᴼ','P':'ᴾ','Q':'ᵠ','R':'ᴿ','S':'ˢ','T':'ᵀ','U':'ᵁ','V':'ⱽ','W':'ᵂ','X':'ˣ','Y':'ʸ','Z':'ᶻ'
+        },
+        func: function(text) {
+            return [...text].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[super]';
+            return this.func(text.slice(0, 4)) + (text.length > 4 ? '...' : '');
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [k,v] of Object.entries(this.map)) revMap[v] = k;
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+
+    subscript: {
+        name: 'Subscript',
+        map: {
+            '0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉',
+            'a':'ₐ','e':'ₑ','h':'ₕ','i':'ᵢ','j':'ⱼ','k':'ₖ','l':'ₗ','m':'ₘ','n':'ₙ','o':'ₒ','p':'ₚ','r':'ᵣ','s':'ₛ','t':'ₜ','u':'ᵤ','v':'ᵥ','x':'ₓ'
+        },
+        func: function(text) {
+            return [...text].map(c => this.map[c] || c).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[sub]';
+            return this.func(text.slice(0, 4)) + (text.length > 4 ? '...' : '');
+        },
+        reverse: function(text) {
+            const revMap = {};
+            for (const [k,v] of Object.entries(this.map)) revMap[v] = k;
+            return [...text].map(c => revMap[c] || c).join('');
+        }
+    },
+
+    // Formatting fun
+    alternating_case: {
+        name: 'Alternating Case',
+        func: function(text) {
+            let upper = true;
+            return [...text].map(c => {
+                if (/[a-zA-Z]/.test(c)) {
+                    const out = upper ? c.toUpperCase() : c.toLowerCase();
+                    upper = !upper; 
+                    return out;
+                }
+                return c;
+            }).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[alt case]';
+            return this.func(text.slice(0, 6)) + (text.length > 6 ? '...' : '');
+        }
+    },
+
+    reverse_words: {
+        name: 'Reverse Words',
+        func: function(text) {
+            return text.split(/(\s+)/).reverse().join('');
+        },
+        preview: function(text) {
+            if (!text) return '[rev words]';
+            return this.func(text.split(/\s+/).slice(0,2).join(' ')) + '...';
+        },
+        reverse: function(text) {
+            // Reversing words twice restores
+            return this.func(text);
+        }
+    },
+    
+    // Special Randomizer Functions
+    randomizer: {
+        name: 'Random Mix',
+        
+        // Get a list of transforms suitable for randomization
+        getRandomizableTransforms() {
+            const suitable = [
+                'base64', 'binary', 'hex', 'morse', 'rot13', 'caesar', 'atbash', 'rot5',
+                'upside_down', 'bubble', 'small_caps', 'fullwidth', 'leetspeak', 'superscript', 'subscript',
+                'quenya', 'tengwar', 'klingon', 'dovahzul', 'elder_futhark',
+                'hieroglyphics', 'ogham', 'mathematical', 'cursive', 'medieval',
+                'monospace', 'greek', 'braille', 'alternating_case', 'reverse_words',
+                'title_case', 'sentence_case', 'camel_case', 'snake_case', 'kebab_case', 'random_case',
+                'regional_indicator', 'fraktur', 'cyrillic_stylized', 'katakana', 'hiragana', 'emoji_speak'
+            ];
+            return suitable.filter(name => window.transforms[name]);
+        },
+        
+        // Apply random transforms to each word in a sentence
+        func: function(text, options = {}) {
+            if (!text) return '';
+            
+            const {
+                preservePunctuation = true,
+                minTransforms = 2,
+                maxTransforms = 5,
+                allowRepeats = false
+            } = options;
+            
+            // Split text into words while preserving punctuation
+            const words = this.smartWordSplit(text);
+            const availableTransforms = this.getRandomizableTransforms();
+            
+            if (availableTransforms.length === 0) return text;
+            
+            // Select random transforms to use
+            const numTransforms = Math.min(
+                Math.max(minTransforms, Math.floor(Math.random() * maxTransforms) + 1),
+                availableTransforms.length
+            );
+            
+            const selectedTransforms = [];
+            const usedTransforms = new Set();
+            
+            for (let i = 0; i < numTransforms; i++) {
+                let transform;
+                do {
+                    transform = availableTransforms[Math.floor(Math.random() * availableTransforms.length)];
+                } while (!allowRepeats && usedTransforms.has(transform) && usedTransforms.size < availableTransforms.length);
+                
+                selectedTransforms.push(transform);
+                usedTransforms.add(transform);
+            }
+            
+            // Apply random transforms to words
+            const transformedWords = words.map(wordObj => {
+                if (wordObj.isWord) {
+                    const randomTransform = selectedTransforms[Math.floor(Math.random() * selectedTransforms.length)];
+                    const transform = window.transforms[randomTransform];
+                    
+                    try {
+                        const transformed = transform.func(wordObj.text);
+                        return {
+                            ...wordObj,
+                            text: transformed,
+                            transform: transform.name,
+                            originalTransform: randomTransform
+                        };
+                    } catch (e) {
+                        console.error(`Error applying ${randomTransform} to "${wordObj.text}":`, e);
+                        return wordObj;
+                    }
+                } else {
+                    return wordObj; // Keep punctuation/spaces as-is
+                }
+            });
+            
+            // Reconstruct the text
+            const result = transformedWords.map(w => w.text).join('');
+            
+            // Store transform mapping for decoding
+            this.lastTransformMap = transformedWords
+                .filter(w => w.isWord && w.originalTransform)
+                .map(w => ({
+                    original: w.text,
+                    transform: w.originalTransform,
+                    transformName: w.transform
+                }));
+            
+            return result;
+        },
+        
+        // Smart word splitting that preserves punctuation
+        smartWordSplit: function(text) {
+            const words = [];
+            let currentWord = '';
+            let isInWord = false;
+            
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const isWordChar = /[a-zA-Z0-9]/.test(char);
+                
+                if (isWordChar) {
+                    if (!isInWord && currentWord) {
+                        // We were in punctuation/space, now starting a word
+                        words.push({ text: currentWord, isWord: false });
+                        currentWord = '';
+                    }
+                    currentWord += char;
+                    isInWord = true;
+                } else {
+                    if (isInWord && currentWord) {
+                        // We were in a word, now in punctuation/space
+                        words.push({ text: currentWord, isWord: true });
+                        currentWord = '';
+                    }
+                    currentWord += char;
+                    isInWord = false;
+                }
+            }
+            
+            // Add the last segment
+            if (currentWord) {
+                words.push({ text: currentWord, isWord: isInWord });
+            }
+            
+            return words;
+        },
+        
+        preview: function(text) {
+            return '[mixed transforms]';
+        },
+        
+        // Attempt to decode a mixed-transform sentence
+        reverse: function(text) {
+            if (!this.lastTransformMap) {
+                return '[Cannot decode - no transform map available]';
+            }
+            
+            // This is a simplified reverse - in practice, mixed decoding is complex
+            // because we need to identify which transform was applied to which word
+            return '[Mixed decode - use Universal Decoder for individual words]';
+        },
+        
+        // Get info about the last randomization
+        getLastTransformInfo: function() {
+            return this.lastTransformMap || [];
         }
     }
 };

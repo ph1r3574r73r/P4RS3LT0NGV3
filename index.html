@@ -189,6 +189,10 @@
                             <div class="legend-item transform-category-format" data-target="category-format">Formatting</div>
                             <div class="legend-item transform-category-unicode" data-target="category-unicode">Unicode</div>
                             <div class="legend-item transform-category-special" data-target="category-special">Special</div>
+                            <div class="legend-item transform-category-fantasy" data-target="category-fantasy">Fantasy</div>
+                            <div class="legend-item transform-category-ancient" data-target="category-ancient">Ancient</div>
+                            <div class="legend-item transform-category-technical" data-target="category-technical">Technical</div>
+                            <div class="legend-item transform-category-randomizer" data-target="category-randomizer">🎲 Randomizer</div>
                         </div>
                         <div class="transform-categories">
                             <!-- Encoding Category -->
@@ -364,6 +368,129 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- Fantasy Category -->
+                            <div id="category-fantasy" class="transform-category-section">
+                                <h4 class="category-title transform-category-fantasy">Fantasy</h4>
+                                <div class="transform-buttons">
+                                    <div v-for="transform in getTransformsByCategory('fantasy')" :key="transform.name" class="transform-button-group">
+                                        <button 
+                                            @click="applyTransform(transform, $event)"
+                                            class="transform-button transform-category-fantasy"
+                                            :class="{ active: activeTransform === transform }"
+                                            :title="'Click to transform and copy: ' + transform.name"
+                                        >
+                                            {{ transform.name }}
+                                            <small class="transform-preview" v-if="transformInput">
+                                                {{ transform.preview(transformInput.slice(0, 10)) }}
+                                            </small>
+                                            <i class="fas fa-copy auto-copy-icon"></i>
+                                        </button>
+                                        <button 
+                                            v-if="transformHasReverse(transform)"
+                                            @click="decodeWithTransform(transform)"
+                                            class="decode-button transform-category-fantasy"
+                                            :title="'Click to decode using: ' + transform.name"
+                                        >
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Ancient Category -->
+                            <div id="category-ancient" class="transform-category-section">
+                                <h4 class="category-title transform-category-ancient">Ancient</h4>
+                                <div class="transform-buttons">
+                                    <div v-for="transform in getTransformsByCategory('ancient')" :key="transform.name" class="transform-button-group">
+                                        <button 
+                                            @click="applyTransform(transform, $event)"
+                                            class="transform-button transform-category-ancient"
+                                            :class="{ active: activeTransform === transform }"
+                                            :title="'Click to transform and copy: ' + transform.name"
+                                        >
+                                            {{ transform.name }}
+                                            <small class="transform-preview" v-if="transformInput">
+                                                {{ transform.preview(transformInput.slice(0, 10)) }}
+                                            </small>
+                                            <i class="fas fa-copy auto-copy-icon"></i>
+                                        </button>
+                                        <button 
+                                            v-if="transformHasReverse(transform)"
+                                            @click="decodeWithTransform(transform)"
+                                            class="decode-button transform-category-ancient"
+                                            :title="'Click to decode using: ' + transform.name"
+                                        >
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Technical Category -->
+                            <div id="category-technical" class="transform-category-section">
+                                <h4 class="category-title transform-category-technical">Technical</h4>
+                                <div class="transform-buttons">
+                                    <div v-for="transform in getTransformsByCategory('technical')" :key="transform.name" class="transform-button-group">
+                                        <button 
+                                            @click="applyTransform(transform, $event)"
+                                            class="transform-button transform-category-technical"
+                                            :class="{ active: activeTransform === transform }"
+                                            :title="'Click to transform and copy: ' + transform.name"
+                                        >
+                                            {{ transform.name }}
+                                            <small class="transform-preview" v-if="transformInput">
+                                                {{ transform.preview(transformInput.slice(0, 10)) }}
+                                            </small>
+                                            <i class="fas fa-copy auto-copy-icon"></i>
+                                        </button>
+                                        <button 
+                                            v-if="transformHasReverse(transform)"
+                                            @click="decodeWithTransform(transform)"
+                                            class="decode-button transform-category-technical"
+                                            :title="'Click to decode using: ' + transform.name"
+                                        >
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Randomizer Category -->
+                            <div id="category-randomizer" class="transform-category-section randomizer-special">
+                                <h4 class="category-title transform-category-randomizer">🎲 Randomizer - Code Switching Magic!</h4>
+                                <p class="randomizer-description">
+                                    🌟 Apply different transforms to each word in your sentence! Creates a polyglot mix of encodings.
+                                </p>
+                                <div class="chaos-overlay" aria-hidden="true"></div>
+                                <div class="transform-buttons">
+                                    <div v-for="transform in getTransformsByCategory('randomizer')" :key="transform.name" class="transform-button-group">
+                                        <button 
+                                            @click="applyTransform(transform, $event)"
+                                            class="transform-button transform-category-randomizer randomizer-button"
+                                            :class="{ active: activeTransform === transform }"
+                                            :title="'Click to apply random transforms to each word!'"
+                                        >
+                                            <i class="fas fa-random"></i>
+                                            {{ transform.name }}
+                                            <small class="transform-preview">
+                                                🎯 Each word = different transform!
+                                            </small>
+                                            <i class="fas fa-copy auto-copy-icon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="randomizer-info">
+                                    <h5>🎮 How it works:</h5>
+                                    <ul>
+                                        <li>🔀 Each word gets a <strong>random transform</strong></li>
+                                        <li>🎯 Mixes <strong>fantasy</strong>, <strong>ancient</strong>, and <strong>modern</strong> encodings</li>
+                                        <li>📝 Preserves punctuation and spacing</li>
+                                        <li>🔍 Check console for transform mapping details</li>
+                                    </ul>
+                                    <p><em>Example: "Hello World!" → "SGVsbG8= ᚹᚩᚱᛚᛞ!"</em></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -470,6 +597,37 @@
     
     <!-- Force emoji grid rendering -->
     <script>
+        // Chaos particles generator for Randomizer
+        (function(){
+            const CHAOS_EMOJIS = ['✨','🌀','💥','⚡','🔥','🌈','🎲','🔮','💫','🌪️'];
+            function spawnChaosParticles(container, count) {
+                if (!container) return;
+                for (let i=0;i<count;i++) {
+                    const el = document.createElement('div');
+                    el.className = 'chaos-particle';
+                    el.textContent = CHAOS_EMOJIS[Math.floor(Math.random()*CHAOS_EMOJIS.length)];
+                    el.style.left = (10 + Math.random()*80) + '%';
+                    el.style.fontSize = (14 + Math.random()*10) + 'px';
+                    el.style.animationDelay = (Math.random()*0.2) + 's';
+                    container.appendChild(el);
+                    setTimeout(()=>{ if (el.parentNode) el.parentNode.removeChild(el); }, 1300);
+                }
+            }
+            // hook into button clicks after Vue renders
+            document.addEventListener('click', function(e){
+                const btn = e.target.closest && e.target.closest('.randomizer-button');
+                if (btn) {
+                    const section = document.getElementById('category-randomizer');
+                    const overlay = section && section.querySelector('.chaos-overlay');
+                    if (overlay) {
+                        section.classList.add('shake-once','randomizer-glow');
+                        spawnChaosParticles(overlay, 10);
+                        setTimeout(()=>section && section.classList.remove('shake-once','randomizer-glow'), 600);
+                    }
+                }
+            }, true);
+        })();
+
         // Function to initialize emoji grid with retries
         function initEmojiGrid(retryCount) {
             retryCount = retryCount || 0;

@@ -15,11 +15,15 @@ window.app = new Vue({
         // Transform categories for styling
         transformCategories: {
             encoding: ['Base64', 'Base32', 'Binary', 'Hexadecimal', 'ASCII85', 'URL Encode', 'HTML Entities'],
-            cipher: ['Caesar Cipher', 'ROT13', 'ROT47', 'Morse Code'],
-            visual: ['Rainbow Text', 'Strikethrough', 'Underline', 'Reverse Text'],
-            format: ['Pig Latin', 'Leetspeak', 'NATO Phonetic'],
-            unicode: ['Invisible Text', 'Upside Down', 'Full Width', 'Small Caps', 'Bubble', 'Braille', 'Greek Letters', 'Wingdings'],
-            special: ['Medieval', 'Cursive', 'Monospace', 'Double-Struck', 'Elder Futhark', 'Mirror Text', 'Zalgo']
+            cipher: ['Caesar Cipher', 'ROT13', 'ROT47', 'Morse Code', 'Atbash Cipher', 'ROT5'],
+            visual: ['Rainbow Text', 'Strikethrough', 'Underline', 'Reverse Text', 'Alternating Case', 'Reverse Words', 'Random Case', 'Title Case', 'Sentence Case', 'Emoji Speak'],
+            format: ['Pig Latin', 'Leetspeak', 'NATO Phonetic', 'camelCase', 'snake_case', 'kebab-case'],
+            unicode: ['Invisible Text', 'Upside Down', 'Full Width', 'Small Caps', 'Bubble', 'Braille', 'Greek Letters', 'Wingdings', 'Superscript', 'Subscript', 'Regional Indicator Letters', 'Fraktur', 'Cyrillic Stylized', 'Katakana', 'Hiragana'],
+            special: ['Medieval', 'Cursive', 'Monospace', 'Double-Struck', 'Elder Futhark', 'Mirror Text', 'Zalgo'],
+            fantasy: ['Quenya (Tolkien Elvish)', 'Tengwar Script', 'Klingon', 'Aurebesh (Star Wars)', 'Dovahzul (Dragon)'],
+            ancient: ['Hieroglyphics', 'Ogham (Celtic)', 'Semaphore Flags'],
+            technical: ['Brainfuck', 'Mathematical Notation', 'Chemical Symbols'],
+            randomizer: ['Random Mix']
         },
         transforms: Object.entries(window.transforms).map(([key, transform]) => ({
             name: transform.name,
@@ -55,6 +59,39 @@ window.app = new Vue({
         showCopyHistory: false
     },
     methods: {
+        // Focus an element without causing the page to scroll
+        focusWithoutScroll(el) {
+            if (!el) return;
+            const x = window.scrollX, y = window.scrollY;
+            try {
+                el.focus({ preventScroll: true });
+            } catch (e) {
+                el.focus();
+                window.scrollTo(x, y);
+            }
+        },
+
+        // Trigger randomizer chaos animation regardless of input
+        triggerRandomizerChaos() {
+            try {
+                const section = document.getElementById('category-randomizer');
+                const overlay = section && section.querySelector('.chaos-overlay');
+                if (!overlay) return;
+                const emojis = ['✨','🌀','💥','⚡','🔥','🌈','🎲','🔮','💫','🌪️'];
+                for (let i=0;i<10;i++) {
+                    const el = document.createElement('div');
+                    el.className = 'chaos-particle';
+                    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+                    el.style.left = (10 + Math.random()*80) + '%';
+                    el.style.fontSize = (14 + Math.random()*10) + 'px';
+                    el.style.animationDelay = (Math.random()*0.2) + 's';
+                    overlay.appendChild(el);
+                    setTimeout(()=>{ if (el.parentNode) el.parentNode.removeChild(el); }, 1300);
+                }
+                section.classList.add('shake-once','randomizer-glow');
+                setTimeout(()=>section && section.classList.remove('shake-once','randomizer-glow'), 600);
+            } catch(_) {}
+        },
         // Switch between tabs with proper initialization
         switchToTab(tabName) {
             this.activeTab = tabName;
@@ -120,24 +157,41 @@ window.app = new Vue({
 
         // Transform Methods
         applyTransform(transform, event) {
+            // Prevent default button behavior and scrolling
+            event && event.preventDefault();
+            event && event.stopPropagation();
+
+            // Always trigger chaos animation for Random Mix, even with empty input
+            if (transform && transform.name === 'Random Mix') {
+                this.triggerRandomizerChaos();
+            }
+
             if (this.transformInput) {
-                // Prevent default button behavior
-                event && event.preventDefault();
-                
                 // Update active transform and apply it
                 this.activeTransform = transform;
-                
-                // Handle text with proper Unicode segmentation
-                const segments = window.emojiLibrary.splitEmojis(this.transformInput);
-                const transformedSegments = segments.map(segment => {
-                    // Skip transformation for emojis and complex Unicode characters
-                    if (segment.length > 1 || /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u.test(segment)) {
-                        return segment;
+
+                if (transform.name === 'Random Mix') {
+                    this.transformOutput = window.transforms.randomizer.func(this.transformInput);
+                    // Show transform mapping info
+                    const transformInfo = window.transforms.randomizer.getLastTransformInfo();
+                    if (transformInfo.length > 0) {
+                        const transformsList = transformInfo.map(t => t.transformName).join(', ');
+                        this.showNotification(`<i class="fas fa-random"></i> Mixed with: ${transformsList}`, 'success');
+                        console.log('Transform mapping:', transformInfo);
                     }
-                    return transform.func(segment);
-                });
-                
-                this.transformOutput = window.emojiLibrary.joinEmojis(transformedSegments);
+                } else {
+                    // Handle text with proper Unicode segmentation
+                    const segments = window.emojiLibrary.splitEmojis(this.transformInput);
+                    const transformedSegments = segments.map(segment => {
+                        // Skip transformation for emojis and complex Unicode characters
+                        if (segment.length > 1 || /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u.test(segment)) {
+                            return segment;
+                        }
+                        return transform.func(segment);
+                    });
+                    
+                    this.transformOutput = window.emojiLibrary.joinEmojis(transformedSegments);
+                }
                 
                 // Set flag to mark this as a transform-initiated copy
                 this.isTransformCopy = true;
@@ -148,8 +202,10 @@ window.app = new Vue({
                 // Add to copy history
                 this.addToCopyHistory(`Transform: ${transform.name}`, this.transformOutput);
                 
-                // Enhanced notification for transform and copy
-                this.showNotification(`<i class="fas fa-check"></i> ${transform.name} applied and copied!`, 'success');
+                // Enhanced notification for transform and copy (if not randomizer - it has its own notification)
+                if (transform.name !== 'Random Mix') {
+                    this.showNotification(`<i class="fas fa-check"></i> ${transform.name} applied and copied!`, 'success');
+                }
                 
                 // Remove active state from transform buttons
                 document.querySelectorAll('.transform-button').forEach(button => {
@@ -159,9 +215,9 @@ window.app = new Vue({
                 // Keep focus on input and move cursor to end
                 const inputBox = document.querySelector('#transform-input');
                 if (inputBox) {
-                    inputBox.focus();
+                    this.focusWithoutScroll(inputBox);
                     const len = inputBox.value.length;
-                    inputBox.setSelectionRange(len, len);
+                    try { inputBox.setSelectionRange(len, len); } catch (_) {}
                 }
                 
                 // Reset flags immediately
@@ -793,6 +849,86 @@ window.app = new Vue({
                 }
             }
             
+            // 3. Smart pattern detection for new transforms
+            // Check for specific patterns that indicate certain transform types
+            
+            // - Check for fantasy language patterns
+            if (/[ᚪᛒᛲᛞᛖᚠᚷᚺᛁᛃᛚᛗᚾᛟᛈᛩᚱᛋᛏᚢᛩᛉ]/.test(input)) {
+                // This looks like Tengwar or Elder Futhark runes
+                try {
+                    if (window.transforms.tengwar && window.transforms.tengwar.reverse) {
+                        const result = window.transforms.tengwar.reverse(input);
+                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                            return { text: result, method: 'Tengwar Script', priorityMatch: true };
+                        }
+                    }
+                    if (window.transforms.elder_futhark && window.transforms.elder_futhark.reverse) {
+                        const result = window.transforms.elder_futhark.reverse(input);
+                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                            return { text: result, method: 'Elder Futhark', priorityMatch: true };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Rune decode error:', e);
+                }
+            }
+            
+            // - Check for hieroglyphic patterns
+            if (/[𓃭𓃮𓃯𓃰𓃱𓃲𓃳𓃴𓃵𓃶𓃷𓃸𓃹𓃺𓃻𓃼]/.test(input)) {
+                try {
+                    if (window.transforms.hieroglyphics && window.transforms.hieroglyphics.reverse) {
+                        const result = window.transforms.hieroglyphics.reverse(input);
+                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                            return { text: result, method: 'Hieroglyphics', priorityMatch: true };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Hieroglyphics decode error:', e);
+                }
+            }
+            
+            // - Check for Ogham patterns
+            if (/[ᚐᚁᚉᚇᚓᚃᚌᚆᚔᚈᚊᚂᚋᚅᚑᚚᚏᚄ]/.test(input)) {
+                try {
+                    if (window.transforms.ogham && window.transforms.ogham.reverse) {
+                        const result = window.transforms.ogham.reverse(input);
+                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                            return { text: result, method: 'Ogham (Celtic)', priorityMatch: true };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Ogham decode error:', e);
+                }
+            }
+            
+            // - Check for mathematical notation patterns
+            if (/[𝒶𝒷𝒸𝒹𝑒𝒻𝑔𝒽𝒾𝒿𝓀𝓁𝓂𝓃𝑜𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵]/.test(input)) {
+                try {
+                    if (window.transforms.mathematical && window.transforms.mathematical.reverse) {
+                        const result = window.transforms.mathematical.reverse(input);
+                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                            return { text: result, method: 'Mathematical Notation', priorityMatch: true };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Mathematical notation decode error:', e);
+                }
+            }
+            
+            // - Check for chemical symbol patterns
+            if (/^(Ac|B|C|D|Es|F|Ge|H|I|J|K|L|Mn|N|O|P|Q|R|S|Ti|U|V|W|Xe|Y|Zn|AC|ES|GE|MN|TI|XE)\s*$/.test(input.trim())) {
+                try {
+                    if (window.transforms.chemical && window.transforms.chemical.reverse) {
+                        const result = window.transforms.chemical.reverse(input);
+                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                            return { text: result, method: 'Chemical Symbols', priorityMatch: true };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Chemical symbols decode error:', e);
+                }
+            }
+            
             // - Binary (improved with more patterns)
             if (/^[01\s]+$/.test(input.trim())) {
                 try {
@@ -1127,6 +1263,165 @@ window.app = new Vue({
                 }
             }
             
+            // - Check for Fantasy Languages
+            const fantasyLanguageChecks = [
+                { name: 'Quenya (Tolkien Elvish)', transform: 'quenya' },
+                { name: 'Tengwar Script', transform: 'tengwar' },
+                { name: 'Klingon', transform: 'klingon' },
+                { name: 'Dovahzul (Dragon)', transform: 'dovahzul' }
+            ];
+            
+            for (const language of fantasyLanguageChecks) {
+                if (window.transforms[language.transform] && window.transforms[language.transform].map) {
+                    try {
+                        // Create reverse mapping
+                        const reverseMap = {};
+                        for (const [key, value] of Object.entries(window.transforms[language.transform].map)) {
+                            reverseMap[value] = key;
+                        }
+                        
+                        // Check if input contains characters from this language
+                        const languageChars = Object.values(window.transforms[language.transform].map);
+                        const hasLanguageChars = languageChars.some(char => input.includes(char));
+                        
+                        if (hasLanguageChars) {
+                            // Decode text
+                            let result = '';
+                            for (const char of input) {
+                                result += reverseMap[char] || char;
+                            }
+                            
+                            if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                                return { text: result, method: language.name };
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`${language.name} decode error:`, e);
+                    }
+                }
+            }
+            
+            // - Check for Aurebesh (Star Wars) - special case due to word-based mapping
+            if (window.transforms.aurebesh && window.transforms.aurebesh.map) {
+                try {
+                    // Check if input contains Aurebesh words
+                    const aurebeshWords = Object.values(window.transforms.aurebesh.map);
+                    const hasAurebeshWords = aurebeshWords.some(word => 
+                        input.toLowerCase().includes(word.toLowerCase())
+                    );
+                    
+                    if (hasAurebeshWords) {
+                        const result = window.transforms.aurebesh.reverse(input);
+                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                            return { text: result, method: 'Aurebesh (Star Wars)' };
+                        }
+                    }
+                } catch (e) {
+                    console.error('Aurebesh decode error:', e);
+                }
+            }
+            
+            // - Check for Ancient Scripts
+            const ancientScriptChecks = [
+                { name: 'Hieroglyphics', transform: 'hieroglyphics' },
+                { name: 'Ogham (Celtic)', transform: 'ogham' },
+                { name: 'Elder Futhark', transform: 'elder_futhark' }
+            ];
+            
+            for (const script of ancientScriptChecks) {
+                if (window.transforms[script.transform] && window.transforms[script.transform].map) {
+                    try {
+                        // Create reverse mapping
+                        const reverseMap = {};
+                        for (const [key, value] of Object.entries(window.transforms[script.transform].map)) {
+                            reverseMap[value] = key;
+                        }
+                        
+                        // Check if input contains characters from this script
+                        const scriptChars = Object.values(window.transforms[script.transform].map);
+                        const hasScriptChars = scriptChars.some(char => input.includes(char));
+                        
+                        if (hasScriptChars) {
+                            // Decode text
+                            let result = '';
+                            for (const char of input) {
+                                result += reverseMap[char] || char;
+                            }
+                            
+                            if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                                return { text: result, method: script.name };
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`${script.name} decode error:`, e);
+                    }
+                }
+            }
+            
+            // - Check for Technical Codes
+            const technicalCodeChecks = [
+                { name: 'Mathematical Notation', transform: 'mathematical' },
+                { name: 'Chemical Symbols', transform: 'chemical' }
+            ];
+            
+            for (const code of technicalCodeChecks) {
+                if (window.transforms[code.transform] && window.transforms[code.transform].map) {
+                    try {
+                        // Create reverse mapping
+                        const reverseMap = {};
+                        for (const [key, value] of Object.entries(window.transforms[code.transform].map)) {
+                            reverseMap[value] = key;
+                        }
+                        
+                        // Check if input contains characters from this code
+                        const codeChars = Object.values(window.transforms[code.transform].map);
+                        const hasCodeChars = codeChars.some(char => input.includes(char));
+                        
+                        if (hasCodeChars) {
+                            // Decode text
+                            let result = '';
+                            for (const char of input) {
+                                result += reverseMap[char] || char;
+                            }
+                            
+                            if (result !== input && /[a-zA-Z0-9]/.test(result)) {
+                                return { text: result, method: code.name };
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`${code.name} decode error:`, e);
+                    }
+                }
+            }
+            
+            // - Check for Brainfuck (special case - look for brainfuck patterns)
+            if (window.transforms.brainfuck) {
+                try {
+                    // Brainfuck typically contains lots of +, -, <, >, [, ], ., and ,
+                    const brainfuckPattern = /^[+\-<>\[\].,\s]+$/;
+                    if (brainfuckPattern.test(input.trim()) && input.length > 20) {
+                        // This looks like brainfuck code, but we can't easily reverse it
+                        // Just indicate that it was detected
+                        return { text: '[Brainfuck code detected - cannot decode]', method: 'Brainfuck' };
+                    }
+                } catch (e) {
+                    console.error('Brainfuck detection error:', e);
+                }
+            }
+            
+            // - Check for Semaphore Flags (special case - look for flag emojis)
+            if (window.transforms.semaphore) {
+                try {
+                    // Look for flag-like characters or emojis
+                    const flagPattern = /[🔄🚩🏁🏴🏳️]/;
+                    if (flagPattern.test(input)) {
+                        return { text: '[Semaphore flags detected]', method: 'Semaphore Flags' };
+                    }
+                } catch (e) {
+                    console.error('Semaphore detection error:', e);
+                }
+            }
+            
             // - Try reverse each transform that has a built-in reverse function
             for (const name in window.transforms) {
                 const transform = window.transforms[name];
@@ -1140,6 +1435,36 @@ window.app = new Vue({
                     } catch (e) {
                         console.error(`Error decoding with ${name}:`, e);
                     }
+                }
+            }
+
+            // 4. Mixed/Randomized text decoding (token-wise decoding)
+            // Split on whitespace and common punctuation, keep separators
+            const tokens = input.split(/(\s+|[\.,!?:;()\[\]{}])/);
+            if (tokens.length > 1) {
+                const decodedTokens = tokens.map(tok => {
+                    // Skip separators
+                    if (!tok || /^(\s+|[\.,!?:;()\[\]{}])$/.test(tok)) return tok;
+                    
+                    // Try specific pattern checks first for token
+                    const quick = this.universalDecode(tok);
+                    if (quick && quick.text) return quick.text;
+                    
+                    // Fallback: try all reverses for token
+                    for (const name in window.transforms) {
+                        const transform = window.transforms[name];
+                        if (transform.reverse) {
+                            try {
+                                const r = transform.reverse(tok);
+                                if (r && r !== tok && /[a-zA-Z0-9\s]{1,}/.test(r)) return r;
+                            } catch (_) {}
+                        }
+                    }
+                    return tok;
+                });
+                const joined = decodedTokens.join('');
+                if (joined !== input && /[a-zA-Z0-9\s]{3,}/.test(joined)) {
+                    return { text: joined, method: 'Mixed (token-wise)' };
                 }
             }
             
