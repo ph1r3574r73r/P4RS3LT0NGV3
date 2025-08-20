@@ -116,28 +116,39 @@
                         </div>
                     </div>
 
-                    <!-- Token Bomb Generator -->
+                    <!-- Tokenade Generator -->
                     <div class="token-bomb-section">
                         <div class="section-header">
                             <h3>
-                                <i class="fas fa-bomb"></i> Token Bomb Generator
-                                <small>Create dense token sequences using nested emojis</small>
+                                <span title="High-density token payload builder">💥 Tokenade Generator</span>
+                                <small>Craft dense token sequences with nested emojis and zero-width characters</small>
                             </h3>
                         </div>
+                        <div class="output-instructions">
+                            <small>
+                                <strong>Disclaimer:</strong> These payloads can be disruptive to models, UIs, and tools. Use responsibly and avoid deploying in production or against systems without consent.
+                            </small>
+                        </div>
+                        <div class="tokenade-presets">
+                            <label style="margin-right:8px">Presets</label>
+                            <button class="transform-button" title="Balanced density" @click="applyTokenadePreset('light')">Light</button>
+                            <button class="transform-button" title="High density" @click="applyTokenadePreset('standard')">Standard</button>
+                            <button class="transform-button" title="Extreme density" @click="applyTokenadePreset('heavy')">Heavy</button>
+                        </div>
                         <div class="token-bomb-controls options-grid">
-                            <label>
-                                Depth
+                            <label title="Nesting levels; higher = more layers of grouping">
+                                Depth (nesting)
                                 <input type="number" v-model.number="tbDepth" min="1" max="8" />
                             </label>
-                            <label>
+                            <label title="How many items per level; higher = wider structure">
                                 Breadth per level
                                 <input type="number" v-model.number="tbBreadth" min="1" max="12" />
                             </label>
-                            <label>
-                                Repeats
+                            <label title="How many times to repeat the whole block">
+                                Repeats (blocks)
                                 <input type="number" v-model.number="tbRepeats" min="1" max="100" />
                             </label>
-                            <label>
+                            <label title="Invisible separator inserted between units">
                                 Separator
                                 <select v-model="tbSeparator">
                                     <option value="zwj">Zero-Width Joiner (\u200D)</option>
@@ -146,29 +157,35 @@
                                     <option value="none">None</option>
                                 </select>
                             </label>
-                            <label>
+                            <label title="Adds VS16/VS15 after glyphs to increase token churn">
                                 Include Variation Selectors
                                 <input type="checkbox" v-model="tbIncludeVS" />
                             </label>
-                            <label>
+                            <label title="Sprinkles random zero-width codepoints between segments">
                                 Include Invisible Noise
                                 <input type="checkbox" v-model="tbIncludeNoise" />
                             </label>
-                            <label>
+                            <label title="Use random emojis instead of cycling a fixed set">
                                 Randomize Emojis
                                 <input type="checkbox" v-model="tbRandomizeEmojis" />
                             </label>
+                            <label title="Automatically copy result after generation">
+                                Auto-copy
+                                <input type="checkbox" v-model="tbAutoCopy" />
+                            </label>
                         </div>
                         <div class="token-bomb-actions">
-                            <button class="transform-button" @click="generateTokenBomb">
-                                <i class="fas fa-hammer"></i> Generate
+                            <button class="transform-button" @click="generateTokenBomb" title="Build the tokenade with current settings">
+                                <i class="fas fa-hammer"></i> Generate Tokenade
                             </button>
                             <button class="copy-button" v-if="tokenBombOutput" @click="copyToClipboard(tokenBombOutput)">
                                 <i class="fas fa-copy"></i> Copy
                             </button>
-                            <small v-if="tokenBombOutput">
-                                Length: {{ tokenBombOutput.length.toLocaleString() }} chars
-                            </small>
+                            <div class="output-instructions" v-if="tokenBombOutput">
+                                <small>
+                                    Length: {{ tokenBombOutput.length.toLocaleString() }} chars · Tip: Increasing depth/breadth grows size <em>multiplicatively</em>.
+                                </small>
+                            </div>
                         </div>
                         <div class="output-container" v-if="tokenBombOutput">
                             <textarea readonly v-model="tokenBombOutput" aria-label="Token bomb output"></textarea>

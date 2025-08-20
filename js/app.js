@@ -60,6 +60,7 @@ window.app = new Vue({
         tbIncludeVS: true,
         tbIncludeNoise: true,
         tbRandomizeEmojis: true,
+        tbAutoCopy: false,
         tokenBombOutput: '',
         
         // History of copied content
@@ -1741,6 +1742,24 @@ window.app = new Vue({
 
             // Provide a quick visual confirmation
             this.showNotification('<i class="fas fa-bomb"></i> Token bomb generated', 'success');
+
+            if (this.tbAutoCopy && this.tokenBombOutput) {
+                this.$nextTick(() => this.copyToClipboard(this.tokenBombOutput));
+            }
+        },
+
+        applyTokenadePreset(preset) {
+            if (preset === 'light') {
+                this.tbDepth = 2; this.tbBreadth = 3; this.tbRepeats = 3; this.tbSeparator = 'zwsp';
+                this.tbIncludeVS = false; this.tbIncludeNoise = true; this.tbRandomizeEmojis = true;
+            } else if (preset === 'standard') {
+                this.tbDepth = 3; this.tbBreadth = 4; this.tbRepeats = 6; this.tbSeparator = 'zwj';
+                this.tbIncludeVS = true; this.tbIncludeNoise = true; this.tbRandomizeEmojis = true;
+            } else if (preset === 'heavy') {
+                this.tbDepth = 4; this.tbBreadth = 6; this.tbRepeats = 12; this.tbSeparator = 'zwj';
+                this.tbIncludeVS = true; this.tbIncludeNoise = true; this.tbRandomizeEmojis = true;
+            }
+            this.showNotification('<i class="fas fa-sliders-h"></i> Preset applied', 'success');
         }
     },
     // Initialize theme and components
