@@ -452,7 +452,10 @@ const transforms = {
         name: 'Strikethrough',
         func: function(text) {
             // Use proper Unicode combining characters for strikethrough
-            const segments = window.emojiLibrary.splitEmojis(text);
+            const splitter = (typeof window !== 'undefined' && window.emojiLibrary && window.emojiLibrary.splitEmojis)
+                ? window.emojiLibrary.splitEmojis
+                : (t) => Array.from(t);
+            const segments = splitter(text);
             return segments.map(c => c + '\u0336').join('');
         },
         preview: function(text) {
@@ -469,7 +472,10 @@ const transforms = {
         name: 'Underline',
         func: function(text) {
             // Use proper Unicode combining characters for underline
-            const segments = window.emojiLibrary.splitEmojis(text);
+            const splitter = (typeof window !== 'undefined' && window.emojiLibrary && window.emojiLibrary.splitEmojis)
+                ? window.emojiLibrary.splitEmojis
+                : (t) => Array.from(t);
+            const segments = splitter(text);
             return segments.map(c => c + '\u0332').join('');
         },
         preview: function(text) {
