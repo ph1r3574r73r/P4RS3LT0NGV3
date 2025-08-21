@@ -231,7 +231,6 @@ const transforms = {
 
     // Note: other transforms don't have reverse functions because they're not easily reversible
     // The universal decoder will only try to reverse transforms that have a reverse function
-    ,
     
     // Additional transforms
     base64: {
@@ -377,18 +376,6 @@ const transforms = {
         preview: function(text) {
             if (!text) return '[double-struck]';
             return this.func(text.slice(0, 3)) + '...';
-        },
-        // Create reverse map for decoding
-        reverseMap: function() {
-            const revMap = {};
-            for (const [key, value] of Object.entries(this.map)) {
-                revMap[value] = key.toLowerCase();
-            }
-            return revMap;
-        },
-        reverse: function(text) {
-            const revMap = this.reverseMap();
-            return [...text].map(c => revMap[c] || c).join('');
         }
     },
     
@@ -424,17 +411,6 @@ const transforms = {
             if (!text) return '[quenya]';
             return this.func(text.slice(0, 3)) + '...';
         },
-        // Create reverse map for decoding
-        reverseMap: function() {
-            const revMap = {};
-            for (const [key, value] of Object.entries(this.map)) {
-                revMap[value.toLowerCase()] = key;
-            }
-            return revMap;
-        },
-        reverse: function(text) {
-            const revMap = this.reverseMap();
-            return text.split(/\s+/).map(word => revMap[word.toLowerCase()] || word).join('');
         }
     },
     
@@ -918,19 +894,7 @@ const transforms = {
         preview: function(text) {
             return text.substring(0, 10) + (text.length > 10 ? '...' : '');
         },
-        reverseMap: function() {
-            if (!this._reverseMap) {
-                this._reverseMap = {};
-                for (let key in this.map) {
-                    this._reverseMap[this.map[key]] = key;
-                }
-            }
-            return this._reverseMap;
-        },
-        reverse: function(text) {
-            const revMap = this.reverseMap();
-            return text.split('').map(char => revMap[char] || char).join('');
-        }
+        reverse: undefined
     },
     
     wingdings: {
@@ -1642,14 +1606,7 @@ const transforms = {
             if (!text) return '[1-26]';
             return this.func(text.slice(0, 5)) + '...';
         },
-        reverse: function(text) {
-            return text.split(/([^0-9]+)/).map(tok => {
-                if (!/^\d+$/.test(tok)) return tok;
-                const n = parseInt(tok,10);
-                if (n>=1 && n<=26) return String.fromCharCode(64+n).toLowerCase();
-                return tok;
-            }).join('');
-        }
+        reverse: undefined
     },
 
     // Affine Cipher (a=5, b=8)
@@ -1818,16 +1775,7 @@ const transforms = {
             if (!text) return '🇦🇧🇨';
             return this.func(text.slice(0, 4)) + (text.length > 4 ? '...' : '');
         },
-        reverse: function(text) {
-            const base = 0x1F1E6;
-            return [...text].map(ch => {
-                const cp = ch.codePointAt(0);
-                if (cp >= base && cp <= base + 25) {
-                    return String.fromCharCode(65 + (cp - base));
-                }
-                return ch;
-            }).join('');
-        }
+        reverse: undefined
     },
 
     // Fraktur (Mathematical Fraktur letters)
