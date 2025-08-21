@@ -14,15 +14,15 @@ window.app = new Vue({
         activeTransform: null,
         // Transform categories for styling
         transformCategories: {
-            encoding: ['Base64', 'Base64 URL', 'Base32', 'Base32 Crockford', 'Base45', 'Base58', 'Base62', 'Base85 (Z85)', 'Base91', 'Binary', 'Hexadecimal', 'Hex (Compact Uppercase)', 'ASCII85', 'URL Encode', 'HTML Entities', 'Quoted-Printable', 'Bitflip (NOT)+Base64'],
-            cipher: ['Caesar Cipher', 'ROT13', 'ROT47', 'Morse Code', 'Atbash Cipher', 'ROT5', 'Vigenère Cipher', 'Rail Fence (3 Rails)', 'Rail Fence (5 Rails)', 'XOR Cipher (KEY)'],
-            visual: ['Rainbow Text', 'Strikethrough', 'Underline', 'Reverse Text', 'Alternating Case', 'Reverse Words', 'Random Case', 'Swap Case', 'Title Case', 'Sentence Case', 'Emoji Speak'],
-            format: ['Pig Latin', 'Ubbi Dubbi', 'Rövarspråket', 'NATO Phonetic', 'camelCase', 'snake_case', 'kebab-case', 'Squash Whitespace'],
+            encoding: ['Base64', 'Base64 URL', 'Base32', 'Base45', 'Base58', 'Base62', 'Binary', 'Hexadecimal', 'ASCII85', 'URL Encode', 'HTML Entities'],
+            cipher: ['Caesar Cipher', 'ROT13', 'ROT47', 'Morse Code', 'Atbash Cipher', 'ROT5', 'Vigenère Cipher', 'Rail Fence (3 Rails)', 'Baconian Cipher', 'Tap Code'],
+            visual: ['Rainbow Text', 'Strikethrough', 'Underline', 'Reverse Text', 'Alternating Case', 'Reverse Words', 'Random Case', 'Title Case', 'Sentence Case', 'Emoji Speak', 'Ubbi Dubbi', 'Rövarspråket'],
+            format: ['Pig Latin', 'Leetspeak', 'NATO Phonetic', 'camelCase', 'snake_case', 'kebab-case'],
             unicode: ['Invisible Text', 'Upside Down', 'Full Width', 'Small Caps', 'Bubble', 'Braille', 'Greek Letters', 'Wingdings', 'Superscript', 'Subscript', 'Regional Indicator Letters', 'Fraktur', 'Cyrillic Stylized', 'Katakana', 'Hiragana', 'Roman Numerals'],
-            special: ['Medieval', 'Cursive', 'Monospace', 'Double-Struck', 'Elder Futhark', 'Mirror Text', 'Zalgo', 'Unicode Normalize (NFC)', 'Unicode Normalize (NFD)', 'Strip Diacritics', 'Unicode Escape (\u)'],
+            special: ['Medieval', 'Cursive', 'Monospace', 'Double-Struck', 'Elder Futhark', 'Mirror Text', 'Zalgo'],
             fantasy: ['Quenya (Tolkien Elvish)', 'Tengwar Script', 'Klingon', 'Aurebesh (Star Wars)', 'Dovahzul (Dragon)'],
             ancient: ['Hieroglyphics', 'Ogham (Celtic)', 'Semaphore Flags'],
-            technical: ['Brainfuck', 'Mathematical Notation', 'Chemical Symbols', 'QWERTY Right Shift', 'QWERTY Left Shift', 'QWERTY ↔ Dvorak'],
+            technical: ['Brainfuck', 'Mathematical Notation', 'Chemical Symbols'],
             randomizer: ['Random Mix']
         },
         transforms: Object.entries(window.transforms).map(([key, transform]) => ({
