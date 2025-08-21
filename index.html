@@ -802,21 +802,21 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Danger Zone Modal -->
-    <div :class="['danger-modal-backdrop', showDangerModal ? 'danger-active' : '']">
-        <div class="danger-modal">
-            <div class="danger-header">
-                <i class="fas fa-radiation"></i>
-                <strong>Danger zone warning</strong>
-            </div>
-            <div class="danger-body">
-                <p>Your projected payload size exceeds <strong>25,000,000</strong> characters. Generating this will very likely <strong>freeze/crash</strong> your browser or downstream tools, and can rack up serious costs if sent to a model.</p>
-                <p>Proceed only if you fully understand the risks and are testing in a safe, isolated environment.</p>
-            </div>
-            <div class="danger-actions">
-                <button class="danger-proceed" @click="proceedDangerAction"><i class="fas fa-skull-crossbones"></i> I understand, proceed</button>
+        <!-- Danger Zone Modal (must live inside #app for Vue bindings) -->
+        <div :class="['danger-modal-backdrop', showDangerModal ? 'danger-active' : '']">
+            <div class="danger-modal">
+                <div class="danger-header">
+                    <i class="fas fa-radiation"></i>
+                    <strong>Danger zone warning</strong>
+                </div>
+                <div class="danger-body">
+                    <p>Your projected payload size exceeds <strong>25,000,000</strong> characters. Generating this will very likely <strong>freeze/crash</strong> your browser or downstream tools, and can rack up serious costs if sent to a model.</p>
+                    <p>Proceed only if you fully understand the risks and are testing in a safe, isolated environment.</p>
+                </div>
+                <div class="danger-actions">
+                    <button class="danger-proceed" @click="proceedDangerAction"><i class="fas fa-skull-crossbones"></i> I understand, proceed</button>
+                </div>
             </div>
         </div>
     </div>
