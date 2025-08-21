@@ -230,7 +230,8 @@ h1, h2, h3, h4, h5 {
 }
 
 /* Safety: hide all tab-content until Vue mounts and activates one */
-[v-cloak] .tab-content { display: none; }
+/* Remove aggressive v-cloak hiding to avoid blank app if Vue fails */
+/* [v-cloak] .tab-content { display: none; } */
 
 /* Input and output sections */
 .input-section,
