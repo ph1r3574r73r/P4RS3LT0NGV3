@@ -63,7 +63,7 @@ window.app = new Vue({
         tbSeparator: 'zwnj',
         tbIncludeVS: true,
         tbIncludeNoise: true,
-        tbRandomizeEmojis: true,
+        tbRandomizeEmojis: true, // forced on; no UI control
         tbAutoCopy: true,
         tbSingleCarrier: true,
         tbCarrier: '',
