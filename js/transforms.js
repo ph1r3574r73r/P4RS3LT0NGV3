@@ -1340,6 +1340,57 @@ const transforms = {
         }
     },
 
+    // Base45 (RFC 9285, used in QR payloads)
+    base45: {
+        name: 'Base45',
+        alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:',
+        func: function(text) {
+            if (!text) return '';
+            const bytes = new TextEncoder().encode(text);
+            let out = '';
+            for (let i = 0; i < bytes.length; i += 2) {
+                if (i + 1 < bytes.length) {
+                    const x = bytes[i];
+                    const y = bytes[i + 1];
+                    const v = x * 256 + y;
+                    const e = v % 45; const d = Math.floor(v / 45) % 45; const c = Math.floor(v / (45 * 45));
+                    out += this.alphabet[c] + this.alphabet[d] + this.alphabet[e];
+                } else {
+                    const x = bytes[i];
+                    const d = Math.floor(x / 45); const e = x % 45;
+                    out += this.alphabet[d] + this.alphabet[e];
+                }
+            }
+            return out;
+        },
+        preview: function(text) {
+            if (!text) return '[base45]';
+            return this.func(text.slice(0,3)) + '...';
+        },
+        reverse: function(text) {
+            if (!text) return '';
+            const idx = c => this.alphabet.indexOf(c);
+            const bytes = [];
+            let i = 0;
+            while (i < text.length) {
+                if (i + 2 < text.length) {
+                    const c = idx(text[i++]); const d = idx(text[i++]); const e = idx(text[i++]);
+                    if (c < 0 || d < 0 || e < 0) continue;
+                    const v = c * 45 * 45 + d * 45 + e;
+                    bytes.push(Math.floor(v / 256), v % 256);
+                } else if (i + 1 < text.length) {
+                    const d = idx(text[i++]); const e = idx(text[i++]);
+                    if (d < 0 || e < 0) continue;
+                    const v = d * 45 + e;
+                    bytes.push(v);
+                } else {
+                    break;
+                }
+            }
+            return new TextDecoder().decode(Uint8Array.from(bytes));
+        }
+    },
+
     // Roman Numerals (1..3999)
     roman_numerals: {
         name: 'Roman Numerals',
@@ -1380,6 +1431,50 @@ const transforms = {
         }
     },
 
+    // Rail Fence Cipher (5 rails)
+    rail_fence_5: {
+        name: 'Rail Fence (5 Rails)',
+        rails: 5,
+        func: function(text) {
+            const rails = Array.from({length: this.rails}, () => []);
+            let rail = 0, dir = 1;
+            for (const ch of text) {
+                rails[rail].push(ch);
+                rail += dir;
+                if (rail === 0 || rail === this.rails-1) dir *= -1;
+            }
+            return rails.flat().join('');
+        },
+        preview: function(text) {
+            if (!text) return '[rail5]';
+            return this.func(text.slice(0,12)) + (text.length>12?'...':'');
+        },
+        reverse: function(text) {
+            const len = text.length;
+            const pattern = [];
+            let rail = 0, dir = 1;
+            for (let i=0;i<len;i++) {
+                pattern.push(rail);
+                rail += dir;
+                if (rail === 0 || rail === this.rails-1) dir *= -1;
+            }
+            const counts = Array(this.rails).fill(0);
+            for (const r of pattern) counts[r]++;
+            const railsArr = [];
+            let idx = 0;
+            for (let r=0;r<this.rails;r++) {
+                railsArr[r] = text.slice(idx, idx+counts[r]).split('');
+                idx += counts[r];
+            }
+            const positions = Array(this.rails).fill(0);
+            let out = '';
+            for (const r of pattern) {
+                out += railsArr[r][positions[r]++];
+            }
+            return out;
+        }
+    },
+
     // Vigenère Cipher (default key: KEY)
     vigenere: {
         name: 'Vigenère Cipher',
@@ -1415,6 +1510,38 @@ const transforms = {
                 else out += c;
             }
             return out;
+        }
+    },
+
+    // XOR Cipher with default key (outputs Base64)
+    xor_cipher: {
+        name: 'XOR Cipher (KEY)',
+        key: 'KEY',
+        func: function(text) {
+            const encoder = new TextEncoder();
+            const keyBytes = encoder.encode(this.key);
+            const bytes = encoder.encode(text);
+            const out = new Uint8Array(bytes.length);
+            for (let i=0;i<bytes.length;i++) out[i] = bytes[i] ^ keyBytes[i % keyBytes.length];
+            // base64 encode
+            let bin = '';
+            for (let i=0;i<out.length;i++) bin += String.fromCharCode(out[i]);
+            return btoa(bin);
+        },
+        preview: function(text) {
+            if (!text) return '[xor]';
+            return this.func(text.slice(0,8)) + '...';
+        },
+        reverse: function(text) {
+            try {
+                const bin = atob(text);
+                const enc = new TextEncoder();
+                const keyBytes = enc.encode(this.key);
+                const data = new Uint8Array(bin.length);
+                for (let i=0;i<bin.length;i++) data[i] = bin.charCodeAt(i);
+                for (let i=0;i<data.length;i++) data[i] ^= keyBytes[i % keyBytes.length];
+                return new TextDecoder().decode(data);
+            } catch (e) { return text; }
         }
     },
 
@@ -1481,6 +1608,19 @@ const transforms = {
         preview: function(text) {
             if (!text) return '[rot18]';
             return this.func(text.slice(0, 8)) + (text.length>8?'...':'');
+        },
+        reverse: function(text) { return this.func(text); }
+    },
+
+    // Swap Case
+    swap_case: {
+        name: 'Swap Case',
+        func: function(text) {
+            return [...text].map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join('');
+        },
+        preview: function(text) {
+            if (!text) return '[sWaP]';
+            return this.func(text.slice(0,8)) + (text.length>8?'...':'');
         },
         reverse: function(text) { return this.func(text); }
     },
@@ -1984,6 +2124,59 @@ const transforms = {
             for (const [k,v] of Object.entries(this.map)) revMap[v] = k;
             return [...text].map(c => revMap[c] || c).join('');
         }
+    },
+
+    // Unicode utilities
+    normalize_nfc: {
+        name: 'Unicode Normalize (NFC)',
+        func: function(text) { try { return text.normalize('NFC'); } catch (_) { return text; } },
+        preview: function(text) { return this.func(text); }
+    },
+    normalize_nfd: {
+        name: 'Unicode Normalize (NFD)',
+        func: function(text) { try { return text.normalize('NFD'); } catch (_) { return text; } },
+        preview: function(text) { return this.func(text); }
+    },
+    strip_diacritics: {
+        name: 'Strip Diacritics',
+        func: function(text) {
+            try {
+                return text.normalize('NFD').replace(/\p{M}+/gu, '');
+            } catch (_) {
+                return text.replace(/[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]+/g,'');
+            }
+        },
+        preview: function(text) { return this.func(text); }
+    },
+    unicode_escape: {
+        name: 'Unicode Escape (\\u)',
+        func: function(text) {
+            const parts = Array.from(text).map(ch => {
+                const cp = ch.codePointAt(0);
+                if (cp >= 32 && cp <= 126 && ch !== '\\' && ch !== '"') return ch;
+                if (cp <= 0xFFFF) return `\\u${cp.toString(16).padStart(4,'0')}`;
+                return `\\u{${cp.toString(16)}}`;
+            });
+            return parts.join('');
+        },
+        preview: function(text) { return this.func(text.slice(0,4)) + (text.length>4?'...':''); },
+        reverse: function(text) {
+            if (!text) return '';
+            // Handle \u{XXXX}, \uXXXX, \xXX, and common escapes
+            let out = text
+                .replace(/\\u\{([0-9a-fA-F]+)\}/g, (_,hex)=>String.fromCodePoint(parseInt(hex,16)))
+                .replace(/\\u([0-9a-fA-F]{4})/g, (_,hex)=>String.fromCharCode(parseInt(hex,16)))
+                .replace(/\\x([0-9a-fA-F]{2})/g, (_,hex)=>String.fromCharCode(parseInt(hex,16)))
+                .replace(/\\n/g,'\n').replace(/\\r/g,'\r').replace(/\\t/g,'\t').replace(/\\\\/g,'\\').replace(/\\"/g,'"');
+            return out;
+        }
+    },
+
+    // Whitespace utilities
+    squash_whitespace: {
+        name: 'Squash Whitespace',
+        func: function(text) { return text.replace(/\s+/g,' ').trim(); },
+        preview: function(text) { return this.func(text); }
     },
 
     subscript: {
