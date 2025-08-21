@@ -1721,7 +1721,16 @@ window.app = new Vue({
         },
 
         // Modal acknowledge handler
-        proceedDangerAction() { this.showDangerModal = false; },
+        proceedDangerAction() {
+            // Close modal and return focus to Generate button for accessibility
+            this.showDangerModal = false;
+            this.$nextTick(() => {
+                try {
+                    const btn = document.querySelector('.token-bomb-actions .transform-button');
+                    btn && btn.focus();
+                } catch (_) {}
+            });
+        },
 
         // Token Bomb Generator Logic
         generateTokenBomb() {

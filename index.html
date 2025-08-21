@@ -805,7 +805,7 @@
     </div>
 
     <!-- Danger Zone Modal -->
-    <div v-if="showDangerModal" class="danger-modal-backdrop">
+    <div :class="['danger-modal-backdrop', showDangerModal ? 'danger-active' : '']">
         <div class="danger-modal">
             <div class="danger-header">
                 <i class="fas fa-radiation"></i>
