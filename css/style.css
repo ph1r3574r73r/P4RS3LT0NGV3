@@ -1943,6 +1943,121 @@ html {
     padding: 6px 10px;
 }
 
+/* Hacker style controls */
+.hacker-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+.slider-block {
+    background: var(--main-bg-color);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+}
+.hacker-slider {
+    width: 100%;
+    appearance: none;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(100,181,246,.8), rgba(66,165,245,.4));
+    outline: none;
+    border-radius: 3px;
+}
+.slider-block .hacker-slider { margin-top: 6px; margin-bottom: 4px; }
+.hacker-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(100,181,246,.6);
+}
+.slider-value {
+    display: inline-block;
+    margin-left: 6px;
+    font-family: 'Fira Code', monospace;
+    color: var(--accent-color);
+}
+.segmented {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 8px;
+    background: var(--main-bg-color);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+}
+.segmented-label { opacity: .7; margin-right: 6px; }
+.segmented button {
+    background: var(--button-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-color);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.segmented button.active {
+    background: var(--accent-color);
+    color: var(--main-bg-color);
+    border-color: var(--accent-color);
+}
+.switch { display:flex; gap:6px; align-items:center; padding: 6px 8px; background: var(--main-bg-color); border:1px solid var(--input-border); border-radius:6px; }
+.switch span { opacity:.85; }
+
+/* Tokenade section visual parity with transform cards */
+.token-bomb-section {
+    background: var(--main-bg-color);
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid var(--input-border);
+    margin-bottom: 16px;
+}
+.token-bomb-section .section-header { margin-bottom: 10px; }
+.token-bomb-section .output-instructions { margin-top: 8px; }
+
+/* Presets row polish */
+.tokenade-presets {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 8px 0 12px 0;
+}
+.tokenade-presets .transform-button { min-width: 160px; }
+
+/* Quick picks panel */
+.carrier-quick-grid { 
+    background: var(--secondary-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+.carrier-quick-grid .emoji-grid { 
+    border: none !important; 
+    background: transparent !important; 
+    padding: 6px !important; 
+}
+.tokenade-carrier-options { margin-top: 8px; }
+.carrier-quick-grid .emoji-button { 
+    width: 32px; height: 32px; font-size: 18px;
+}
+
+/* Align tokenade options with transform look */
+.tokenade-carrier-options label,
+.hacker-controls .slider-block,
+.hacker-controls .segmented,
+.hacker-controls .switch { 
+    margin-bottom: 6px;
+}
+
+/* Reduce extra whitespace at bottom of tab cards */
+.tab-content .transform-layout > *:last-child { margin-bottom: 0; }
+
 .transform-layout {
     position: relative;
 }

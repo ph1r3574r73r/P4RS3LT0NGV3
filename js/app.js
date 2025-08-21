@@ -74,6 +74,12 @@ window.app = new Vue({
         tpCombining: true,
         tpZW: false,
         textPayload: '',
+        // Tokenizer tab
+        tokenizerInput: '',
+        tokenizerEngine: 'byte',
+        tokenizerTokens: [],
+        tokenizerCharCount: 0,
+        tokenizerWordCount: 0,
         
         // History of copied content
         copyHistory: [],
@@ -154,6 +160,9 @@ window.app = new Vue({
                 this.$nextTick(() => {
                     this.initializeCategoryNavigation();
                 });
+            }
+            if (tabName === 'tokenizer') {
+                this.$nextTick(() => this.runTokenizer());
             }
         },
         
@@ -1897,6 +1906,48 @@ window.app = new Vue({
             const parts = window.emojiLibrary.splitEmojis(text);
             const onlyEmojis = parts.filter(p => /\p{Extended_Pictographic}/u.test(p));
             this.tbPayloadEmojis.push(...onlyEmojis);
+        }
+        ,
+        // Tokenizer visualization
+        runTokenizer() {
+            const text = this.tokenizerInput || '';
+            const engine = this.tokenizerEngine;
+            const tokens = [];
+            if (!text) { this.tokenizerTokens = []; this.tokenizerCharCount = 0; this.tokenizerWordCount = 0; return; }
+            if (engine === 'byte') {
+                // Split into UTF-8 bytes, display hex and glyphs
+                const encoder = new TextEncoder();
+                const bytes = encoder.encode(text);
+                for (let i=0;i<bytes.length;i++) {
+                    tokens.push({ id: bytes[i], text: `0x${bytes[i].toString(16).padStart(2,'0')}` });
+                }
+            } else if (engine === 'word') {
+                // Naive word split incl. punctuation
+                const parts = text.split(/(\s+|[\.,!?:;()\[\]{}])/);
+                for (const p of parts) { if (p) tokens.push({ text: p }); }
+            } else if (engine === 'gpt3' && window.gpt3enc && window.gpt3enc.encode) {
+                try {
+                    const ids = window.gpt3enc.encode(text);
+                    for (const id of ids) {
+                        const piece = window.gpt3enc.decode([id]);
+                        tokens.push({ id, text: piece });
+                    }
+                } catch (e) {
+                    console.warn('gpt-3-encoder not available', e);
+                    this.tokenizerEngine = 'byte';
+                    return this.runTokenizer();
+                }
+            } else {
+                // Fallback to bytes
+                const encoder = new TextEncoder();
+                const bytes = encoder.encode(text);
+                for (let i=0;i<bytes.length;i++) tokens.push({ id: bytes[i], text: `0x${bytes[i].toString(16).padStart(2,'0')}` });
+            }
+            this.tokenizerTokens = tokens;
+            // Counts
+            this.tokenizerCharCount = Array.from(text).length;
+            const wordMatches = text.trim().match(/[^\s]+/g) || [];
+            this.tokenizerWordCount = wordMatches.length;
         }
         ,
         generateTextPayload() {
