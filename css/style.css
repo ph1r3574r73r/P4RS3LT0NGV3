@@ -1816,6 +1816,8 @@ button:hover {
     border: 2px solid rgba(200, 170, 255, 0.35) !important;
     padding: 18px 28px !important;
     letter-spacing: .3px;
+    min-width: 48ch;
+    justify-content: center;
 }
 
 .randomizer-button::after {
