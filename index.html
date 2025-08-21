@@ -261,19 +261,11 @@
                                 Single emoji carrier mode
                                 <input type="checkbox" v-model="tbSingleCarrier" />
                             </label>
-                            <label v-if="tbSingleCarrier" title="Choose the carrier emoji (type to search, paste, or drop)">
+                            <label v-if="tbSingleCarrier" title="Choose the carrier emoji (quick list)">
                                 Carrier
-                                <input 
-                                    type="text" 
-                                    v-model="tbCarrier" 
-                                    placeholder="Type to search/paste an emoji"
-                                    list="emoji-carrier-list"
-                                    @focus="setCarrierFromSelected"
-                                    @input="onCarrierInput"
-                                />
-                                <datalist id="emoji-carrier-list">
+                                <select v-model="tbCarrier" @focus="setCarrierFromSelected">
                                     <option v-for="em in carrierEmojiList" :key="em" :value="em">{{ em }}</option>
-                                </datalist>
+                                </select>
                             </label>
                         </div>
                         <div v-if="tbSingleCarrier" class="tokenade-payload-drop">
@@ -769,7 +761,7 @@
 
     <!--
     <!-- Tokenade Tab -->
-    <div v-if="activeTab === 'tokenade'" class="tab-content">
+    <!-- <div v-if="activeTab === 'tokenade'" class="tab-content"> -->
         <div class="transform-layout">
             <div class="token-bomb-section">
                 <div class="section-header">
@@ -923,7 +915,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     -->
     <!-- Global Advanced Unicode / Steg Options Panel -->
     <div id="unicode-options-panel" class="unicode-options-panel">
