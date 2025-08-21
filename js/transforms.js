@@ -96,10 +96,6 @@ const transforms = {
         preview: function(text) {
             if (!text) return '[base64]';
             return btoa(text.slice(0, 3)) + '...';
-        },
-        reverse: function(text) {
-            // Remove spaces between characters
-            return text.replace(/ /g, '');
         }
     },
 
