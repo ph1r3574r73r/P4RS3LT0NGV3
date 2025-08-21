@@ -2173,6 +2173,34 @@ const transforms = {
         preview: function(text) { return this.func(text); }
     },
 
+    // Ubbi Dubbi (add 'ub' before vowels)
+    ubbi_dubbi: {
+        name: 'Ubbi Dubbi',
+        func: function(text) {
+            if (!text) return '';
+            return text.replace(/([AEIOUaeiou])/g, 'ub$1');
+        },
+        preview: function(text) { return this.func(text || 'hello'); },
+        reverse: function(text) {
+            if (!text) return '';
+            return text.replace(/ub([AEIOUaeiou])/g, '$1');
+        }
+    },
+
+    // Rövarspråket (Robber's language): consonant -> consonant + 'o' + consonant
+    rovarspraket: {
+        name: 'Rövarspråket',
+        func: function(text) {
+            if (!text) return '';
+            return text.replace(/([b-df-hj-np-tv-z])/gi, (m) => m + 'o' + m);
+        },
+        preview: function(text) { return this.func(text || 'robber'); },
+        reverse: function(text) {
+            if (!text) return '';
+            return text.replace(/([b-df-hj-np-tv-z])o\1/gi, '$1');
+        }
+    },
+
     subscript: {
         name: 'Subscript',
         map: {
