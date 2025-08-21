@@ -247,12 +247,12 @@
                         <div class="section-header">
                             <h3>
                                 <span title="High-density token payload builder">💥 Tokenade Generator</span>
-                                <small>Craft dense token sequences with emojis and zero-width characters</small>
+                                <small>Craft dense token payloads with emojis and zero-width characters</small>
                             </h3>
                         </div>
                         <div class="tokenade-disclaimer" v-if="estimateTokenadeTokens() <= dangerThresholdTokens">
                             <i class="fas fa-triangle-exclamation"></i>
-                            <span><strong>Safety notice:</strong> Tokenade payloads can severely degrade model performance and crash UIs. Use for testing only. Do not deploy to production or target systems without explicit permission.</span>
+                            <span><strong>DISCLAIMER:</strong> Tokenade payloads can severely degrade model performance and crash UIs. Use for testing only. Do not deploy to production or target systems without explicit permission.</span>
                         </div>
                         <div class="tokenade-disclaimer danger" v-else>
                             <i class="fas fa-radiation"></i>
