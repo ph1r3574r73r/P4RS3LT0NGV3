@@ -429,8 +429,8 @@
                         </div>
                         <div class="token-bomb-actions">
                             <button class="transform-button" @click="generateFuzzCases"><i class="fas fa-hammer"></i> Generate Cases</button>
-                            <button class="copy-button" v-if="fuzzerOutputs.length" @click="copyAllFuzz"><i class="fas fa-copy"></i> Copy All</button>
-                            <button class="copy-button" v-if="fuzzerOutputs.length" @click="downloadFuzz"><i class="fas fa-download"></i> Download</button>
+                            <button class="action-button" v-if="fuzzerOutputs.length" @click="copyAllFuzz"><i class="fas fa-copy"></i> Copy All</button>
+                            <button class="action-button" v-if="fuzzerOutputs.length" @click="downloadFuzz"><i class="fas fa-download"></i> Download</button>
                         </div>
                         <div class="output-container" v-if="fuzzerOutputs.length">
                             <div class="token-tiles fuzzer-list" style="display:flex; flex-direction:column; gap:8px;">

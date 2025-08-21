@@ -1644,6 +1644,24 @@ button:hover {
     transform: translateY(1px);
 }
 
+/* Classy secondary action buttons (Copy All / Download) */
+.action-button {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border: 1px solid var(--input-border);
+    color: var(--text-color);
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.action-button i { margin-right: 6px; opacity: .9; }
+.action-button:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    box-shadow: 0 0 0 1px rgba(100, 181, 246, 0.15) inset, 0 0 12px rgba(100, 181, 246, 0.12);
+}
+.action-button:active { transform: translateY(1px); }
+
 .decoded-message {
     position: relative;
     padding: 12px;
