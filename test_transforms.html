@@ -102,6 +102,13 @@
         <div id="output-randomizer" class="test-output"></div>
     </div>
 
+    <div class="category">
+        <h2>✅ Full Self‑Test (round‑trip)</h2>
+        <p>Runs encode→decode for every transform that provides a reverse function.</p>
+        <button class="test-button" onclick="runFullSelfTest()">Run Full Self‑Test</button>
+        <div id="output-matrix" class="test-output"></div>
+    </div>
+
     <script src="js/transforms.js"></script>
     <script>
         function testTransform(transformName) {
@@ -253,6 +260,42 @@
                 }, 500);
             }, 100);
         };
+
+        // Full matrix round-trip tester
+        function runFullSelfTest() {
+            const samples = [
+                'Hello World!',
+                'Attack at dawn 123!',
+                'Café naïve — résumé',
+                '🐍🔥 Parsel 🧪'
+            ];
+            const results = [];
+            const names = Object.keys(window.transforms);
+            for (const key of names) {
+                const t = window.transforms[key];
+                if (!t || typeof t.func !== 'function' || typeof t.reverse !== 'function') continue;
+                let ok = true, detail = '';
+                try {
+                    for (const s of samples) {
+                        const enc = t.func(s);
+                        const dec = t.reverse(enc);
+                        if (dec !== s) { ok = false; detail = `Mismatch on sample "${s}"`; break; }
+                    }
+                } catch (e) {
+                    ok = false; detail = e.message || String(e);
+                }
+                results.push({ name: t.name || key, ok, detail });
+            }
+            const passed = results.filter(r => r.ok);
+            const failed = results.filter(r => !r.ok);
+            let html = `<strong>Total reversible transforms tested:</strong> ${results.length}<br>`+
+                       `<strong>Passed:</strong> ${passed.length} ✅<br>`+
+                       `<strong>Failed:</strong> ${failed.length} ${failed.length? '❌' : ''}<br>`;
+            if (failed.length) {
+                html += '<br><strong>Failures:</strong><br>' + failed.map(f => `• ${f.name}: ${f.detail}`).join('<br>');
+            }
+            document.getElementById('output-matrix').innerHTML = html;
+        }
     </script>
 </body>
 </html> 
