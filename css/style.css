@@ -33,7 +33,8 @@
     --fantasy-color: #ff6b9d;       /* Pink for fantasy languages */
     --ancient-color: #d4af37;       /* Gold for ancient scripts */
     --technical-color: #00bcd4;     /* Cyan for technical codes */
-    --randomizer-color: #9c27b0;    /* Purple for randomizer */
+    --randomizer-color: #7e22ce;    /* Deeper purple */
+    --randomizer-accent: #a855f7;   /* Accent purple */
 }
 
 * {
@@ -1752,8 +1753,9 @@ button:hover {
 
 /* Special styling for randomizer section */
 .randomizer-special {
-    background: linear-gradient(135deg, rgba(156, 39, 176, 0.03), rgba(171, 71, 188, 0.03));
-    border: 2px solid rgba(156, 39, 176, 0.1);
+    background: radial-gradient(1200px 300px at 10% -20%, rgba(126,34,206,.12), transparent),
+                linear-gradient(135deg, rgba(126,34,206,.08), rgba(171,71,188,.05));
+    border: 1px solid rgba(168,85,247,.25);
     border-radius: 12px;
     padding: 20px;
     margin: 15px 0;
@@ -1763,31 +1765,35 @@ button:hover {
 .randomizer-special::before {
     content: '🎲';
     position: absolute;
-    top: -10px;
-    right: 20px;
-    font-size: 24px;
-    background: var(--bg-color);
-    padding: 0 10px;
+    top: -12px;
+    right: -12px;
+    font-size: 22px;
+    background: rgba(10,10,14,.95);
+    border: 1px solid rgba(168,85,247,.35);
+    border-radius: 50%;
+    padding: 6px;
+    filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6));
 }
 
 .randomizer-description {
-    color: rgba(156, 39, 176, 0.9);
+    color: rgba(208,128,255,0.9);
     font-style: italic;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
     text-align: center;
 }
 
 .randomizer-info {
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(156, 39, 176, 0.05);
-    border-radius: 8px;
-    border-left: 4px solid var(--randomizer-color);
+    margin-top: 18px;
+    padding: 16px 18px;
+    background: linear-gradient(180deg, rgba(126,34,206,0.09), rgba(126,34,206,0.03));
+    border-radius: 10px;
+    border-left: 4px solid var(--randomizer-accent);
 }
 
 .randomizer-info h5 {
-    color: var(--randomizer-color);
+    color: var(--randomizer-accent);
     margin-bottom: 10px;
+    letter-spacing: .3px;
 }
 
 .randomizer-info ul {
@@ -1801,16 +1807,17 @@ button:hover {
 
 .randomizer-info p {
     margin-top: 10px;
-    color: rgba(156, 39, 176, 0.8);
+    color: rgba(208,128,255,0.85);
     font-style: italic;
 }
 
 .randomizer-button {
-    background: linear-gradient(135deg, var(--randomizer-color), #ab47bc) !important;
+    background: linear-gradient(135deg, var(--randomizer-color), var(--randomizer-accent)) !important;
     color: white !important;
-    font-weight: bold;
+    font-weight: 600;
     position: relative;
     overflow: hidden;
+    border: 1px solid rgba(168,85,247,.45) !important;
 }
 
 .randomizer-button::after {
