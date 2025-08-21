@@ -65,7 +65,7 @@ window.app = new Vue({
         tbIncludeNoise: true,
         tbRandomizeEmojis: true,
         tbAutoCopy: false,
-        tbSingleCarrier: false,
+        tbSingleCarrier: true,
         tbCarrier: '',
         tbPayloadEmojis: [],
         tokenBombOutput: '',

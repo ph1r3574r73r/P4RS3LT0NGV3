@@ -47,8 +47,8 @@
                 <button 
                     @click="toggleUnicodePanel"
                     class="history-button" 
-                    title="Advanced Unicode options"
-                    aria-label="Advanced Unicode options"
+                    title="Advanced Settings"
+                    aria-label="Advanced Settings"
                 >
                     <i class="fas fa-sliders-h"></i>
                 </button>
@@ -285,19 +285,19 @@
                                 <button :class="{active: tbSeparator==='zwsp'}" @click="tbSeparator='zwsp'">ZWSP</button>
                                 <button :class="{active: tbSeparator==='none'}" @click="tbSeparator='none'">None</button>
                             </div>
-                            <label class="switch" title="Adds VS16/VS15 after glyphs to increase token churn">
+                            <label class="switch neon" title="Adds VS16/VS15 after glyphs to increase token churn">
                                 <input type="checkbox" v-model="tbIncludeVS" />
                                 <span>Variation Selectors</span>
                             </label>
-                            <label class="switch" title="Sprinkles random zero-width codepoints between segments">
+                            <label class="switch neon" title="Sprinkles random zero-width codepoints between segments">
                                 <input type="checkbox" v-model="tbIncludeNoise" />
                                 <span>Invisible Noise</span>
                             </label>
-                            <label class="switch" title="Use random emojis instead of cycling a fixed set">
+                            <label class="switch neon" title="Use random emojis instead of cycling a fixed set">
                                 <input type="checkbox" v-model="tbRandomizeEmojis" />
                                 <span>Randomize</span>
                             </label>
-                            <label class="switch" title="Automatically copy result after generation">
+                            <label class="switch neon" title="Automatically copy result after generation">
                                 <input type="checkbox" v-model="tbAutoCopy" />
                                 <span>Auto-copy</span>
                             </label>
@@ -806,11 +806,11 @@
     </div>
 
         
-    <!-- Global Advanced Unicode / Steg Options Panel -->
+    <!-- Global Advanced Settings Panel -->
     <div id="unicode-options-panel" class="unicode-options-panel">
         <div class="unicode-panel-header">
-            <h3><i class="fas fa-sliders-h"></i> Advanced Unicode Encoding</h3>
-            <button class="close-button" @click="toggleUnicodePanel" title="Close options"><i class="fas fa-times"></i></button>
+            <h3><i class="fas fa-sliders-h"></i> Advanced Settings</h3>
+            <button class="close-button" @click="toggleUnicodePanel()" title="Close Advanced Settings"><i class="fas fa-times"></i></button>
         </div>
         <div class="unicode-panel-content options-grid steg-adv-panel">
             <label>

@@ -1922,6 +1922,7 @@ button:hover {
 .unicode-panel-header h3 { margin: 0; color: var(--accent-color); font-size: 1rem; }
 
 .unicode-panel-content { padding: 12px; overflow-y: auto; }
+.unicode-panel-header .close-button { background: transparent; border: none; color: var(--text-color); cursor: pointer; padding: 4px; }
 
 /* Fluid UX: reduce scroll fatigue during repeated actions */
 html {
@@ -2007,6 +2008,18 @@ html {
 }
 .switch { display:flex; gap:6px; align-items:center; padding: 6px 8px; background: var(--main-bg-color); border:1px solid var(--input-border); border-radius:6px; }
 .switch span { opacity:.85; }
+.switch.neon { border-color:#1b5e20; box-shadow:0 0 0 1px rgba(76,175,80,.15) inset, 0 0 10px rgba(76,175,80,.15); }
+.switch.neon input[type="checkbox"] {
+    appearance: none;
+    width: 36px; height: 20px; border-radius: 12px; position: relative;
+    background: #0b2e13; border:1px solid #1b5e20; outline: none; cursor: pointer; transition: background .2s, box-shadow .2s;
+}
+.switch.neon input[type="checkbox"]:after {
+    content: '';
+    position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background:#a5d6a7; transition: transform .2s; box-shadow: 0 0 6px rgba(165,214,167,.6);
+}
+.switch.neon input[type="checkbox"]:checked { background:#1b5e20; box-shadow: 0 0 12px rgba(76,175,80,.45); }
+.switch.neon input[type="checkbox"]:checked:after { transform: translateX(16px); background:#69f0ae; box-shadow: 0 0 12px rgba(105,240,174,.75); }
 
 /* Tokenade section visual parity with transform cards */
 .token-bomb-section {
