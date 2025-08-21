@@ -860,74 +860,71 @@
                     </div>
                 </div>
             </div>
+        <!-- Advanced Settings Panel (inside app so Vue bindings work) -->
+        <div id="unicode-options-panel" class="unicode-options-panel">
+            <div class="unicode-panel-header">
+                <h3><i class="fas fa-sliders-h"></i> Advanced Settings</h3>
+                <button class="close-button" @click="toggleUnicodePanel" title="Close Advanced Settings"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="unicode-panel-content options-grid steg-adv-panel">
+                <label>
+                    Initial Presentation
+                    <select class="steg-initial-presentation">
+                        <option value="emoji">Emoji (VS16)</option>
+                        <option value="text">Text (VS15)</option>
+                        <option value="none">None</option>
+                    </select>
+                </label>
+                <label>
+                    Bit-0 Selector
+                    <select class="steg-vs-zero">
+                        <option value="\ufe0e">VS15 (\ufe0e)</option>
+                        <option value="\ufe0f">VS16 (\ufe0f)</option>
+                    </select>
+                </label>
+                <label>
+                    Bit-1 Selector
+                    <select class="steg-vs-one">
+                        <option value="\ufe0f">VS16 (\ufe0f)</option>
+                        <option value="\ufe0e">VS15 (\ufe0e)</option>
+                    </select>
+                </label>
+                <label>
+                    Inter-bit Zero-Width
+                    <select class="steg-inter-zw">
+                        <option value="">None</option>
+                        <option value="\u200C">ZWNJ (\u200C)</option>
+                        <option value="\u200D">ZWJ (\u200D)</option>
+                        <option value="\u200B">ZWSP (\u200B)</option>
+                        <option value="\ufeff">BOM (\ufeff)</option>
+                    </select>
+                </label>
+                <label>
+                    Inter-bit Every N bits
+                    <input class="steg-inter-every" type="number" min="1" max="8" value="1" />
+                </label>
+                <label>
+                    Bit Order
+                    <select class="steg-bit-order">
+                        <option value="msb">MSB First</option>
+                        <option value="lsb">LSB First</option>
+                    </select>
+                </label>
+                <label>
+                    Trailing Zero-Width
+                    <select class="steg-trailing-zw">
+                        <option value="\u200B">ZWSP (\u200B)</option>
+                        <option value="\u200C">ZWNJ (\u200C)</option>
+                        <option value="\u200D">ZWJ (\u200D)</option>
+                        <option value="\ufeff">BOM (\ufeff)</option>
+                        <option value="">None</option>
+                    </select>
+                </label>
+                <button class="apply-steg-options" @click="applyUnicodeOptions">Apply</button>
+                <small class="steg-note">These options affect Unicode-based steganography encoding/decoding.</small>
+            </div>
         </div>
 
-    </div>
-
-        
-    <!-- Global Advanced Settings Panel -->
-    <div id="unicode-options-panel" class="unicode-options-panel">
-        <div class="unicode-panel-header">
-            <h3><i class="fas fa-sliders-h"></i> Advanced Settings</h3>
-            <button class="close-button" @click="toggleUnicodePanel()" title="Close Advanced Settings"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="unicode-panel-content options-grid steg-adv-panel">
-            <label>
-                Initial Presentation
-                <select class="steg-initial-presentation">
-                    <option value="emoji">Emoji (VS16)</option>
-                    <option value="text">Text (VS15)</option>
-                    <option value="none">None</option>
-                </select>
-            </label>
-            <label>
-                Bit-0 Selector
-                <select class="steg-vs-zero">
-                    <option value="\ufe0e">VS15 (\ufe0e)</option>
-                    <option value="\ufe0f">VS16 (\ufe0f)</option>
-                </select>
-            </label>
-            <label>
-                Bit-1 Selector
-                <select class="steg-vs-one">
-                    <option value="\ufe0f">VS16 (\ufe0f)</option>
-                    <option value="\ufe0e">VS15 (\ufe0e)</option>
-                </select>
-            </label>
-            <label>
-                Inter-bit Zero-Width
-                <select class="steg-inter-zw">
-                    <option value="">None</option>
-                    <option value="\u200C">ZWNJ (\u200C)</option>
-                    <option value="\u200D">ZWJ (\u200D)</option>
-                    <option value="\u200B">ZWSP (\u200B)</option>
-                    <option value="\ufeff">BOM (\ufeff)</option>
-                </select>
-            </label>
-            <label>
-                Inter-bit Every N bits
-                <input class="steg-inter-every" type="number" min="1" max="8" value="1" />
-            </label>
-            <label>
-                Bit Order
-                <select class="steg-bit-order">
-                    <option value="msb">MSB First</option>
-                    <option value="lsb">LSB First</option>
-                </select>
-            </label>
-            <label>
-                Trailing Zero-Width
-                <select class="steg-trailing-zw">
-                    <option value="\u200B">ZWSP (\u200B)</option>
-                    <option value="\u200C">ZWNJ (\u200C)</option>
-                    <option value="\u200D">ZWJ (\u200D)</option>
-                    <option value="\ufeff">BOM (\ufeff)</option>
-                    <option value="">None</option>
-                </select>
-            </label>
-            <button class="apply-steg-options">Apply</button>
-            <small class="steg-note">These options affect Unicode-based steganography encoding/decoding.</small>
-        </div>
     </div>
 
     <script src="js/transforms.js"></script>

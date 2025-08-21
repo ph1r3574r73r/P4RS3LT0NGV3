@@ -114,6 +114,35 @@ window.app = new Vue({
                 else panel.classList.remove('active');
             }
         },
+        applyUnicodeOptions() {
+            try {
+                const initSel = document.querySelector('.steg-initial-presentation');
+                const vs0Sel = document.querySelector('.steg-vs-zero');
+                const vs1Sel = document.querySelector('.steg-vs-one');
+                const zwSel = document.querySelector('.steg-inter-zw');
+                const everyInput = document.querySelector('.steg-inter-every');
+                const orderSel = document.querySelector('.steg-bit-order');
+                const trailSel = document.querySelector('.steg-trailing-zw');
+
+                if (window.steganography && window.steganography.setOptions) {
+                    window.steganography.setOptions({
+                        initialPresentation: initSel && initSel.value || 'none',
+                        vsZero: vs0Sel && vs0Sel.value || '\\ufe0e',
+                        vsOne: vs1Sel && vs1Sel.value || '\\ufe0f',
+                        interbitZW: zwSel && zwSel.value || '',
+                        interbitEvery: Math.max(1, Math.min(8, Number(everyInput && everyInput.value || 1))),
+                        bitOrder: orderSel && orderSel.value || 'msb',
+                        trailingZW: trailSel && trailSel.value || ''
+                    });
+                    this.showNotification('<i class="fas fa-sliders-h"></i> Advanced settings applied', 'success');
+                } else {
+                    this.showNotification('<i class="fas fa-exclamation-triangle"></i> Engine missing setOptions()', 'warning');
+                }
+            } catch (e) {
+                console.error('Apply Unicode options error', e);
+                this.showNotification('<i class="fas fa-exclamation-triangle"></i> Failed to apply settings', 'error');
+            }
+        },
         // Focus an element without causing the page to scroll
         focusWithoutScroll(el) {
             if (!el) return;
