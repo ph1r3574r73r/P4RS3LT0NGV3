@@ -33,8 +33,7 @@
     --fantasy-color: #ff6b9d;       /* Pink for fantasy languages */
     --ancient-color: #d4af37;       /* Gold for ancient scripts */
     --technical-color: #00bcd4;     /* Cyan for technical codes */
-    --randomizer-color: #7e22ce;    /* Deeper purple */
-    --randomizer-accent: #a855f7;   /* Accent purple */
+    --randomizer-color: #9c27b0;    /* Purple for randomizer */
 }
 
 * {
@@ -1753,47 +1752,43 @@ button:hover {
 
 /* Special styling for randomizer section */
 .randomizer-special {
-    background: radial-gradient(1200px 300px at 10% -20%, rgba(126,34,206,.12), transparent),
-                linear-gradient(135deg, rgba(126,34,206,.08), rgba(171,71,188,.05));
-    border: 1px solid rgba(168,85,247,.25);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 15px 0;
+    background: linear-gradient(135deg, rgba(88, 28, 135, 0.22), rgba(74, 20, 140, 0.22));
+    border: 2px solid rgba(186, 104, 200, 0.35);
+    border-radius: 14px;
+    padding: 22px;
+    margin: 18px 0;
     position: relative;
+    box-shadow: 0 12px 28px rgba(0,0,0,.35) inset, 0 8px 24px rgba(88,28,135,.18);
 }
 
 .randomizer-special::before {
     content: '🎲';
     position: absolute;
-    top: -12px;
-    right: -12px;
-    font-size: 22px;
-    background: rgba(10,10,14,.95);
-    border: 1px solid rgba(168,85,247,.35);
-    border-radius: 50%;
-    padding: 6px;
-    filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6));
+    top: -10px;
+    right: 20px;
+    font-size: 24px;
+    background: var(--bg-color);
+    padding: 0 10px;
 }
 
 .randomizer-description {
-    color: rgba(208,128,255,0.9);
+    color: rgba(156, 39, 176, 0.9);
     font-style: italic;
-    margin-bottom: 16px;
+    margin-bottom: 15px;
     text-align: center;
 }
 
 .randomizer-info {
-    margin-top: 18px;
-    padding: 16px 18px;
-    background: linear-gradient(180deg, rgba(126,34,206,0.09), rgba(126,34,206,0.03));
-    border-radius: 10px;
-    border-left: 4px solid var(--randomizer-accent);
+    margin-top: 20px;
+    padding: 16px 16px 12px 16px;
+    background: rgba(123, 31, 162, 0.16);
+    border-radius: 12px;
+    border-left: 4px solid var(--randomizer-color);
 }
 
 .randomizer-info h5 {
-    color: var(--randomizer-accent);
+    color: var(--randomizer-color);
     margin-bottom: 10px;
-    letter-spacing: .3px;
 }
 
 .randomizer-info ul {
@@ -1807,17 +1802,19 @@ button:hover {
 
 .randomizer-info p {
     margin-top: 10px;
-    color: rgba(208,128,255,0.85);
+    color: rgba(200, 170, 255, 0.9);
     font-style: italic;
 }
 
 .randomizer-button {
-    background: linear-gradient(135deg, var(--randomizer-color), var(--randomizer-accent)) !important;
-    color: white !important;
-    font-weight: 600;
+    background: linear-gradient(135deg, #7e57c2, #ab47bc) !important;
+    color: #f8f8ff !important;
+    font-weight: 800;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(168,85,247,.45) !important;
+    border: 2px solid rgba(200, 170, 255, 0.35) !important;
+    padding: 16px 22px !important;
+    letter-spacing: .3px;
 }
 
 .randomizer-button::after {
@@ -1827,15 +1824,14 @@ button:hover {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-    transform: rotate(45deg);
-    animation: shimmer 3s infinite;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.18), rgba(255,255,255,0) 60%);
+    transform: rotate(25deg);
+    opacity: 0;
+    transition: opacity .25s ease;
 }
 
-@keyframes shimmer {
-    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-}
+.randomizer-button:hover::after { opacity: 1; }
+.randomizer-button:hover { filter: brightness(1.08) saturate(1.05); }
 
 /* Randomizer chaos animations */
 .randomizer-special { position: relative; }
