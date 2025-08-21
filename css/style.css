@@ -2130,6 +2130,9 @@ html {
 }
 
 /* Mutation Lab actions */
-.mutation-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mutation-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0 12px 0; }
 .mutation-actions .action-button, .mutation-actions .transform-button { white-space: nowrap; }
-.mutation-actions .action-button i, .mutation-actions .transform-button i { margin-right: 6px; }
+.mutation-actions .action-button.copy { border-color: #1976d2; color: #90caf9; }
+.mutation-actions .action-button.copy:hover { color: #bbdefb; box-shadow: 0 0 0 1px rgba(144,202,249,.2) inset, 0 0 14px rgba(144,202,249,.18); }
+.mutation-actions .action-button.download { border-color: #2e7d32; color: #69f0ae; }
+.mutation-actions .action-button.download:hover { color: #b9f6ca; box-shadow: 0 0 0 1px rgba(105,240,174,.2) inset, 0 0 14px rgba(105,240,174,.18); }
