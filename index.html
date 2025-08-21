@@ -251,6 +251,12 @@
                             </small>
                         </div>
                         <div class="tokenade-carrier-options options-grid">
+                            <div class="carrier-quick-grid" v-if="tbSingleCarrier">
+                                <small>Quick picks</small>
+                                <div class="emoji-grid" style="grid-template-columns: repeat(10, 32px); grid-auto-rows: 32px; gap: 6px;">
+                                    <button class="emoji-button" v-for="em in quickCarrierEmojis" :key="'q-'+em" @click="tbCarrier = em" :title="'Use '+em">{{ em }}</button>
+                                </div>
+                            </div>
                             <label title="Condense payload into a single emoji carrier">
                                 Single emoji carrier mode
                                 <input type="checkbox" v-model="tbSingleCarrier" />
@@ -761,6 +767,7 @@
         </div>
     </div>
 
+    <!--
     <!-- Tokenade Tab -->
     <div v-if="activeTab === 'tokenade'" class="tab-content">
         <div class="transform-layout">
@@ -917,6 +924,7 @@
             </div>
         </div>
     </div>
+    -->
     <!-- Global Advanced Unicode / Steg Options Panel -->
     <div id="unicode-options-panel" class="unicode-options-panel">
         <div class="unicode-panel-header">

@@ -53,11 +53,12 @@ window.app = new Vue({
         filteredEmojis: [...window.emojiLibrary.EMOJI_LIST],
         selectedEmoji: null,
         carrierEmojiList: [...window.emojiLibrary.EMOJI_LIST],
+        quickCarrierEmojis: ['🐍','🐉','🐲','🔥','💥','🗿','⚓','⭐','✨','🚀','💀','🪨','🍃','🪶','🔮','🐢','🐊','🦎','🐍'],
         // Token Bomb Generator
         tbDepth: 3,
         tbBreadth: 4,
         tbRepeats: 5,
-        tbSeparator: 'zwj',
+        tbSeparator: 'zwnj',
         tbIncludeVS: true,
         tbIncludeNoise: true,
         tbRandomizeEmojis: true,
