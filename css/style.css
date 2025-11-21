@@ -55,13 +55,450 @@ body {
     font-feature-settings: "liga" 1, "calt" 1; /* Enable ligatures */
 }
 
+/* ========================================
+   STANDARD UI COMPONENT TEMPLATES
+   
+   Reusable components for consistent design
+   across the entire application.
+   ======================================== */
+
+/* Section Header with Icon and Description
+   Usage:
+   <div class="section-header-card">
+     <div class="section-header-card-title">
+       <i class="fas fa-icon"></i>
+       <h3>Title Here</h3>
+     </div>
+     <p class="section-header-card-description">
+       Description text that explains what this section does.
+     </p>
+   </div>
+*/
+.section-header-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--secondary-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.section-header-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: fit-content;
+    flex-shrink: 0;
+}
+
+.section-header-card-title i {
+    font-size: 1.3rem;
+    color: var(--accent-color);
+}
+
+.section-header-card-title h3,
+.section-header-card-title h4 {
+    margin: 0;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    white-space: nowrap;
+}
+
+.section-header-card-description {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding-top: 2px;
+}
+
+/* Responsive stacking for section header cards */
+@media (max-width: 768px) {
+    .section-header-card {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .section-header-card-title {
+        width: 100%;
+    }
+    
+    .section-header-card-description {
+        padding-top: 0;
+    }
+}
+
+/* Icon + Title Inline (simpler variant)
+   Usage:
+   <div class="title-with-icon">
+     <i class="fas fa-icon"></i>
+     <h3>Title</h3>
+     <small>optional subtitle</small>
+   </div>
+*/
+.title-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.title-with-icon i {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+
+.title-with-icon h3,
+.title-with-icon h4 {
+    margin: 0;
+    color: var(--accent-color);
+}
+
+.title-with-icon small {
+    font-size: 0.75em;
+    font-weight: normal;
+    color: var(--text-muted);
+    background-color: rgba(100, 181, 246, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* Info Box - For disclaimers, tips, warnings
+   Usage:
+   <div class="info-box">
+     <i class="fas fa-info-circle"></i>
+     <span>Your message here</span>
+   </div>
+   
+   Add class modifiers: .info-box-warning, .info-box-success, .info-box-danger
+*/
+.info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--input-border);
+    background: rgba(100, 181, 246, 0.1);
+    border-left: 3px solid var(--accent-color);
+    border-radius: 6px;
+    margin: 12px 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.info-box i {
+    color: var(--accent-color);
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.info-box-warning {
+    background: rgba(255, 183, 77, 0.1);
+    border-left-color: var(--format-color);
+}
+
+.info-box-warning i {
+    color: var(--format-color);
+}
+
+.info-box-success {
+    background: rgba(102, 187, 106, 0.1);
+    border-left-color: var(--special-color);
+}
+
+.info-box-success i {
+    color: var(--special-color);
+}
+
+.info-box-danger {
+    background: rgba(239, 83, 80, 0.1);
+    border-left-color: var(--visual-color);
+}
+
+.info-box-danger i {
+    color: var(--visual-color);
+}
+
+/* Card Container - Standard content card
+   Usage:
+   <div class="card">
+     <div class="card-header">
+       <h4>Card Title</h4>
+       <button>Action</button>
+     </div>
+     <div class="card-body">
+       Content goes here
+     </div>
+     <div class="card-footer">
+       Footer content (optional)
+     </div>
+   </div>
+*/
+.card {
+    background: var(--main-bg-color);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--input-border);
+    background: var(--secondary-bg);
+}
+
+.card-header h3,
+.card-header h4 {
+    margin: 0;
+    color: var(--accent-color);
+    font-size: 1rem;
+}
+
+.card-body {
+    padding: 16px;
+}
+
+.card-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--input-border);
+    background: var(--secondary-bg);
+}
+
+/* Button Group - Standard action buttons
+   Usage:
+   <div class="button-group">
+     <button class="btn">Primary Action</button>
+     <button class="btn btn-secondary">Secondary</button>
+   </div>
+*/
+.button-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.button-group .btn {
+    flex: 0 1 auto;
+}
+
+@media (max-width: 400px) {
+    .button-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .button-group .btn {
+        width: 100%;
+    }
+}
+
+/* Button variants */
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--input-border);
+}
+
+.btn-secondary:hover {
+    background: var(--button-bg);
+}
+
+.btn-primary {
+    background: var(--accent-color);
+    color: var(--main-bg-color);
+    border-color: var(--accent-color);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+/* ========================================
+   STANDARD FORM INPUT STYLES
+   
+   These base styles apply to ALL form inputs
+   across the entire application. Only add
+   specific overrides when truly needed.
+   
+   Benefits:
+   - Consistent styling everywhere
+   - Easy to maintain and test
+   - No need to chase down individual inputs
+   - Responsive by default
+   ======================================== */
+
+/* Standard text input, number input, and select styles */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0; /* Allow shrinking below content width */
+    padding: 8px 10px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+/* Select-specific styles for better overflow handling */
+select {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    appearance: none; /* Remove default arrow to control width better */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23e0e0e0' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px; /* Space for custom arrow */
+}
+
+/* Option elements inherit text color */
+select option {
+    background: var(--input-bg);
+    color: var(--text-color);
+    padding: 4px 8px;
+}
+
+/* Safety net: Ensure ALL form controls respect container width */
+input, select, textarea, button {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Focus states for all inputs */
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(100, 181, 246, 0.2);
+}
+
+/* Disabled state */
+input[type="text"]:disabled,
+input[type="number"]:disabled,
+input[type="email"]:disabled,
+input[type="password"]:disabled,
+select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Standard textarea styles */
+textarea {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.4;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+textarea::placeholder {
+    color: rgba(224, 224, 224, 0.5);
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: var(--focus-shadow);
+}
+
+/* Standard button styles */
+button,
+.btn {
+    padding: 8px 16px;
+    background: var(--button-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+button:hover,
+.btn:hover {
+    background: var(--button-hover-bg);
+    border-color: var(--accent-color);
+}
+
+button:active,
+.btn:active {
+    transform: translateY(1px);
+}
+
+button:focus-visible,
+.btn:focus-visible {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: var(--focus-shadow);
+}
+
+button:disabled,
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Standard label styles */
+label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-sizing: border-box;
+    word-wrap: break-word;
+}
+
+label small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: normal;
+    margin-top: -2px;
+}
+
 .container {
     max-width: 900px;
+    width: 100%;
     margin: 0 auto;
     padding: 24px;
     background-color: var(--secondary-bg);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
 header {
@@ -186,6 +623,7 @@ h1, h2, h3, h4, h5 {
 
 .tab-buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 24px;
 }
@@ -256,6 +694,31 @@ h1, h2, h3, h4, h5 {
 
 .section-header {
     margin-bottom: 15px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.section-title h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-color);
+    margin: 0;
+}
+
+.section-title small {
+    font-size: 0.85em;
+    font-weight: normal;
+    color: var(--text-muted);
+    background-color: rgba(100, 181, 246, 0.1);
+    padding: 4px 10px;
+    border-radius: 4px;
 }
 
 .section-header h3 {
@@ -341,28 +804,11 @@ h1, h2, h3, h4, h5 {
     background-color: rgba(var(--accent-color-rgb), 0.2);
 }
 
-textarea {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    border: 1px solid var(--input-border);
-    border-radius: 4px;
-    font-family: 'Fira Code', 'Courier New', monospace;
-    resize: vertical;
-    min-height: 100px;
-    line-height: 1.4;
-    font-size: 14px;
-    transition: all 0.2s ease;
-}
-
-/* Special styling for encoded message textarea */
+/* Special styling for encoded message textarea - only overrides */
 .output-section textarea {
     background-color: var(--secondary-bg);
     color: var(--accent-color);
     border: 1px solid rgba(100, 181, 246, 0.3);
-    border-radius: 6px;
-    font-family: 'Fira Code', monospace;
     letter-spacing: 0.5px;
     line-height: 1.5;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -452,21 +898,9 @@ textarea {
     width: 220px;
 }
 
+/* Emoji search input - only unique override for icon padding */
 .emoji-search input {
-    width: 100%;
-    padding: 8px 12px 8px 32px;
-    background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: 4px;
-    color: var(--text-color);
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
-
-.emoji-search input:focus {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
-    outline: none;
+    padding-left: 32px; /* Space for search icon */
 }
 
 .emoji-search i {
@@ -638,8 +1072,9 @@ textarea {
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-width: 120px;
+    min-width: max-content; /* Fit content but allow wrapping */
     white-space: nowrap;
+    flex-shrink: 1; /* Allow shrinking if needed */
 }
 
 .emoji-category-tab.active,
@@ -776,25 +1211,7 @@ textarea {
     border-color: var(--accent-color);
 }
 
-textarea::placeholder {
-    color: rgba(224, 224, 224, 0.5);
-}
-
-textarea:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: var(--focus-shadow);
-}
-
-button:focus-visible {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: var(--focus-shadow);
-}
-
-button:active {
-    transform: translateY(1px);
-}
+/* Button focus and active states handled in standard styles above */
 
 /* Invisible Text Button */
 .invisible-button {
@@ -833,23 +1250,7 @@ button:active {
     border-style: solid;
 }
 
-button {
-    background-color: var(--button-bg);
-    color: var(--text-color);
-    border: 1px solid var(--button-border);
-    border-radius: 4px;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-family: 'Courier New', monospace;
-    transition: all 0.3s;
-}
-
-/* Copy button styling moved to a single definition below */
-
-button:hover {
-    background-color: var(--button-hover-bg);
-    color: var(--button-hover-text);
-}
+/* Base button styles defined in standard form styles above */
 
 /* Emoji grid */
 
@@ -1768,6 +2169,299 @@ button:hover {
         width: 100%;
         text-align: left;
     }
+    
+    .section-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .section-title h3 {
+        width: 100%;
+    }
+    
+    .section-title small {
+        width: 100%;
+        text-align: left;
+    }
+}
+
+/* Extra small screens - under 400px */
+@media (max-width: 400px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 12px;
+        border-radius: 4px;
+    }
+    
+    header {
+        flex-direction: column;
+        gap: 12px;
+        padding: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .logo h1 {
+        font-size: 1.2rem;
+        padding: 6px;
+    }
+    
+    .actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Tab buttons remain stacked but with smaller padding */
+    .tab-buttons button {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    /* Transform buttons grid more compact */
+    .transform-buttons {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 6px;
+    }
+    
+    /* Options grid single column on very small screens */
+    .options-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin: 12px 0;
+    }
+    
+    /* Hacker controls single column */
+    .hacker-controls {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    /* Transform chain items stack vertically */
+    .transform-chain-item select {
+        min-width: 100%;
+        width: 100%;
+    }
+    
+    /* Split messages grid single column */
+    .split-messages-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    /* Smaller inputs and selects on very small screens */
+    input[type="number"],
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select {
+        padding: 6px 8px;
+        font-size: 14px;
+    }
+    
+    /* Compact section headers */
+    .section-header h3 {
+        font-size: 1rem;
+    }
+    
+    .section-header h3 small {
+        font-size: 0.65em;
+        padding: 2px 6px;
+    }
+    
+    /* Smaller textareas */
+    textarea {
+        padding: 10px;
+        font-size: 13px;
+        min-height: 80px;
+    }
+    
+    /* Encapsulation presets wrap better */
+    .encapsulation-presets {
+        gap: 4px;
+    }
+    
+    .preset-btn {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
+    
+    /* Transform section padding */
+    .transform-section {
+        padding: 12px;
+    }
+    
+    .input-section,
+    .output-section,
+    .decode-section {
+        padding: 12px;
+    }
+    
+    /* Token bomb controls more compact */
+    .token-bomb-section {
+        padding: 12px;
+    }
+    
+    .tokenade-presets .transform-button {
+        padding: 4px 6px;
+        font-size: 0.75rem;
+    }
+    
+    /* Smaller segmented buttons */
+    .segmented button {
+        padding: 5px 8px;
+        font-size: 0.85rem;
+    }
+    
+    /* Legend items wrap better */
+    .transform-category-legend {
+        gap: 6px;
+    }
+    
+    .legend-item {
+        font-size: 0.75rem;
+        padding: 3px 6px;
+    }
+    
+    /* Copy history panel full width */
+    .copy-history-panel {
+        width: 100%;
+        right: -100%;
+    }
+    
+    .copy-history-panel.active {
+        right: 0;
+    }
+    
+    /* Unicode options panel full width */
+    .unicode-options-panel {
+        width: 100%;
+        right: -100%;
+    }
+    
+    .unicode-options-panel.active {
+        right: 0;
+    }
+    
+    /* Emoji grid more compact */
+    .emoji-grid {
+        grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)) !important;
+        grid-auto-rows: 38px !important;
+        gap: 4px !important;
+        padding: 8px !important;
+    }
+    
+    .emoji-button {
+        font-size: 1.3rem;
+    }
+    
+    /* Emoji category tabs smaller and flexible */
+    .emoji-category-tab {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+        min-width: auto; /* Remove fixed width */
+        flex: 1 1 auto; /* Allow flexible sizing */
+    }
+    
+    /* Output heading smaller */
+    .output-heading h4 {
+        font-size: 0.9rem;
+    }
+    
+    .output-heading h4 small {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+    
+    /* Tokenizer tiles more compact */
+    .token-tiles {
+        gap: 4px;
+    }
+    
+    .token-chip {
+        padding: 4px 6px;
+        font-size: 0.85rem;
+    }
+    
+    /* Mutation actions stack */
+    .mutation-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .mutation-actions button {
+        width: 100%;
+    }
+    
+    /* Splitter actions stack */
+    .splitter-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .splitter-actions button,
+    .splitter-actions .switch {
+        width: 100%;
+    }
+    
+    /* Transform button preview text */
+    .transform-preview {
+        font-size: 0.7rem;
+        max-width: 100%;
+    }
+    
+    /* Category section padding */
+    .transform-category-section {
+        padding: 12px;
+    }
+    
+    .category-title {
+        font-size: 1rem;
+        padding-left: 6px;
+    }
+    
+    /* Tokenade carrier options single column */
+    .tokenade-carrier-options {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Carrier quick grid emojis smaller */
+    .carrier-quick-grid .emoji-grid {
+        grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)) !important;
+        grid-auto-rows: 28px !important;
+        gap: 3px !important;
+    }
+    
+    .carrier-quick-grid .emoji-button {
+        font-size: 16px;
+    }
+    
+    /* Transform button group */
+    .transform-button-group {
+        width: 100%;
+    }
+    
+    /* Switch controls full width */
+    .switch {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    /* Randomizer section adjustments */
+    .randomizer-special {
+        padding: 16px;
+    }
+    
+    .randomizer-info {
+        padding: 12px;
+    }
+    
+    .randomizer-info ul {
+        margin-left: 16px;
+    }
 }
 
 /* Special styling for randomizer section */
@@ -1925,12 +2619,10 @@ button:hover {
     margin-bottom: 8px;
 }
 
-.steg-adv-panel select, .steg-adv-panel input[type=number] {
-    background: var(--input-bg);
-    color: var(--text-color);
-    border: 1px solid var(--input-border);
-    border-radius: 4px;
-    padding: 6px 8px;
+/* Steg panel inputs - only unique overrides */
+.steg-adv-panel select, 
+.steg-adv-panel input[type=number] {
+    padding: 6px 8px; /* Slightly smaller padding */
 }
 
 .steg-note {
@@ -2057,7 +2749,16 @@ html {
     color: var(--main-bg-color);
     border-color: var(--accent-color);
 }
-.switch { display:flex; gap:6px; align-items:center; padding: 6px 8px; background: var(--main-bg-color); border:1px solid var(--input-border); border-radius:6px; }
+.switch { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    padding: 6px 8px 6px 8px; 
+    background: var(--main-bg-color); 
+    border:1px solid var(--input-border); 
+    border-radius:6px;
+    margin-left: 6px;
+}
 .switch span { opacity:.85; }
 .switch.neon { border-color:#1b5e20; box-shadow:0 0 0 1px rgba(76,175,80,.15) inset, 0 0 10px rgba(76,175,80,.15); }
 .switch.neon input[type="checkbox"] {
@@ -2117,11 +2818,16 @@ html {
     border-radius: 8px;
     padding: 10px;
     margin-bottom: 8px;
+    grid-column: 1 / -1; /* Span full width of the grid */
+    width: 100%;
 }
 .carrier-quick-grid .emoji-grid { 
     border: none !important; 
     background: transparent !important; 
-    padding: 6px !important; 
+    padding: 6px !important;
+    grid-template-columns: repeat(auto-fill, minmax(32px, 1fr)) !important;
+    grid-auto-rows: 32px !important;
+    width: 100% !important;
 }
 .tokenade-carrier-options { margin-top: 8px; }
 .carrier-quick-grid .emoji-button { 
@@ -2160,3 +2866,410 @@ html {
 .mutation-actions .action-button.copy:hover { color: #bbdefb; box-shadow: 0 0 0 1px rgba(144,202,249,.2) inset, 0 0 14px rgba(144,202,249,.18); }
 .mutation-actions .action-button.download { border-color: #2e7d32; color: #69f0ae; }
 .mutation-actions .action-button.download:hover { color: #b9f6ca; box-shadow: 0 0 0 1px rgba(105,240,174,.2) inset, 0 0 14px rgba(105,240,174,.18); }
+
+/* Message Splitter Styles */
+.encapsulation-section {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--main-bg-color);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+}
+
+.encapsulation-section .section-header {
+    margin-bottom: 16px;
+}
+
+.encapsulation-section .section-header h4 {
+    margin-bottom: 4px;
+    margin-top: 0;
+    color: var(--accent-color);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.encapsulation-section .section-header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+.encapsulation-presets {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.encapsulation-presets small {
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-right: 4px;
+}
+
+.preset-btn {
+    padding: 6px 12px;
+    background: var(--button-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+}
+
+.preset-btn:hover {
+    background: var(--button-hover-bg);
+    border-color: var(--accent-color);
+    transform: translateY(-1px);
+}
+
+.preset-btn:active {
+    transform: translateY(0);
+}
+
+.split-messages-container {
+    margin-top: 16px;
+}
+
+.split-messages-container .output-heading {
+    margin-bottom: 12px;
+}
+
+.split-messages-container .output-heading h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-color);
+    margin-bottom: 0;
+}
+
+.split-messages-container .output-heading h4 small {
+    font-size: 0.7em;
+    font-weight: normal;
+    color: var(--text-muted);
+    background-color: rgba(100, 181, 246, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.split-messages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.split-message-card {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.split-message-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(100, 181, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.split-message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--input-border);
+}
+
+.message-number {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-family: 'Fira Code', monospace;
+}
+
+.copy-button-small {
+    padding: 4px 8px;
+    background: var(--button-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    color: var(--accent-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.copy-button-small:hover {
+    background: var(--accent-color);
+    color: var(--main-bg-color);
+    transform: scale(1.05);
+}
+
+.copy-button-small i {
+    font-size: 0.85rem;
+}
+
+.split-message-content {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    word-break: break-all;
+    line-height: 1.5;
+    min-height: 40px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+/* Ensure consistent spacing with other tabs */
+.tab-content .transform-layout .transform-section {
+    margin-bottom: 16px;
+}
+
+.tab-content .transform-layout .transform-section:last-child {
+    margin-bottom: 0;
+}
+
+/* Options grid styling (used across multiple tabs) */
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+}
+
+/* Options grid label overrides */
+.options-grid label.switch {
+    flex-direction: row;
+    gap: 8px;
+}
+
+.label-with-tooltip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tooltip-icon {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    position: relative;
+    display: inline-block;
+    margin-left: 4px;
+    z-index: 999;
+}
+
+.tooltip-icon:hover {
+    opacity: 1;
+    color: var(--accent-color);
+    z-index: 999;
+}
+
+.tooltip-icon:active {
+    transform: scale(0.95);
+}
+
+/* Custom click-based tooltip */
+.custom-tooltip {
+    position: fixed;
+    padding: 8px 12px;
+    background: rgba(20, 20, 25, 0.98);
+    color: #fff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    border-radius: 6px;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    max-width: 280px;
+    min-width: 200px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(100, 181, 246, 0.2);
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.custom-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(20, 20, 25, 0.98);
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+}
+
+.custom-tooltip.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Position tooltip icons properly */
+.tooltip-icon[data-tooltip] {
+    position: relative;
+}
+
+/* Options grid inputs inherit from standard form styles */
+
+.options-grid .switch {
+    margin-bottom: 0;
+    margin-left: 6px;
+    margin-top: auto;
+    padding: 6px 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    height: fit-content;
+    min-height: 38px;
+    max-height: 38px;
+    align-self: flex-end;
+}
+
+/* Transform chain styling */
+.transform-chain {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.transform-chain-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.transform-chain-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+/* Transform chain select - only unique override for larger screens */
+.transform-chain-item select {
+    min-width: min(200px, 100%); /* Never exceed container width */
+}
+
+@media (max-width: 768px) {
+    .transform-chain-item select {
+        min-width: 100%; /* Full width on smaller screens */
+    }
+}
+
+.transform-arrow {
+    color: var(--accent-color);
+    font-size: 1rem;
+    opacity: 0.7;
+    margin: 0 4px;
+}
+
+.remove-transform-inline-btn {
+    padding: 4px 6px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    opacity: 0.6;
+}
+
+.remove-transform-inline-btn:hover {
+    background: rgba(211, 47, 47, 0.1);
+    color: #d32f2f;
+    opacity: 1;
+}
+
+.add-transform-inline-btn {
+    padding: 8px 12px;
+    background: var(--button-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    color: var(--accent-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 38px;
+}
+
+.add-transform-inline-btn:hover {
+    background: var(--button-hover-bg);
+    border-color: var(--accent-color);
+    transform: translateY(-1px);
+}
+
+.add-transform-inline-btn i {
+    font-size: 0.9rem;
+}
+
+/* Splitter-specific action button styling */
+.splitter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 16px 0 0 0;
+}
+
+.splitter-copy-option {
+    margin-left: 0;
+}
+
+/* Responsive adjustments for splitter */
+@media (max-width: 768px) {
+    .split-messages-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .encapsulation-presets {
+        gap: 6px;
+    }
+    
+    .preset-btn {
+        padding: 5px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .transform-chain-inline {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .transform-arrow {
+        transform: rotate(90deg);
+        margin: 4px 0;
+    }
+    
+    .splitter-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .splitter-actions button {
+        width: 100%;
+    }
+}

@@ -95,6 +95,41 @@ window.app = new Vue({
         fuzzEncodeShuffle: false,
         fuzzerOutputs: [],
 
+        // Gibberish Dictionary
+        gibberishInput: '',
+        gibberishOutput: '',
+        gibberishSeed: '',
+        gibberishDictionary: '',
+        gibberishChars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        gibberishMode: 'random',
+
+        // Removal mode properties
+        removalSubMode: 'random',
+        removalInput: '',
+        removalVariations: 10,
+        removalMinLetters: 1,
+        removalMaxLetters: 3,
+        removalSeed: '',
+        removalOutputs: [],
+        
+        removalSpecificInput: '',
+        removalCharsToRemove: '',
+        removalSpecificOutput: '',
+
+        // Message Splitter Tab
+        splitterInput: '',
+        splitterMode: 'word', // 'chunk' or 'word' - default to word
+        splitterChunkSize: 6,
+        splitterWordSplitSide: 'left', // 'left' or 'right' for even-length words
+        splitterWordSkip: 0, // number of words to skip between splits
+        splitterMinWordLength: 2, // minimum word length to consider for splitting (skip shorter words)
+        splitterSplitFirstWord: true, // whether to split the first word (true) or keep it whole (false)
+        splitterCopyAsSingleLine: false, // copy as single line (true) or multiline (false)
+        splitterTransforms: [''], // array of transform names to apply in sequence (start with one empty slot)
+        splitterStartWrap: '',
+        splitterEndWrap: '',
+        splitMessages: [],
+
         // History of copied content
         copyHistory: [],
         maxHistoryItems: 10,
@@ -1830,6 +1865,297 @@ window.app = new Vue({
             const a = document.createElement('a'); a.href = url; a.download = 'fuzz_cases.txt'; a.click();
             setTimeout(()=>URL.revokeObjectURL(url), 200);
         },
+
+        // Message Splitter Methods
+        /**
+         * Set encapsulation start and end strings
+         * @param {string} start - The start string
+         * @param {string} end - The end string
+         */
+        setEncapsulation(start, end) {
+            this.splitterStartWrap = start;
+            this.splitterEndWrap = end;
+        },
+
+        /**
+         * Toggle tooltip visibility on click
+         * @param {Event} event - The click event
+         */
+        toggleTooltip(event) {
+            event.stopPropagation();
+            
+            const icon = event.currentTarget;
+            const tooltipId = 'tooltip-' + Math.random().toString(36).substr(2, 9);
+            let tooltip = document.querySelector(`.custom-tooltip[data-for="${icon.dataset.tooltipId || tooltipId}"]`);
+            const isCurrentlyActive = tooltip && tooltip.classList.contains('active');
+            
+            // Close all tooltips first
+            document.querySelectorAll('.custom-tooltip.active').forEach(t => {
+                t.classList.remove('active');
+                setTimeout(() => {
+                    if (!t.classList.contains('active')) {
+                        t.remove();
+                    }
+                }, 200);
+            });
+            
+            // If this tooltip wasn't active, open it
+            if (!isCurrentlyActive) {
+                const tooltipText = icon.getAttribute('data-tooltip');
+                if (tooltipText) {
+                    // Store tooltip ID on icon for future reference
+                    if (!icon.dataset.tooltipId) {
+                        icon.dataset.tooltipId = tooltipId;
+                    }
+                    
+                    // Create tooltip and append to body for better positioning
+                    tooltip = document.createElement('div');
+                    tooltip.className = 'custom-tooltip';
+                    tooltip.textContent = tooltipText;
+                    tooltip.setAttribute('data-for', icon.dataset.tooltipId);
+                    document.body.appendChild(tooltip);
+                    
+                    // Position the tooltip relative to the icon
+                    const iconRect = icon.getBoundingClientRect();
+                    tooltip.style.position = 'fixed';
+                    tooltip.style.left = (iconRect.left + iconRect.width / 2) + 'px';
+                    tooltip.style.top = (iconRect.top - 8) + 'px';
+                    tooltip.style.transform = 'translate(-50%, -100%)';
+                    
+                    // Force reflow to ensure transition works
+                    void tooltip.offsetHeight;
+                    
+                    // Use setTimeout to ensure the element is in the DOM before adding active class
+                    setTimeout(() => {
+                        tooltip.classList.add('active');
+                    }, 10);
+                }
+            }
+        },
+
+        /**
+         * Handle transform change - auto-add next dropdown or collapse consecutive Nones
+         * @param {number} index - The index of the transformation that changed
+         */
+        handleTransformChange(index) {
+            const value = this.splitterTransforms[index];
+            
+            if (value && value !== '') {
+                // Transform was selected - add next dropdown if it doesn't exist
+                if (index === this.splitterTransforms.length - 1) {
+                    this.splitterTransforms.push('');
+                }
+            } else {
+                // Transform was set to None
+                // Check if previous dropdown is also None - if so, remove current one and collapse from previous position
+                if (index > 0) {
+                    const prevValue = this.splitterTransforms[index - 1];
+                    if (!prevValue || prevValue === '') {
+                        // Previous one is also None, remove current one
+                        this.splitterTransforms.splice(index, 1);
+                        // Now collapse trailing Nones from the previous position
+                        index = index - 1;
+                    }
+                }
+                
+                // Remove all consecutive trailing Nones
+                // Keep removing the next dropdown if it's also None
+                while (index + 1 < this.splitterTransforms.length) {
+                    const nextValue = this.splitterTransforms[index + 1];
+                    if (!nextValue || nextValue === '') {
+                        // Next one is also None, remove it
+                        this.splitterTransforms.splice(index + 1, 1);
+                    } else {
+                        // Next one has a value, stop removing
+                        break;
+                    }
+                }
+            }
+        },
+
+        /**
+         * Remove a transformation at the given index
+         * @param {number} index - The index of the transformation to remove
+         */
+        removeTransform(index) {
+            if (this.splitterTransforms.length > 1) {
+                this.splitterTransforms.splice(index, 1);
+            } else {
+                // If it's the last one, just clear it instead of removing
+                this.splitterTransforms[0] = '';
+            }
+        },
+
+        /**
+         * Generate split messages from input text
+         * Supports two modes: character chunks or split words in half
+         */
+        generateSplitMessages() {
+            // Clear previous output at the start
+            this.splitMessages = [];
+
+            const input = this.splitterInput;
+            if (!input) {
+                return;
+            }
+
+            let chunks = [];
+
+            if (this.splitterMode === 'chunk') {
+                // Character chunk mode
+                const chunkSize = Math.max(1, Math.min(500, this.splitterChunkSize || 6));
+                for (let i = 0; i < input.length; i += chunkSize) {
+                    chunks.push(input.slice(i, i + chunkSize));
+                }
+            } else if (this.splitterMode === 'word') {
+                // Word split mode - creates messages with pattern: secondHalf + wholeWords + firstHalf
+                // IMPORTANT: ALL words must be included in output, never filtered out
+                const words = input.match(/\S+/g) || [];
+                if (words.length === 0) return;
+                
+                const skipCount = Math.max(0, Math.min(20, this.splitterWordSkip || 0));
+                const minLength = Math.max(1, this.splitterMinWordLength || 2);
+                
+                // Process all words - only split words that meet minimum length
+                // Short words are kept whole but still included in the pattern
+                let wordsToProcess = words;
+                let prependToFirst = [];
+                
+                // Handle "Split First Word" option
+                if (!this.splitterSplitFirstWord && words.length > 0) {
+                    prependToFirst = [words[0]];
+                    wordsToProcess = words.slice(1);
+                }
+
+                // Build word processing array - track which words can be split vs kept whole
+                const wordData = wordsToProcess.map((word, idx) => {
+                    const canSplit = word.length >= minLength && word.length > 1;
+                    return {
+                        word: word,
+                        canSplit: canSplit,
+                        index: idx
+                    };
+                });
+
+                // Determine which words to split (only words that can be split)
+                const splittableWords = wordData.filter(w => w.canSplit);
+                if (splittableWords.length === 0) {
+                    // No words can be split, output everything as one message
+                    chunks.push([...prependToFirst, ...wordsToProcess].join(' '));
+                    return;
+                }
+
+                // Determine split pattern based on splittable words only
+                const splitIndexes = new Set();
+                for (let i = 0; i < splittableWords.length; i++) {
+                    if ((i % (skipCount + 1)) === 0) {
+                        splitIndexes.add(splittableWords[i].index);
+                    }
+                }
+
+                // Process all words and build split structure
+                const processedWords = wordData.map((wd, idx) => {
+                    if (splitIndexes.has(idx) && wd.canSplit) {
+                        // Split this word
+                        let splitPos;
+                        if (wd.word.length % 2 === 0) {
+                            splitPos = wd.word.length / 2;
+                        } else {
+                            splitPos = this.splitterWordSplitSide === 'left' 
+                                ? Math.ceil(wd.word.length / 2) 
+                                : Math.floor(wd.word.length / 2);
+                        }
+                        return {
+                            firstHalf: wd.word.slice(0, splitPos),
+                            secondHalf: wd.word.slice(splitPos),
+                            split: true
+                        };
+                    }
+                    // Keep whole (either too short or skipped)
+                    return { whole: wd.word, split: false };
+                });
+
+                // Build output messages
+                let currentMessage = [...prependToFirst];
+                let messageStarted = false;
+
+                for (let i = 0; i < processedWords.length; i++) {
+                    const item = processedWords[i];
+                    
+                    if (item.split) {
+                        if (!messageStarted) {
+                            // First split word - add first half to current message
+                            currentMessage.push(item.firstHalf);
+                            chunks.push(currentMessage.join(' '));
+                            currentMessage = [item.secondHalf];
+                            messageStarted = true;
+                        } else {
+                            // Add first half to current message, then start new message with second half
+                            currentMessage.push(item.firstHalf);
+                            chunks.push(currentMessage.join(' '));
+                            currentMessage = [item.secondHalf];
+                        }
+                    } else {
+                        // Whole word - add to current message (ALL words included)
+                        currentMessage.push(item.whole);
+                    }
+                }
+
+                // Add any remaining message
+                if (currentMessage.length > 0) {
+                    chunks.push(currentMessage.join(' '));
+                }
+            }
+
+            // Apply transformations in sequence (chaining)
+            let processedChunks = chunks;
+            if (this.splitterTransforms && this.splitterTransforms.length > 0) {
+                // Filter out empty transforms
+                const activeTransforms = this.splitterTransforms.filter(t => t && t !== '');
+                
+                if (activeTransforms.length > 0) {
+                    // Apply each transformation in sequence
+                    for (const transformName of activeTransforms) {
+                        const selectedTransform = this.transforms.find(t => t.name === transformName);
+                        if (selectedTransform && selectedTransform.func) {
+                            processedChunks = processedChunks.map(chunk => {
+                                try {
+                                    return selectedTransform.func(chunk);
+                                } catch (e) {
+                                    console.error('Transform error:', e);
+                                    return chunk;
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Apply encapsulation
+            const start = this.splitterStartWrap || '';
+            const end = this.splitterEndWrap || '';
+            this.splitMessages = processedChunks.map(chunk => `${start}${chunk}${end}`);
+        },
+
+        /**
+         * Copy all split messages to clipboard
+         * Single line: merges messages into one continuous string (keeps encapsulation/transformations)
+         * Multiline: copies messages separated by newlines
+         */
+        copyAllSplitMessages() {
+            if (this.splitMessages.length === 0) return;
+            
+            if (this.splitterCopyAsSingleLine) {
+                // Merge all messages back together, keeping encapsulation and transformations
+                // Just join without newlines - all encapsulation/transformations are already in splitMessages
+                const merged = this.splitMessages.join('');
+                this.copyToClipboard(merged);
+            } else {
+                // Copy all messages separated by newlines
+                const allMessages = this.splitMessages.join('\n');
+                this.copyToClipboard(allMessages);
+            }
+        },
         // Quick estimate of token count for Tokenade
         estimateTokenadeTokens() {
             // Roughly approximate tokens by estimated character length
@@ -2141,6 +2467,156 @@ window.app = new Vue({
             this.textPayload = out;
             this.showNotification('<i class="fas fa-bomb"></i> Text payload generated', 'success');
         },
+
+        // Gibberish Logic
+        seededRandom(seed) {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        },
+
+        sentenceToGibberish() {
+        function generateGibberish(word, seed) {
+            const length = Math.max(4, word.length);
+            let gibberish = "";
+            const chars = this.gibberishChars;
+
+            for (let i = 0; i < length; i++) {
+            const randomValue = this.seededRandom(seed + i * 0.1);
+            gibberish += chars[Math.floor(randomValue * chars.length)];
+            }
+            return gibberish;
+        }
+        const src = String(this.gibberishInput || '');
+        if (!src) { this.gibberishOutput = ''; return; }
+
+        const words = this.gibberishInput.match(/\b\w+\b/g) || [];
+        const dictionary = {};
+        let gibberishSentence = "";
+        let wordIndex = 0;
+
+        words.forEach((word) => {
+            const lowerWord = word.toLowerCase();
+            const seed =
+            this.gibberishSeed === ""
+                ? Math.random() * 100
+                : Number(this.gibberishSeed);
+
+            if (!dictionary[lowerWord]) {
+            const wordSeed = seed + wordIndex * 100;
+            dictionary[lowerWord] = generateGibberish.call(this, word, wordSeed);
+            wordIndex++;
+            }
+        });
+
+        let charIndex = 0;
+        for (let i = 0; i < this.gibberishInput.length; i++) {
+            const char = this.gibberishInput[i];
+
+            if (/\w/.test(char)) {
+            let j = i;
+            while (
+                j < this.gibberishInput.length &&
+                /\w/.test(this.gibberishInput[j])
+            ) {
+                j++;
+            }
+
+            const word = this.gibberishInput.substring(i, j).toLowerCase();
+            gibberishSentence += dictionary[word];
+            i = j - 1;
+            } else {
+            gibberishSentence += char;
+            }
+        }
+
+        const dictionaryString = Object.entries(dictionary)
+            .map(([plain, gib]) => `"${plain}": "${gib}"`)
+            .join(", ");
+
+        this.gibberishOutput = gibberishSentence;
+        this.gibberishDictionary = '{' + dictionaryString + '}';
+        },
+
+        
+        generateRandomRemovals() {
+            if (!this.removalInput.trim()) {
+                this.showNotification('Please enter text to process', 'error');
+                return;
+            }
+            
+            const seed = this.removalSeed ? String(this.removalSeed) : String(Date.now());
+            let rng = this.seededRandomFactory(seed);
+            
+            this.removalOutputs = [];
+            const words = this.removalInput.split(/\s+/);
+            
+            for (let v = 0; v < this.removalVariations; v++) {
+                const modifiedWords = words.map(word => {
+                    // Skip very short words or non-alphabetic
+                    if (word.length <= 1 || !/[a-zA-Z]/.test(word)) {
+                        return word;
+                    }
+                    
+                    // Determine how many letters to remove for this word
+                    const minRemove = Math.max(0, this.removalMinLetters);
+                    const maxRemove = Math.min(word.length - 1, this.removalMaxLetters);
+                    const numToRemove = minRemove + Math.floor(rng() * (maxRemove - minRemove + 1));
+                    
+                    if (numToRemove === 0) {
+                        return word;
+                    }
+                    
+                    // Get letter positions
+                    const letters = word.split('').map((c, i) => ({ char: c, index: i }))
+                        .filter(item => /[a-zA-Z]/.test(item.char));
+                    
+                    // Randomly select positions to remove
+                    const toRemoveIndices = new Set();
+                    const maxAttempts = numToRemove * 3;
+                    let attempts = 0;
+                    
+                    while (toRemoveIndices.size < Math.min(numToRemove, letters.length) && attempts < maxAttempts) {
+                        const randIdx = Math.floor(rng() * letters.length);
+                        toRemoveIndices.add(letters[randIdx].index);
+                        attempts++;
+                    }
+                    
+                    // Build result by skipping removed indices
+                    return word.split('').filter((_, i) => !toRemoveIndices.has(i)).join('');
+                });
+                
+                this.removalOutputs.push(modifiedWords.join(' '));
+            }
+            
+            this.showNotification(`Generated ${this.removalOutputs.length} variations`, 'success');
+        },
+        
+        
+        generateSpecificRemoval() {
+            if (!this.removalSpecificInput.trim()) {
+                this.showNotification('Please enter text to process', 'error');
+                return;
+            }
+            
+            if (!this.removalCharsToRemove) {
+                this.showNotification('Please specify characters to remove', 'error');
+                return;
+            }
+            
+            const charsToRemove = new Set(this.removalCharsToRemove.split(''));
+            this.removalSpecificOutput = this.removalSpecificInput
+                .split('')
+                .filter(char => !charsToRemove.has(char))
+                .join('');
+            
+            this.showNotification('Characters removed', 'success');
+        },
+        
+        // Copy all removal outputs
+        copyAllRemovals() {
+            const allText = this.removalOutputs.join('\n');
+            this.copyToClipboard(allText);
+        },
         
         // Set up paste event handlers for all textareas
         setupPasteHandlers() {
@@ -2168,6 +2644,22 @@ window.app = new Vue({
         if (this.isDarkTheme) {
             document.body.classList.add('dark-theme');
         }
+        
+        // Close tooltips when clicking outside
+        document.addEventListener('click', (e) => {
+            // Only close if not clicking on a tooltip icon
+            if (!e.target.closest('.tooltip-icon')) {
+                document.querySelectorAll('.custom-tooltip.active').forEach(tooltip => {
+                    tooltip.classList.remove('active');
+                    // Remove tooltip from DOM after transition
+                    setTimeout(() => {
+                        if (!tooltip.classList.contains('active')) {
+                            tooltip.remove();
+                        }
+                    }, 200);
+                });
+            }
+        });
         
         // Initialize category navigation
         this.initializeCategoryNavigation();
