@@ -234,8 +234,12 @@
 
                     <!-- Random Mode -->
                     <div v-if="gibberishMode === 'random'" class="transform-section">
-                        <div class="section-header">
-                            <h3><i class="fas fa-book"></i> Gibberish Dictionary<small>Translate text into random gibberish and corresponding dictionary.</small></h3>
+                        <div class="section-header-card">
+                            <div class="section-header-card-title">
+                                <i class="fas fa-book"></i>
+                                <h3>Gibberish Dictionary</h3>
+                            </div>
+                            <p class="section-header-card-description">Translate text into random gibberish and corresponding dictionary.</p>
                         </div>
                         <div class="options-grid">
                             <label>
@@ -272,8 +276,12 @@
 
                     <!-- Removal Mode -->
                     <div v-if="gibberishMode === 'removal'" class="transform-section">
-                        <div class="section-header">
-                            <h3><i class="fas fa-list"></i> Gibberish by Removal <small>Gibberish via character removal</small></h3>
+                        <div class="section-header-card">
+                            <div class="section-header-card-title">
+                                <i class="fas fa-list"></i>
+                                <h3>Gibberish by Removal</h3>
+                            </div>
+                            <p class="section-header-card-description">Gibberish via character removal</p>
                         </div>
                         
                         <!-- Sub-mode selector -->
@@ -584,11 +592,10 @@
             <div v-if="activeTab === 'fuzzer'" class="tab-content">
                 <div class="transform-layout">
                     <div class="transform-section">
-                        <div class="section-header">
-                            <div class="section-title">
-                                <h3><i class="fas fa-bug"></i> Mutation Lab</h3>
-                                <small>mutate text into diverse payloads</small>
-                            </div>
+                        <div class="title-with-icon">
+                            <i class="fas fa-bug"></i>
+                            <h3>Mutation Lab</h3>
+                            <small>mutate text into diverse payloads</small>
                         </div>
                         <div class="options-grid">
                             <label style="grid-column: 1 / -1;">
@@ -1024,12 +1031,12 @@
             <div v-if="activeTab === 'splitter'" class="tab-content">
                 <div class="transform-layout">
                     <div class="transform-section">
-                        <div class="section-header">
-                            <div class="section-title">
-                                <h3><i class="fas fa-grip-lines"></i> Message Splitter</h3>
-                                <small>split text into multiple copyable chunks</small>
+                        <div class="section-header-card">
+                            <div class="section-header-card-title">
+                                <i class="fas fa-grip-lines"></i>
+                                <h3>Message Splitter</h3>
                             </div>
-                            <p>Enter text to split into multiple messages. Each message can be transformed and encapsulated individually.</p>
+                            <p class="section-header-card-description">Split text into multiple copyable chunks. Each message can be transformed and encapsulated individually.</p>
                         </div>
                         
                         <!-- Input Section -->
