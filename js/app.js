@@ -1,148 +1,67 @@
-// Initialize Vue app
+const baseData = {
+    isDarkTheme: true,
+    activeTab: 'transforms',
+    registeredTools: [],
+    universalDecodeInput: '',
+    universalDecodeResult: null,
+    isPasteOperation: false,
+    lastCopyTime: 0,
+    ignoreKeyboardEvents: false,
+    isTransformCopy: false,
+    keyboardEventsTimeout: null,
+    showDecoder: true,
+    tbCarrierManual: '',
+    copyHistory: [],
+    maxHistoryItems: window.CONFIG.MAX_HISTORY_ITEMS,
+    showCopyHistory: false,
+    showUnicodePanel: false,
+    unicodeApplyBusy: false,
+    unicodeApplyFlash: false,
+    unicodePanelToggleLock: false,
+    unicodeApplyFlashTimeout: null,
+    showDangerModal: false,
+    dangerThresholdTokens: window.CONFIG.DANGER_THRESHOLD_TOKENS
+};
+
+const toolData = (window.toolRegistry && typeof window.toolRegistry.mergeVueData === 'function') 
+    ? window.toolRegistry.mergeVueData() 
+    : {};
+const mergedData = Object.assign({}, baseData, toolData);
+
+const toolMethods = (window.toolRegistry && typeof window.toolRegistry.mergeVueMethods === 'function') 
+    ? window.toolRegistry.mergeVueMethods() 
+    : {};
+
 window.app = new Vue({
     el: '#app',
-    data: {
-        // Theme
-        isDarkTheme: true,
-
-        // Tab Management
-        activeTab: 'transforms',
-
-        // Transform Tab
-        transformInput: '',
-        transformOutput: '',
-        activeTransform: null,
-        // Transform categories for styling
-        transformCategories: {
-            encoding: ['Base64', 'Base64 URL', 'Base32', 'Base45', 'Base58', 'Base62', 'Binary', 'Hexadecimal', 'ASCII85', 'URL Encode', 'HTML Entities'],
-            cipher: ['Caesar Cipher', 'ROT13', 'ROT47', 'ROT18', 'ROT5', 'Morse Code', 'Atbash Cipher', 'Vigenère Cipher', 'Affine Cipher (a=5,b=8)', 'Rail Fence (3 Rails)', 'Baconian Cipher', 'Tap Code', 'A1Z26', 'QWERTY Right Shift'],
-            visual: ['Rainbow Text', 'Strikethrough', 'Underline', 'Reverse Text', 'Alternating Case', 'Reverse Words', 'Random Case', 'Title Case', 'Sentence Case', 'Emoji Speak', 'Ubbi Dubbi', 'Rövarspråket', 'Vaporwave', 'Disemvowel'],
-            format: ['Pig Latin', 'Leetspeak', 'NATO Phonetic', 'camelCase', 'snake_case', 'kebab-case'],
-            unicode: ['Invisible Text', 'Upside Down', 'Full Width', 'Small Caps', 'Bubble', 'Braille', 'Greek Letters', 'Wingdings', 'Superscript', 'Subscript', 'Regional Indicator Letters', 'Fraktur', 'Cyrillic Stylized', 'Katakana', 'Hiragana', 'Roman Numerals'],
-            special: ['Medieval', 'Cursive', 'Monospace', 'Double-Struck', 'Elder Futhark', 'Mirror Text', 'Zalgo'],
-            fantasy: ['Quenya (Tolkien Elvish)', 'Tengwar Script', 'Klingon', 'Aurebesh (Star Wars)', 'Dovahzul (Dragon)'],
-            ancient: ['Hieroglyphics', 'Ogham (Celtic)', 'Semaphore Flags'],
-            technical: ['Brainfuck', 'Mathematical Notation', 'Chemical Symbols'],
-            randomizer: ['Random Mix']
-        },
-        // Be resilient if transforms.js fails to load
-        transforms: Object.entries(window.transforms || {}).map(([key, transform]) => ({
-            name: transform.name,
-            func: transform.func.bind(transform),
-            preview: transform.preview.bind(transform)
-        })),
-
-        // Steganography Tab
-        emojiMessage: '',
-        encodedMessage: '',
-        decodeInput: '',
-        decodedMessage: '',
-        selectedCarrier: null,
-        
-        // Universal Decoder - works on both tabs
-        universalDecodeInput: '',
-        universalDecodeResult: null,
-        isPasteOperation: false, // Flag to track paste operations
-        lastCopyTime: 0,         // Timestamp of last copy operation for debounce
-        ignoreKeyboardEvents: false, // Flag to prevent keyboard events from triggering copies
-        isTransformCopy: false,   // Flag to mark transform-initiated copy operations
-        keyboardEventsTimeout: null, // Timeout for resetting keyboard event flag
-        activeSteg: null,
-        carriers: window.steganography.carriers,
-        showDecoder: true,
-        // Emoji Library
-        filteredEmojis: [...window.emojiLibrary.EMOJI_LIST],
-        selectedEmoji: null,
-        carrierEmojiList: [...window.emojiLibrary.EMOJI_LIST],
-        quickCarrierEmojis: ['🐍','🐉','🐲','🔥','💥','🗿','⚓','⭐','✨','🚀','💀','🪨','🍃','🪶','🔮','🐢','🐊','🦎'],
-        tbCarrierManual: '',
-        // Token Bomb Generator
-        tbDepth: 3,
-        tbBreadth: 4,
-        tbRepeats: 5,
-        tbSeparator: 'zwnj',
-        tbIncludeVS: true,
-        tbIncludeNoise: true,
-        tbRandomizeEmojis: true, // forced on; no UI control
-        tbAutoCopy: true,
-        tbSingleCarrier: true,
-        tbCarrier: '',
-        tbPayloadEmojis: [],
-        tokenBombOutput: '',
-        // Text Payload Generator
-        tpBase: '',
-        tpRepeat: 100,
-        tpCombining: true,
-        tpZW: false,
-        textPayload: '',
-        // Tokenizer tab
-        tokenizerInput: '',
-        tokenizerEngine: 'byte',
-        tokenizerTokens: [],
-        tokenizerCharCount: 0,
-        tokenizerWordCount: 0,
-        
-        // Fuzzer
-        fuzzerInput: '',
-        fuzzerCount: 20,
-        fuzzerSeed: '',
-        fuzzUseRandomMix: true,
-        fuzzZeroWidth: true,
-        fuzzUnicodeNoise: true,
-        fuzzZalgo: false,
-        fuzzWhitespace: true,
-        fuzzCasing: true,
-        fuzzEncodeShuffle: false,
-        fuzzerOutputs: [],
-
-        // Gibberish Dictionary
-        gibberishInput: '',
-        gibberishOutput: '',
-        gibberishSeed: '',
-        gibberishDictionary: '',
-        gibberishChars: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        gibberishMode: 'random',
-
-        // Removal mode properties
-        removalSubMode: 'random',
-        removalInput: '',
-        removalVariations: 10,
-        removalMinLetters: 1,
-        removalMaxLetters: 3,
-        removalSeed: '',
-        removalOutputs: [],
-        
-        removalSpecificInput: '',
-        removalCharsToRemove: '',
-        removalSpecificOutput: '',
-
-        // History of copied content
-        copyHistory: [],
-        maxHistoryItems: 10,
-        showCopyHistory: false,
-        showUnicodePanel: false,
-        unicodeApplyBusy: false,
-        unicodeApplyFlash: false,
-
-        // Danger zone controls
-        showDangerModal: false,
-        dangerThresholdTokens: 25_000_000,
-        
-        // Copy operation tracking (moved from methods)
-        lastCopyTime: 0
-    },
-    methods: {
-        toggleUnicodePanel() {
+    data: mergedData,
+    methods: Object.assign({}, toolMethods || {}, {
+        toggleUnicodePanel(event) {
+            if (this.unicodePanelToggleLock) return;
+            this.unicodePanelToggleLock = true;
+            
             this.showUnicodePanel = !this.showUnicodePanel;
             const panel = document.getElementById('unicode-options-panel');
             if (panel) {
                 if (this.showUnicodePanel) panel.classList.add('active');
                 else panel.classList.remove('active');
             }
+            
+            setTimeout(() => {
+                this.unicodePanelToggleLock = false;
+            }, 300);
         },
         applyUnicodeOptions() {
             if (this.unicodeApplyBusy) return;
+            
+            if (this.unicodeApplyFlashTimeout) {
+                clearTimeout(this.unicodeApplyFlashTimeout);
+                this.unicodeApplyFlashTimeout = null;
+            }
+            
+            this.unicodeApplyFlash = false;
             this.unicodeApplyBusy = true;
+            
             try {
                 const initSel = document.querySelector('.steg-initial-presentation');
                 const vs0Sel = document.querySelector('.steg-vs-zero');
@@ -152,10 +71,7 @@ window.app = new Vue({
                 const orderSel = document.querySelector('.steg-bit-order');
                 const trailSel = document.querySelector('.steg-trailing-zw');
 
-                const parseEsc = (s)=>{
-                    if (!s) return s;
-                    try { return eval(`'${s}'`); } catch(_) { return s; }
-                };
+                const parseEsc = (s) => window.EscapeParser.parseEscapeSequence(s);
 
                 if (window.steganography && window.steganography.setStegOptions) {
                     window.steganography.setStegOptions({
@@ -168,29 +84,26 @@ window.app = new Vue({
                         trailingZW: parseEsc(trailSel && trailSel.value) || ''
                     });
                     this.unicodeApplyFlash = true;
-                    this.showNotification('<i class="fas fa-sliders-h"></i> Advanced settings applied', 'success');
-                    setTimeout(()=>{ this.unicodeApplyFlash = false; }, 1200);
+                    this.showNotification('Advanced settings applied', 'success', 'fas fa-sliders-h');
+                    this.unicodeApplyFlashTimeout = setTimeout(() => {
+                        this.unicodeApplyFlash = false;
+                        this.unicodeApplyFlashTimeout = null;
+                    }, 1200);
                 } else {
-                    this.showNotification('<i class="fas fa-exclamation-triangle"></i> Engine missing setStegOptions()', 'warning');
+                    this.showNotification('Engine missing setStegOptions()', 'warning', 'fas fa-exclamation-triangle');
                 }
             } catch (e) {
                 console.error('Apply Unicode options error', e);
-                this.showNotification('<i class="fas fa-exclamation-triangle"></i> Failed to apply settings', 'error');
-            } finally { this.unicodeApplyBusy = false; }
-        },
-        // Focus an element without causing the page to scroll
-        focusWithoutScroll(el) {
-            if (!el) return;
-            const x = window.scrollX, y = window.scrollY;
-            try {
-                el.focus({ preventScroll: true });
-            } catch (e) {
-                el.focus();
-                window.scrollTo(x, y);
+                this.showNotification('Failed to apply settings', 'error', 'fas fa-exclamation-triangle');
+                this.unicodeApplyFlash = false;
+            } finally { 
+                this.unicodeApplyBusy = false; 
             }
         },
+        focusWithoutScroll(el) {
+            window.FocusUtils.focusWithoutScroll(el);
+        },
 
-        // Trigger randomizer chaos animation regardless of input
         triggerRandomizerChaos() {
             try {
                 const section = document.getElementById('category-randomizer');
@@ -211,62 +124,27 @@ window.app = new Vue({
                 setTimeout(()=>section && section.classList.remove('shake-once','randomizer-glow'), 600);
             } catch(_) {}
         },
-        // Switch between tabs with proper initialization
         switchToTab(tabName) {
-            this.activeTab = tabName;
-            console.log('Switched to tab:', tabName);
+            if (this.activeTab && window.toolRegistry) {
+                window.toolRegistry.deactivateTool(this.activeTab, this);
+            }
             
-            // Reset universal decoder input when switching tabs
+            this.activeTab = tabName;
             this.universalDecodeInput = '';
             this.universalDecodeResult = null;
             
-            // Initialize emoji grid when switching to steganography tab
-            if (tabName === 'steganography') {
-                this.$nextTick(() => {
-                    console.log('Tab switch: Initializing emoji grid');
-                    const emojiGridContainer = document.getElementById('emoji-grid-container');
-                    if (emojiGridContainer) {
-                        console.log('Found emoji grid container after tab switch');
-                        // Make sure the container is visible
-                        emojiGridContainer.setAttribute('style', 'display: block !important; visibility: visible !important; min-height: 300px; padding: 10px;');
-                        // Render the emoji grid
-                        this.renderEmojiGrid();
-                    } else {
-                        console.log('Emoji grid container not found after tab switch');
-                    }
-                });
-            }
-            
-            // Initialize category navigation when switching to transforms tab
-            if (tabName === 'transforms') {
-                this.$nextTick(() => {
-                    this.initializeCategoryNavigation();
-                });
-            }
-            if (tabName === 'tokenizer') {
-                this.$nextTick(() => this.runTokenizer());
+            if (window.toolRegistry) {
+                window.toolRegistry.activateTool(tabName, this);
             }
         },
         
-        // Get transforms grouped by category
-        getTransformsByCategory(category) {
-            return this.transforms.filter(transform => 
-                this.transformCategories[category].includes(transform.name)
-            );
-        },
-        
-        // Theme Toggle
         toggleTheme() {
-            this.isDarkTheme = !this.isDarkTheme;
-            document.body.classList.toggle('light-theme');
+            this.isDarkTheme = window.ThemeUtils.toggleTheme(this.isDarkTheme);
         },
         
-        // Copy History Toggle
         toggleCopyHistory() {
             this.showCopyHistory = !this.showCopyHistory;
-            console.log('Copy history toggled:', this.showCopyHistory);
             
-            // If showing history panel, focus the first copy-again button if available
             if (this.showCopyHistory && this.copyHistory.length > 0) {
                 this.$nextTick(() => {
                     const firstCopyButton = document.querySelector('.copy-again-button');
@@ -277,2081 +155,212 @@ window.app = new Vue({
             }
         },
 
-        // Transform Methods
-        applyTransform(transform, event) {
-            // Prevent default button behavior and scrolling
-            event && event.preventDefault();
-            event && event.stopPropagation();
-
-            // Always trigger chaos animation for Random Mix, even with empty input
-            if (transform && transform.name === 'Random Mix') {
-                this.triggerRandomizerChaos();
-            }
-
-            if (this.transformInput) {
-                // Update active transform and apply it
-                this.activeTransform = transform;
-
-                if (transform.name === 'Random Mix') {
-                    this.transformOutput = window.transforms.randomizer.func(this.transformInput);
-                    // Show transform mapping info
-                    const transformInfo = window.transforms.randomizer.getLastTransformInfo();
-                    if (transformInfo.length > 0) {
-                        const transformsList = transformInfo.map(t => t.transformName).join(', ');
-                        this.showNotification(`<i class="fas fa-random"></i> Mixed with: ${transformsList}`, 'success');
-                        console.log('Transform mapping:', transformInfo);
-                    }
-                } else {
-                    // Apply transform to full text - let the transform handle segmentation if needed
-                    this.transformOutput = transform.func(this.transformInput);
-                }
-                
-                // Set flag to mark this as a transform-initiated copy
-                this.isTransformCopy = true;
-                
-                // Force copy the transform output to clipboard
-                this.forceCopyToClipboard(this.transformOutput);
-                
-                // Add to copy history
-                this.addToCopyHistory(`Transform: ${transform.name}`, this.transformOutput);
-                
-                // Enhanced notification for transform and copy (if not randomizer - it has its own notification)
-                if (transform.name !== 'Random Mix') {
-                    this.showNotification(`<i class="fas fa-check"></i> ${transform.name} applied and copied!`, 'success');
-                }
-                
-                // Remove active state from transform buttons
-                document.querySelectorAll('.transform-button').forEach(button => {
-                    button.classList.remove('active');
-                });
-                
-                // Keep focus on input and move cursor to end
-                const inputBox = document.querySelector('#transform-input');
-                if (inputBox) {
-                    this.focusWithoutScroll(inputBox);
-                    const len = inputBox.value.length;
-                    try { inputBox.setSelectionRange(len, len); } catch (_) {}
-                }
-                
-                // Reset flags immediately
-                this.isTransformCopy = false;
-                this.ignoreKeyboardEvents = false;
-            }
-        },
-        autoTransform() {
-            // Only proceed if we're in the transforms tab and have an active transform
-            if (this.transformInput && this.activeTransform && this.activeTab === 'transforms') {
-                // Handle text with proper Unicode segmentation
-                const segments = window.emojiLibrary.splitEmojis(this.transformInput);
-                const transformedSegments = segments.map(segment => {
-                    // Skip transformation for emojis and complex Unicode characters
-                    if (segment.length > 1 || /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u.test(segment)) {
-                        return segment;
-                    }
-                    return this.activeTransform.func(segment);
-                });
-                
-                this.transformOutput = window.emojiLibrary.joinEmojis(transformedSegments);
-            }
-        },
-        
-        // Check if a transform has a reverse function
-        transformHasReverse(transform) {
-            return transform && typeof transform.reverse === 'function';
-        },
-        
-        // Decode text using the specific transform's reverse function
-        decodeWithTransform(transform) {
-            if (!this.transformInput || !transform || !this.transformHasReverse(transform)) {
-                return;
-            }
-            
-            try {
-                // Handle text with proper Unicode segmentation
-                const segments = window.emojiLibrary.splitEmojis(this.transformInput);
-                const decodedSegments = segments.map(segment => {
-                    // Skip decoding for emojis and complex Unicode characters
-                    if (segment.length > 1 || /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u.test(segment)) {
-                        return segment;
-                    }
-                    return transform.reverse(segment);
-                });
-                
-                const decodedText = window.emojiLibrary.joinEmojis(decodedSegments);
-                
-                if (decodedText !== this.transformInput) {
-                    // Update the input with the decoded text
-                    this.transformInput = decodedText;
-                    
-                    // Show a notification
-                    this.showNotification(`<i class="fas fa-check"></i> Decoded using ${transform.name}`, 'success');
-                    
-                    // Add to copy history
-                    this.addToCopyHistory(`Decoded (${transform.name})`, decodedText);
-                } else {
-                    this.showNotification(`<i class="fas fa-exclamation-triangle"></i> Could not decode with ${transform.name}`, 'warning');
-                }
-            } catch (error) {
-                console.error(`Error decoding with ${transform.name}:`, error);
-                this.showNotification(`<i class="fas fa-exclamation-triangle"></i> Error decoding with ${transform.name}`, 'error');
-            }
-        },
-
-        // Steganography Methods
-        selectCarrier(carrier) {
-            // Toggle carrier selection if clicking the same one again
-            if (this.selectedCarrier === carrier) {
-                this.selectedCarrier = null;
-                this.encodedMessage = '';
-            } else {
-                this.selectedCarrier = carrier;
-                this.activeSteg = 'emoji';
-                this.autoEncode();
-            }
-        },
-        setStegMode(mode) {
-            // For invisible text, make it a direct action (not a toggle)
-            if (mode === 'invisible') {
-                // Set the mode temporarily to generate the encoded message
-                this.activeSteg = mode;
-                // Clear any carrier selection
-                this.selectedCarrier = null;
-                // Generate the encoded message
-                this.autoEncode();
-                
-                // Auto-copy the encoded message
-                if (this.encodedMessage) {
-                    this.$nextTick(() => {
-                        this.forceCopyToClipboard(this.encodedMessage);
-                        this.showNotification('<i class="fas fa-check"></i> Invisible text created and copied!', 'success');
-                        this.addToCopyHistory('Invisible Text', this.encodedMessage);
-                    });
-                }
-            } else {
-                // For other modes (like emoji), keep the toggle behavior
-                if (this.activeSteg === mode) {
-                    this.activeSteg = null;
-                    this.encodedMessage = '';
-                } else {
-                    this.activeSteg = mode;
-                    this.autoEncode();
-                }
-            }
-        },
-        autoEncode() {
-            // Only proceed if we're in the steganography tab
-            if (!this.emojiMessage || this.activeTab !== 'steganography') {
-                this.encodedMessage = '';
-                return;
-            }
-
-            if (this.activeSteg === 'invisible') {
-                this.encodedMessage = window.steganography.encodeInvisible(this.emojiMessage);
-                // Auto-copy will be handled in setStegMode method
-            } else if (this.selectedCarrier) {
-                this.encodedMessage = window.steganography.encodeEmoji(
-                    this.selectedCarrier.emoji,
-                    this.emojiMessage
-                );
-                // Auto-copy for emoji carrier is handled in selectEmoji method
-            }
-        },
-        autoDecode() {
-            if (!this.decodeInput) {
-                this.decodedMessage = '';
-                return;
-            }
-
-            // Use the universal decoder
-            const result = this.universalDecode(this.decodeInput);
-            
-            if (result) {
-                this.decodedMessage = `Decoded (${result.method}): ${result.text}`;
-                
-                // Auto-copy decoded message to clipboard
-                this.$nextTick(() => {
-                    // Only copy the actual decoded text, not the formatted message
-                    const decodedText = result.text;
-                    
-                    if (decodedText) {
-                        // Force clipboard copy regardless of event source
-                        this.forceCopyToClipboard(decodedText);
-                        this.showNotification(`<i class="fas fa-check"></i> Decoded message copied!`, 'success');
-                        
-                        // Add to copy history
-                        this.addToCopyHistory(`Decoded (${result.method})`, decodedText);
-                    }
-                });
-            } else {
-                this.decodedMessage = 'No encoded message detected';
-            }
-        },
-        previewInvisible(text) {
-            return '[invisible]';
-        },
-
-        // Add to copy history functionality
         addToCopyHistory(source, content) {
-            // Create history item with timestamp
-            const historyItem = {
-                source: source,
-                content: content,
-                timestamp: new Date().toLocaleTimeString(),
-                date: new Date().toLocaleDateString()
-            };
-            
-            // Add to beginning of array (most recent first)
-            this.copyHistory.unshift(historyItem);
-            
-            // Limit history to maxHistoryItems
-            if (this.copyHistory.length > this.maxHistoryItems) {
-                this.copyHistory.pop();
-            }
-            
-            // Log history item for debugging
-            console.log('Added to copy history:', historyItem);
+            window.HistoryUtils.addToHistory(
+                this.copyHistory,
+                this.maxHistoryItems,
+                source,
+                content
+            );
         },
         
-        // Utility Methods
+        clearCopyHistory() {
+            window.HistoryUtils.clearHistory(this.copyHistory);
+            this.showNotification('History cleared', 'success', 'fas fa-check');
+        },
+        
+        removeFromCopyHistory(id) {
+            window.HistoryUtils.removeFromHistory(this.copyHistory, id);
+        },
+        
+        formatHistoryTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        },
+        
         async copyToClipboard(text) {
-            if (!text) return;
+            if (!text || !window.ClipboardUtils) return;
             
-            // Check clipboard lock - don't proceed if locked
-            if (this.clipboardLocked) {
-                console.log('Copy operation prevented by clipboard lock');
-                return;
-            }
+            const source = window.HistoryUtils.getHistorySource(this.activeTab, {
+                activeTransform: this.activeTransform,
+                activeSteg: this.activeSteg,
+                selectedEmoji: this.selectedEmoji
+            });
             
-            // Prevent rapid successive copy operations (debounce)
-            const now = Date.now();
-            if (now - this.lastCopyTime < 500) {
-                console.log('Copy operation debounced');
-                return;
-            }
-            this.lastCopyTime = now;
-            
-            // Set clipboard lock immediately
-            this.clipboardLocked = true;
-            console.log('Setting clipboard lock during regular copy');
-            
-            // Always try to copy, regardless of event source
-            try {
-                await navigator.clipboard.writeText(text);
-                
-                // Show a success notification
-                this.showNotification('<i class="fas fa-check"></i> Copied!', 'success');
-                
-                // Add to history - determine source from active tab or context
-                const source = this.activeTab === 'transforms' ? 'Transform' : 'Steganography';
-                this.addToCopyHistory(source, text);
-                
-                // Aggressively clear focus and selections
-                if (document.activeElement && document.activeElement.blur) {
-                    document.activeElement.blur();
-                }
-                
-                // Clear any text selection
-                if (window.getSelection) {
-                    window.getSelection().removeAllRanges();
-                }
-                
-                // Focus body to avoid any specific interactive elements
-                document.body.focus();
-                
-                // Release clipboard lock after a longer delay
-                setTimeout(() => {
-                    this.clipboardLocked = false;
-                    console.log('Clipboard lock released after regular copy');
-                }, 500);
-            } catch (err) {
-                console.warn('Clipboard access not available:', err);
-                
-                // Try fallback method for copying (textarea method)
-                this.fallbackCopy(text);
-            }
-        },
-        
-        fallbackCopy(text) {
-            try {
-                // Check if keyboard events should be ignored
-                if (this.ignoreKeyboardEvents && !this.isTransformCopy) {
-                    console.log('Ignoring fallback copy due to keyboard event flag');
-                    return;
-                }
-                
-                // Reset the transform flag if it was set
-                if (this.isTransformCopy) {
-                    this.isTransformCopy = false;
-                }
-                
-                // Debounce check
-                const now = Date.now();
-                if (now - this.lastCopyTime < 300) {
-                    console.log('Fallback copy operation debounced');
-                    return;
-                }
-                this.lastCopyTime = now;
-                
-                // Create temporary textarea
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';  // Avoid scrolling to bottom
-                textarea.style.left = '-9999px';    // Move offscreen
-                textarea.style.top = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                
-                // Try the copy command
-                const successful = document.execCommand('copy');
-                
-                // Show appropriate notification
-                if (successful) {
-                    this.showNotification('<i class="fas fa-check"></i> Copied!', 'success');
-                    
-                    // Add to history with context
-                    let source = this.activeTab === 'transforms' ? 'Transform' : 'Steganography';
-                    if (this.activeTab === 'transforms' && this.activeTransform) {
-                        source = `Transform: ${this.activeTransform.name}`;
-                    } else if (this.activeTab === 'steganography') {
-                        if (this.activeSteg === 'invisible') {
-                            source = 'Invisible Text';
-                        } else if (this.selectedEmoji) {
-                            source = `Emoji: ${this.selectedEmoji}`;
-                        }
-                    }
+            const success = await window.ClipboardUtils.copy(text, {
+                onSuccess: () => {
                     this.addToCopyHistory(source, text);
-                } else {
-                    this.showNotification('<i class="fas fa-exclamation-triangle"></i> Copy not supported', 'error');
+                    window.FocusUtils.clearFocusAndSelection();
                 }
-                
-                // Clean up
-                document.body.removeChild(textarea);
-                
-                // Aggressively clear focus and selection
-                if (document.activeElement && document.activeElement.blur) {
-                    document.activeElement.blur();
-                }
-                
-                // Clear any text selection
-                if (window.getSelection) {
-                    window.getSelection().removeAllRanges();
-                }
-                
-                // Focus on body element
-                document.body.focus();
-            } catch (err) {
-                console.warn('Fallback copy method failed:', err);
-                this.showNotification('<i class="fas fa-exclamation-triangle"></i> Copy not supported', 'error');
-            }
+            });
+            
+            return success;
         },
         
-        // Force copy to clipboard regardless of event context
         forceCopyToClipboard(text) {
-            if (!text) return;
+            if (!text || !window.ClipboardUtils) return;
             
-            // Skip copy operations during paste
             if (this.isPasteOperation) {
                 this.isPasteOperation = false;
                 return;
             }
             
-            // Block keyboard-triggered copies unless it's a transform
             if (!this.isTransformCopy && this.ignoreKeyboardEvents) {
                 return;
             }
             
-            try {
-                // Use Clipboard API
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    // For emojis and complex characters, use a more robust approach
-                    const processedText = typeof text === 'string' ? text : String(text);
-                    
-                    // Try to use the newer clipboard API methods if available
-                    if (navigator.clipboard.write && processedText.match(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}]/u)) {
-                        const blob = new Blob([processedText], { type: 'text/plain;charset=utf-8' });
-                        const clipboardItem = new ClipboardItem({ 'text/plain': blob });
-                        navigator.clipboard.write([clipboardItem])
-                            .then(() => {
-                                if (this.isTransformCopy) {
-                                    this.showCopiedPopup();
-                                    this.ignoreKeyboardEvents = true;
-                                    clearTimeout(this.keyboardEventsTimeout);
-                                    this.keyboardEventsTimeout = setTimeout(() => {
-                                        this.ignoreKeyboardEvents = false;
-                                    }, 1000);
-                                }
-                                this.isTransformCopy = false;
-                                const inputBox = document.querySelector('#transform-input');
-                                if (inputBox) {
-                                    inputBox.focus();
-                                    const len = inputBox.value.length;
-                                    inputBox.setSelectionRange(len, len);
-                                }
-                            })
-                            .catch(err => {
-                                console.warn('Advanced Clipboard API failed:', err);
-                                // Fall back to basic writeText
-                                navigator.clipboard.writeText(processedText)
-                                    .then(() => {
-                                        if (this.isTransformCopy) {
-                                            this.showCopiedPopup();
-                                        }
-                                        this.isTransformCopy = false;
-                                        const inputBox = document.querySelector('#transform-input');
-                                        if (inputBox) {
-                                            inputBox.focus();
-                                            const len = inputBox.value.length;
-                                            inputBox.setSelectionRange(len, len);
-                                        }
-                                    })
-                                    .catch(err => {
-                                        console.warn('Basic Clipboard API failed:', err);
-                                        this.forceFallbackCopy(processedText);
-                                    });
-                            });
-                    } else {
-                        navigator.clipboard.writeText(processedText)
-                            .then(() => {
-                                if (this.isTransformCopy) {
-                                    this.showCopiedPopup();
-                                }
-                                this.isTransformCopy = false;
-                                const inputBox = document.querySelector('#transform-input');
-                                if (inputBox) {
-                                    inputBox.focus();
-                                    const len = inputBox.value.length;
-                                    inputBox.setSelectionRange(len, len);
-                                }
-                            })
-                            .catch(err => {
-                                console.warn('Basic Clipboard API failed:', err);
-                                this.forceFallbackCopy(processedText);
-                            });
-                    }
-                } else {
-                    this.forceFallbackCopy(text);
-                }
-            } catch (error) {
-                console.error('Force copy failed:', error);
-                this.forceFallbackCopy(text);
-            }
-        },
-        
-        // Fallback copy method that doesn't rely on user-initiated events
-        forceFallbackCopy(text) {
-            try {
-                // If clipboard is locked, don't proceed
-                if (this.clipboardLocked) {
-                    console.log('Fallback copy prevented by clipboard lock');
-                    return;
-                }
-                
-                // Set clipboard lock immediately
-                this.clipboardLocked = true;
-                
-                // Create temporary textarea for copying
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                
-                // Ensure proper emoji rendering
-                textarea.style.fontFamily = "'Segoe UI Emoji', 'Apple Color Emoji', sans-serif";
-                textarea.style.fontSize = '16px';
-                
-                // Position offscreen but with proper dimensions
-                textarea.style.position = 'fixed';
-                textarea.style.left = '-9999px';
-                textarea.style.top = '0';
-                textarea.style.width = '100px';
-                textarea.style.height = '100px';
-                document.body.appendChild(textarea);
-                
-                // Focus and select the text
-                textarea.focus();
-                textarea.select();
-                
-                try {
-                    document.execCommand('copy');
-                    console.log('Force fallback copy successful');
-                } catch (err) {
-                    console.error('Force fallback copy command failed:', err);
-                }
-                
-                // Remove the temporary element
-                document.body.removeChild(textarea);
-                
-                // Keep focus on input
-                const inputBox = document.querySelector('#transform-input');
-                if (inputBox) {
-                    inputBox.focus();
-                    const len = inputBox.value.length;
-                    inputBox.setSelectionRange(len, len);
-                }
-                
-                // Reset flags immediately
-                this.clipboardLocked = false;
-                this.isTransformCopy = false;
-                this.ignoreKeyboardEvents = false;
-                console.log('Clipboard lock released after fallback copy');
-            } catch (err) {
-                console.error('Force fallback copy method failed:', err);
-                this.clipboardLocked = false; // Make sure we don't leave it locked in case of error
-            }
-        },
-        
-        // Notification system
-        showNotification(message, type = 'success') {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `copy-notification ${type}`;
-            notification.innerHTML = message;
-            document.body.appendChild(notification);
+            const source = window.HistoryUtils.getHistorySource(this.activeTab, {
+                activeTransform: this.activeTransform,
+                activeSteg: this.activeSteg,
+                selectedEmoji: this.selectedEmoji
+            });
             
-            // Remove after animation
-            setTimeout(() => {
-                notification.classList.add('fade-out');
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        document.body.removeChild(notification);
+            window.ClipboardUtils.copy(text, {
+                onSuccess: () => {
+                    this.addToCopyHistory(source, text);
+                    if (this.isTransformCopy) {
+                        this.showCopiedPopup();
+                        this.ignoreKeyboardEvents = true;
+                        clearTimeout(this.keyboardEventsTimeout);
+                        this.keyboardEventsTimeout = setTimeout(() => {
+                            this.ignoreKeyboardEvents = false;
+                        }, window.CONFIG.KEYBOARD_EVENTS_TIMEOUT_MS);
                     }
-                }, 300);
-            }, 1000);
+                    this.isTransformCopy = false;
+                    const inputBox = document.querySelector('#transform-input');
+                    if (inputBox) {
+                        window.FocusUtils.focusWithoutScroll(inputBox);
+                        const len = inputBox.value.length;
+                        try { inputBox.setSelectionRange(len, len); } catch (_) {}
+                    }
+                }
+            });
         },
         
-        // Special prominent copy notification
+        showNotification(message, type = 'success', iconClass = null) {
+            window.NotificationUtils.showNotification(message, type, iconClass);
+        },
+        
         showCopiedPopup() {
-            // Create a more visible popup just for copy operations
-            const popup = document.createElement('div');
-            popup.className = 'copy-popup';
-            popup.innerHTML = '<i class="fas fa-clipboard-check"></i> Copied to clipboard!';
-            
-            // Add to body
-            document.body.appendChild(popup);
-            
-            // Force it to be visible and centered
-            popup.style.position = 'fixed';
-            popup.style.top = '50%';
-            popup.style.left = '50%';
-            popup.style.transform = 'translate(-50%, -50%)';
-            popup.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-            popup.style.color = 'white';
-            popup.style.padding = '15px 25px';
-            popup.style.borderRadius = '5px';
-            popup.style.fontSize = '18px';
-            popup.style.fontWeight = 'bold';
-            popup.style.zIndex = '10000';
-            popup.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
-            popup.style.textAlign = 'center';
-            
-            // Add fade-in animation
-            popup.style.opacity = '0';
-            popup.style.transition = 'opacity 0.3s ease-in-out';
-            
-            // Force reflow to make animation work
-            void popup.offsetWidth;
-            
-            // Fade in
-            popup.style.opacity = '1';
-            
-            // Remove after a short delay
-            setTimeout(() => {
-                popup.style.opacity = '0';
-                setTimeout(() => {
-                    if (popup.parentNode) {
-                        document.body.removeChild(popup);
-                    }
-                }, 300);
-            }, 1500);
+            window.NotificationUtils.showCopiedPopup();
         },
         
-        // Run the universal decoder when input changes
-        runUniversalDecode() {
-            console.log('Running universal decoder with input:', this.universalDecodeInput);
-            
-            // Clear result if input is empty
-            if (!this.universalDecodeInput) {
-                this.universalDecodeResult = null;
-                return;
-            }
-            
-            // Try to decode using the currently selected transform first, if any
-            if (this.activeTransform && this.transformHasReverse(this.activeTransform)) {
-                try {
-                    console.log(`Trying to decode with currently selected transform: ${this.activeTransform.name}`);
-                    const decodedText = this.activeTransform.reverse(this.universalDecodeInput);
-                    
-                    // If the decoded text is different from the input and looks like readable text
-                    if (decodedText !== this.universalDecodeInput && /[a-zA-Z0-9\s]{3,}/.test(decodedText)) {
-                        this.universalDecodeResult = {
-                            text: decodedText,
-                            method: this.activeTransform.name
-                        };
-                        console.log(`Successfully decoded with ${this.activeTransform.name}`);
-                        return;
-                    }
-                } catch (e) {
-                    console.error(`Error decoding with selected transform ${this.activeTransform.name}:`, e);
-                }
-            }
-            
-            // If the selected transform didn't work or there isn't one selected,
-            // fall back to trying all available methods
-            const result = this.universalDecode(this.universalDecodeInput);
-            
-            // Update the result
-            this.universalDecodeResult = result;
-            
-            // Log the result
-            if (result) {
-                console.log(`Universal decoder found a match: ${result.method}`);
-            } else {
-                console.log('Universal decoder could not decode the input');
-            }
-        },
-        
-        // Universal Decoder - tries all decoding methods
-        universalDecode(input) {
-            if (!input) return '';
-            
-            // Try all decoders in order
-            
-            // 1. Try steganography decoders
-            // - Check for emoji steganography first
-            // The emoji encoding uses variation selectors which are hard to see
-            if (/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}]/u.test(input)) {
-                console.log('Detected emoji, attempting to decode...');
-                const decoded = window.steganography.decodeEmoji(input);
-                if (decoded) {
-                    console.log('Successfully decoded emoji:', decoded);
-                    return { text: decoded, method: 'Emoji Steganography' };
-                } else {
-                    console.log('Emoji detected but no hidden message found');
-                }
-            }
-            
-            // - Invisible text (only check if the input actually contains invisible characters)
-            if (/[\uE0000-\uE007F]/.test(input)) {
-                let decoded = window.steganography.decodeInvisible(input);
-                if (decoded && decoded.length > 0) {
-                    return { text: decoded, method: 'Invisible Text' };
-                }
-            }
-            
-            // 2. Try transform reversals
-            // Try to decode using active transform first
-            if (this.activeTab === 'transforms' && this.activeTransform) {
-                try {
-                    const transformKey = Object.keys(window.transforms).find(
-                        key => window.transforms[key].name === this.activeTransform.name
-                    );
-                    
-                    if (transformKey && window.transforms[transformKey].reverse) {
-                        const result = window.transforms[transformKey].reverse(input);
-                        if (result && result !== input) {
-                            return { 
-                                text: result, 
-                                method: this.activeTransform.name,
-                                priorityMatch: true 
-                            };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error decoding with active transform:', e);
-                }
-            }
-            
-            // 3. Smart pattern detection for new transforms
-            // Check for specific patterns that indicate certain transform types
-            
-            // - Check for fantasy language patterns
-            if (/[ᚪᛒᛲᛞᛖᚠᚷᚺᛁᛃᛚᛗᚾᛟᛈᛩᚱᛋᛏᚢᛩᛉ]/.test(input)) {
-                // This looks like Tengwar or Elder Futhark runes
-                try {
-                    if (window.transforms.tengwar && window.transforms.tengwar.reverse) {
-                        const result = window.transforms.tengwar.reverse(input);
-                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                            return { text: result, method: 'Tengwar Script', priorityMatch: true };
-                        }
-                    }
-                    if (window.transforms.elder_futhark && window.transforms.elder_futhark.reverse) {
-                        const result = window.transforms.elder_futhark.reverse(input);
-                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                            return { text: result, method: 'Elder Futhark', priorityMatch: true };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Rune decode error:', e);
-                }
-            }
-            
-            // - Check for hieroglyphic patterns
-            if (/[𓃭𓃮𓃯𓃰𓃱𓃲𓃳𓃴𓃵𓃶𓃷𓃸𓃹𓃺𓃻𓃼]/.test(input)) {
-                try {
-                    if (window.transforms.hieroglyphics && window.transforms.hieroglyphics.reverse) {
-                        const result = window.transforms.hieroglyphics.reverse(input);
-                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                            return { text: result, method: 'Hieroglyphics', priorityMatch: true };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Hieroglyphics decode error:', e);
-                }
-            }
-            
-            // - Check for Ogham patterns
-            if (/[ᚐᚁᚉᚇᚓᚃᚌᚆᚔᚈᚊᚂᚋᚅᚑᚚᚏᚄ]/.test(input)) {
-                try {
-                    if (window.transforms.ogham && window.transforms.ogham.reverse) {
-                        const result = window.transforms.ogham.reverse(input);
-                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                            return { text: result, method: 'Ogham (Celtic)', priorityMatch: true };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Ogham decode error:', e);
-                }
-            }
-            
-            // - Check for mathematical notation patterns
-            if (/[𝒶𝒷𝒸𝒹𝑒𝒻𝑔𝒽𝒾𝒿𝓀𝓁𝓂𝓃𝑜𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵]/.test(input)) {
-                try {
-                    if (window.transforms.mathematical && window.transforms.mathematical.reverse) {
-                        const result = window.transforms.mathematical.reverse(input);
-                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                            return { text: result, method: 'Mathematical Notation', priorityMatch: true };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Mathematical notation decode error:', e);
-                }
-            }
-            
-            // - Check for chemical symbol patterns
-            if (/^(Ac|B|C|D|Es|F|Ge|H|I|J|K|L|Mn|N|O|P|Q|R|S|Ti|U|V|W|Xe|Y|Zn|AC|ES|GE|MN|TI|XE)\s*$/.test(input.trim())) {
-                try {
-                    if (window.transforms.chemical && window.transforms.chemical.reverse) {
-                        const result = window.transforms.chemical.reverse(input);
-                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                            return { text: result, method: 'Chemical Symbols', priorityMatch: true };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Chemical symbols decode error:', e);
-                }
-            }
-            
-            // - Binary (improved with more patterns)
-            if (/^[01\s]+$/.test(input.trim())) {
-                try {
-                    // Use binary transform's reverse function if available
-                    if (window.transforms.binary && window.transforms.binary.reverse) {
-                        const result = window.transforms.binary.reverse(input);
-                        if (result && /[\x20-\x7E]{3,}/.test(result)) { // Make sure it's readable ASCII
-                            return { text: result, method: 'Binary' };
-                        }
-                    }
-                    
-                    // Try different binary formats (with and without spaces)
-                    const variations = [
-                        input.trim(),                     // Original input
-                        input.replace(/\s+/g, ''),       // No spaces
-                        input.replace(/([01]{8})/g, '$1 ') // Force 8-bit spacing
-                    ];
-                    
-                    for (const binVariation of variations) {
-                        // Fallback implementation
-                        const binText = binVariation.replace(/\s+/g, '');
-                        let result = '';
-                        
-                        // Try standard 8-bit ASCII
-                        for (let i = 0; i < binText.length; i += 8) {
-                            const byte = binText.substr(i, 8);
-                            if (byte.length === 8) {
-                                result += String.fromCharCode(parseInt(byte, 2));
-                            }
-                        }
-                        
-                        if (result && /[\x20-\x7E]{3,}/.test(result)) { // Make sure it's readable ASCII
-                            return { text: result, method: 'Binary' };
-                        }
-                    }
-                } catch (e) { 
-                    console.error('Binary decode error:', e);
-                }
-            }
-            
-            // - Morse code
-            if (/^[.\-\s\/]+$/.test(input.trim())) {
-                try {
-                    // Use morse transform's reverse function if available
-                    if (window.transforms.morse && window.transforms.morse.reverse) {
-                        const result = window.transforms.morse.reverse(input);
-                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                            return { text: result, method: 'Morse Code' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Morse decode error:', e);
-                }
-            }
-
-            // - Braille
-            const braillePattern = /[⠀-⣿]/;
-            if (braillePattern.test(input)) {
-                try {
-                    // Count how many braille characters are in the input
-                    const brailleMatches = [...input.matchAll(/[⠀-⣿]/g)];
-                    // Only proceed if there are enough braille characters (to avoid false positives)
-                    if (brailleMatches.length > 2) {
-                        // Create a reverse mapping for braille
-                        const brailleReverseMap = {};
-                        if (window.transforms.braille && window.transforms.braille.map) {
-                            for (const [key, value] of Object.entries(window.transforms.braille.map)) {
-                                brailleReverseMap[value] = key;
-                            }
-                            
-                            // Decode the braille
-                            let result = '';
-                            for (const char of input) {
-                                result += brailleReverseMap[char] || char;
-                            }
-                            
-                            if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                                return { text: result, method: 'Braille' };
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.error('Braille decode error:', e);
-                }
-            }
-            
-            // - Base64
-            if (/^[A-Za-z0-9+/=]+$/.test(input.trim())) {
-                try {
-                    // Attempt to decode as base64
-                    const result = atob(input.trim());
-                    // Check if result is readable text
-                    if (/[\x20-\x7E]{3,}/.test(result)) { // At least 3 readable ASCII chars
-                        return { text: result, method: 'Base64' };
-                    }
-                } catch (e) {
-                    // Not valid base64, continue to next decoder
-                    console.error('Base64 decode error:', e);
-                }
-            }
-
-            // - Base58
-            if (/^[1-9A-HJ-NP-Za-km-z]+$/.test(input.trim())) {
-                try {
-                    if (window.transforms.base58 && window.transforms.base58.reverse) {
-                        const result = window.transforms.base58.reverse(input.trim());
-                        if (result && /[\x20-\x7E]{3,}/.test(result)) {
-                            return { text: result, method: 'Base58' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Base58 decode error:', e);
-                }
-            }
-
-            // - Base62
-            if (/^[0-9A-Za-z]+$/.test(input.trim())) {
-                try {
-                    if (window.transforms.base62 && window.transforms.base62.reverse) {
-                        const result = window.transforms.base62.reverse(input.trim());
-                        if (result && /[\x20-\x7E]{3,}/.test(result)) {
-                            return { text: result, method: 'Base62' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Base62 decode error:', e);
-                }
-            }
-
-            // - Upside Down text
-            if (window.transforms.upside_down && window.transforms.upside_down.reverse) {
-                try {
-                    const result = window.transforms.upside_down.reverse(input);
-                    // Check if the result is significantly different
-                    if (result !== input && result.length > 3 && /[a-zA-Z0-9\s]{3,}/.test(result)) {
-                        return { text: result, method: 'Upside Down' };
-                    }
-                } catch (e) {
-                    console.error('Upside Down decode error:', e);
-                }
-            }
-
-            // - Small Caps (create reverse mapping since there's no built-in decoder)
-            if (window.transforms.small_caps && window.transforms.small_caps.map) {
-                try {
-                    // Create reverse mapping
-                    const smallCapsReverseMap = {};
-                    for (const [key, value] of Object.entries(window.transforms.small_caps.map)) {
-                        smallCapsReverseMap[value] = key;
-                    }
-                    
-                    // Check if input contains small caps characters
-                    const smallCapsChars = Object.values(window.transforms.small_caps.map);
-                    const hasSmallCaps = smallCapsChars.some(char => input.includes(char));
-                    
-                    if (hasSmallCaps) {
-                        // Decode text
-                        let result = '';
-                        for (const char of input) {
-                            result += smallCapsReverseMap[char] || char;
-                        }
-                        
-                        if (result !== input && /[a-zA-Z]/.test(result)) {
-                            return { text: result, method: 'Small Caps' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Small Caps decode error:', e);
-                }
-            }
-
-            // - Bubble text (create reverse mapping)
-            if (window.transforms.bubble && window.transforms.bubble.map) {
-                try {
-                    // Create reverse mapping
-                    const bubbleReverseMap = {};
-                    for (const [key, value] of Object.entries(window.transforms.bubble.map)) {
-                        bubbleReverseMap[value] = key;
-                    }
-                    
-                    // Check if input contains bubble characters
-                    const bubbleChars = Object.values(window.transforms.bubble.map);
-                    const hasBubbleChars = bubbleChars.some(char => input.includes(char));
-                    
-                    if (hasBubbleChars) {
-                        // Decode text
-                        let result = '';
-                        for (const char of input) {
-                            result += bubbleReverseMap[char] || char;
-                        }
-                        
-                        if (result !== input && /[a-zA-Z]/.test(result)) {
-                            return { text: result, method: 'Bubble' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Bubble decode error:', e);
-                }
-            }
-            
-            // Check for specific new transforms before trying the generic approach
-            
-            // - Hexadecimal
-            if (/^[0-9A-Fa-f\s]+$/.test(input.trim())) {
-                try {
-                    if (window.transforms.hex && window.transforms.hex.reverse) {
-                        const result = window.transforms.hex.reverse(input);
-                        if (result && /[\x20-\x7E]{3,}/.test(result)) {
-                            return { text: result, method: 'Hexadecimal' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Hex decode error:', e);
-                }
-            }
-            
-            // - URL Encoded
-            if (/%[0-9A-Fa-f]{2}/.test(input)) {
-                try {
-                    if (window.transforms.url && window.transforms.url.reverse) {
-                        const result = window.transforms.url.reverse(input);
-                        if (result !== input && /[\x20-\x7E]{3,}/.test(result)) {
-                            return { text: result, method: 'URL Encoded' };
-                        }
-                    } else {
-                        // Fallback implementation
-                        try {
-                            const result = decodeURIComponent(input);
-                            if (result !== input && /[\x20-\x7E]{3,}/.test(result)) {
-                                return { text: result, method: 'URL Encoded' };
-                            }
-                        } catch (e) {
-                            console.error('URL decode fallback error:', e);
-                        }
-                    }
-                } catch (e) {
-                    console.error('URL decode error:', e);
-                }
-            }
-            
-            // - HTML Entities
-            if (/&[#a-zA-Z0-9]+;/.test(input)) {
-                try {
-                    if (window.transforms.html && window.transforms.html.reverse) {
-                        const result = window.transforms.html.reverse(input);
-                        if (result !== input && /[\x20-\x7E]{3,}/.test(result)) {
-                            return { text: result, method: 'HTML Entities' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('HTML entities decode error:', e);
-                }
-            }
-            
-            // - ROT13/Caesar Cipher (check if decoding produces more common English words)
-            if (/^[a-zA-Z\s.,!?]+$/.test(input)) {
-                try {
-                    // Try ROT13 first as it's more common
-                    if (window.transforms.rot13 && window.transforms.rot13.reverse) {
-                        const result = window.transforms.rot13.reverse(input);
-                        if (result !== input) {
-                            return { text: result, method: 'ROT13' };
-                        }
-                    }
-                    
-                    // Then try Caesar cipher
-                    if (window.transforms.caesar && window.transforms.caesar.reverse) {
-                        const result = window.transforms.caesar.reverse(input);
-                        if (result !== input) {
-                            return { text: result, method: 'Caesar Cipher' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Cipher decode error:', e);
-                }
-            }
-            
-            // - Base32
-            if (/^[A-Z2-7=]+$/.test(input.trim())) {
-                try {
-                    if (window.transforms.base32 && window.transforms.base32.reverse) {
-                        const result = window.transforms.base32.reverse(input);
-                        if (result && /[\x20-\x7E]{3,}/.test(result)) {
-                            return { text: result, method: 'Base32' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Base32 decode error:', e);
-                }
-            }
-            
-            // - ASCII85
-            if (/^<~.*~>$/.test(input.trim())) {
-                try {
-                    if (window.transforms.ascii85 && window.transforms.ascii85.reverse) {
-                        const result = window.transforms.ascii85.reverse(input);
-                        if (result && /[\x20-\x7E]{3,}/.test(result)) {
-                            return { text: result, method: 'ASCII85' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('ASCII85 decode error:', e);
-                }
-            }
-            
-            // - Check for Zalgo text (text with combining marks)
-            const combiningMarksRegex = /[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]/;
-            if (combiningMarksRegex.test(input)) {
-                try {
-                    // Count the number of combining marks to ensure it's actually Zalgo text
-                    // and not just text with a few accents
-                    const matches = input.match(combiningMarksRegex) || [];
-                    if (matches.length > 3) { // Threshold to distinguish Zalgo from normal accented text
-                        // Fallback implementation to remove combining marks
-                        const result = input.replace(/[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]/g, '');
-                        if (result !== input && result.length > 0) {
-                            return { text: result, method: 'Zalgo' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Zalgo decode error:', e);
-                }
-            }
-            
-            // - Check for various Unicode text styles (medieval, cursive, monospace, double-struck)
-            const unicodeStyleChecks = [
-                { name: 'Medieval', transform: 'medieval' },
-                { name: 'Cursive', transform: 'cursive' },
-                { name: 'Monospace', transform: 'monospace' },
-                { name: 'Double-Struck', transform: 'doubleStruck' }
-            ];
-            
-            for (const style of unicodeStyleChecks) {
-                if (window.transforms[style.transform] && window.transforms[style.transform].map) {
-                    try {
-                        // Create reverse mapping
-                        const reverseMap = {};
-                        for (const [key, value] of Object.entries(window.transforms[style.transform].map)) {
-                            reverseMap[value] = key;
-                        }
-                        
-                        // Check if input contains characters from this style
-                        const styleChars = Object.values(window.transforms[style.transform].map);
-                        const hasStyleChars = styleChars.some(char => input.includes(char));
-                        
-                        if (hasStyleChars) {
-                            // Decode text
-                            let result = '';
-                            for (const char of input) {
-                                result += reverseMap[char] || char;
-                            }
-                            
-                            if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                                return { text: result, method: style.name };
-                            }
-                        }
-                    } catch (e) {
-                        console.error(`${style.name} decode error:`, e);
-                    }
-                }
-            }
-            
-            // - Check for Fantasy Languages
-            const fantasyLanguageChecks = [
-                { name: 'Quenya (Tolkien Elvish)', transform: 'quenya' },
-                { name: 'Tengwar Script', transform: 'tengwar' },
-                { name: 'Klingon', transform: 'klingon' },
-                { name: 'Dovahzul (Dragon)', transform: 'dovahzul' }
-            ];
-            
-            for (const language of fantasyLanguageChecks) {
-                if (window.transforms[language.transform] && window.transforms[language.transform].map) {
-                    try {
-                        // Create reverse mapping
-                        const reverseMap = {};
-                        for (const [key, value] of Object.entries(window.transforms[language.transform].map)) {
-                            reverseMap[value] = key;
-                        }
-                        
-                        // Check if input contains characters from this language
-                        const languageChars = Object.values(window.transforms[language.transform].map);
-                        const hasLanguageChars = languageChars.some(char => input.includes(char));
-                        
-                        if (hasLanguageChars) {
-                            // Decode text
-                            let result = '';
-                            for (const char of input) {
-                                result += reverseMap[char] || char;
-                            }
-                            
-                            if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                                return { text: result, method: language.name };
-                            }
-                        }
-                    } catch (e) {
-                        console.error(`${language.name} decode error:`, e);
-                    }
-                }
-            }
-            
-            // - Check for Aurebesh (Star Wars) - special case due to word-based mapping
-            if (window.transforms.aurebesh && window.transforms.aurebesh.map) {
-                try {
-                    // Check if input contains Aurebesh words
-                    const aurebeshWords = Object.values(window.transforms.aurebesh.map);
-                    const hasAurebeshWords = aurebeshWords.some(word => 
-                        input.toLowerCase().includes(word.toLowerCase())
-                    );
-                    
-                    if (hasAurebeshWords) {
-                        const result = window.transforms.aurebesh.reverse(input);
-                        if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                            return { text: result, method: 'Aurebesh (Star Wars)' };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Aurebesh decode error:', e);
-                }
-            }
-            
-            // - Check for Ancient Scripts
-            const ancientScriptChecks = [
-                { name: 'Hieroglyphics', transform: 'hieroglyphics' },
-                { name: 'Ogham (Celtic)', transform: 'ogham' },
-                { name: 'Elder Futhark', transform: 'elder_futhark' }
-            ];
-            
-            for (const script of ancientScriptChecks) {
-                if (window.transforms[script.transform] && window.transforms[script.transform].map) {
-                    try {
-                        // Create reverse mapping
-                        const reverseMap = {};
-                        for (const [key, value] of Object.entries(window.transforms[script.transform].map)) {
-                            reverseMap[value] = key;
-                        }
-                        
-                        // Check if input contains characters from this script
-                        const scriptChars = Object.values(window.transforms[script.transform].map);
-                        const hasScriptChars = scriptChars.some(char => input.includes(char));
-                        
-                        if (hasScriptChars) {
-                            // Decode text
-                            let result = '';
-                            for (const char of input) {
-                                result += reverseMap[char] || char;
-                            }
-                            
-                            if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                                return { text: result, method: script.name };
-                            }
-                        }
-                    } catch (e) {
-                        console.error(`${script.name} decode error:`, e);
-                    }
-                }
-            }
-            
-            // - Check for Technical Codes
-            const technicalCodeChecks = [
-                { name: 'Mathematical Notation', transform: 'mathematical' },
-                { name: 'Chemical Symbols', transform: 'chemical' }
-            ];
-            
-            for (const code of technicalCodeChecks) {
-                if (window.transforms[code.transform] && window.transforms[code.transform].map) {
-                    try {
-                        // Create reverse mapping
-                        const reverseMap = {};
-                        for (const [key, value] of Object.entries(window.transforms[code.transform].map)) {
-                            reverseMap[value] = key;
-                        }
-                        
-                        // Check if input contains characters from this code
-                        const codeChars = Object.values(window.transforms[code.transform].map);
-                        const hasCodeChars = codeChars.some(char => input.includes(char));
-                        
-                        if (hasCodeChars) {
-                            // Decode text
-                            let result = '';
-                            for (const char of input) {
-                                result += reverseMap[char] || char;
-                            }
-                            
-                            if (result !== input && /[a-zA-Z0-9]/.test(result)) {
-                                return { text: result, method: code.name };
-                            }
-                        }
-                    } catch (e) {
-                        console.error(`${code.name} decode error:`, e);
-                    }
-                }
-            }
-            
-            // - Check for Brainfuck (special case - look for brainfuck patterns)
-            if (window.transforms.brainfuck) {
-                try {
-                    // Brainfuck typically contains lots of +, -, <, >, [, ], ., and ,
-                    const brainfuckPattern = /^[+\-<>\[\].,\s]+$/;
-                    if (brainfuckPattern.test(input.trim()) && input.length > 20) {
-                        // This looks like brainfuck code, but we can't easily reverse it
-                        // Just indicate that it was detected
-                        return { text: '[Brainfuck code detected - cannot decode]', method: 'Brainfuck' };
-                    }
-                } catch (e) {
-                    console.error('Brainfuck detection error:', e);
-                }
-            }
-            
-            // - Check for Semaphore Flags (special case - look for flag emojis)
-            if (window.transforms.semaphore) {
-                try {
-                    // Look for flag-like characters or emojis
-                    const flagPattern = /[🔄🚩🏁🏴🏳️]/;
-                    if (flagPattern.test(input)) {
-                        return { text: '[Semaphore flags detected]', method: 'Semaphore Flags' };
-                    }
-                } catch (e) {
-                    console.error('Semaphore detection error:', e);
-                }
-            }
-            
-            // - Try reverse each transform that has a built-in reverse function
-            for (const name in window.transforms) {
-                const transform = window.transforms[name];
-                if (transform.reverse) {
-                    try {
-                        const result = transform.reverse(input);
-                        // Only return if the result is different and contains readable characters
-                        if (result !== input && /[a-zA-Z0-9\s]{3,}/.test(result)) {
-                            return { text: result, method: transform.name };
-                        }
-                    } catch (e) {
-                        console.error(`Error decoding with ${name}:`, e);
-                    }
-                }
-            }
-
-            // 4. Mixed/Randomized text decoding (token-wise decoding)
-            // Split on whitespace and common punctuation, keep separators
-            const tokens = input.split(/(\s+|[\.,!?:;()\[\]{}])/);
-            if (tokens.length > 1) {
-                const decodedTokens = tokens.map(tok => {
-                    // Skip separators
-                    if (!tok || /^(\s+|[\.,!?:;()\[\]{}])$/.test(tok)) return tok;
-                    
-                    // Try specific pattern checks first for token
-                    const quick = this.universalDecode(tok);
-                    if (quick && quick.text) return quick.text;
-                    
-                    // Fallback: try all reverses for token
-                    for (const name in window.transforms) {
-                        const transform = window.transforms[name];
-                        if (transform.reverse) {
-                            try {
-                                const r = transform.reverse(tok);
-                                if (r && r !== tok && /[a-zA-Z0-9\s]{1,}/.test(r)) return r;
-                            } catch (_) {}
-                        }
-                    }
-                    return tok;
-                });
-                const joined = decodedTokens.join('');
-                if (joined !== input && /[a-zA-Z0-9\s]{3,}/.test(joined)) {
-                    return { text: joined, method: 'Mixed (token-wise)' };
-                }
-            }
-            
-            return null;
-        },
-        
-        // Emoji Library Methods
-        filterEmojis() {
-            // Always show all emojis - search functionality removed
-            this.filteredEmojis = [...window.emojiLibrary.EMOJI_LIST];
-            this.renderEmojiGrid();
-        },
-        
-        selectEmoji(emoji) {
-            // Directly copy the emoji to clipboard - ensure it's a string
-            const emojiStr = String(emoji);
-            
-            // Special handling for emoji characters
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(emojiStr)
-                    .then(() => {
-                        this.showNotification(`<i class="fas fa-check"></i> Emoji copied!`, 'success');
-                        this.addToCopyHistory('Emoji', emojiStr);
-                    })
-                    .catch(err => {
-                        console.warn('Emoji clipboard API failed:', err);
-                        // Fallback to our custom method
-                        this.forceCopyToClipboard(emojiStr);
-                        this.showNotification(`<i class="fas fa-check"></i> Emoji copied!`, 'success');
-                        this.addToCopyHistory('Emoji', emojiStr);
-                    });
-            } else {
-                // Use our custom method if Clipboard API not available
-                this.forceCopyToClipboard(emojiStr);
-                this.showNotification(`<i class="fas fa-check"></i> Emoji copied!`, 'success');
-                this.addToCopyHistory('Emoji', emojiStr);
-            }
-            
-            // Also set up carrier if we're in steganography mode
-            if (this.activeTab === 'steganography') {
-                this.selectedEmoji = emoji;
-                
-                // Create a temporary carrier for this emoji
-                const tempCarrier = {
-                    name: `${emoji} Carrier`,
-                    emoji: emoji,
-                    encode: (text) => this.steganography.encode(text, emoji),
-                    decode: (text) => this.steganography.decode(text),
-                    preview: (text) => `${emoji}${text}${emoji}`
-                };
-                
-                // Use this emoji as carrier
-                this.selectedCarrier = tempCarrier;
-                this.activeSteg = 'emoji';
-                
-                // Encode the message with this emoji if we have one
-                if (this.emojiMessage) {
-                    this.autoEncode();
-                    
-                    // Wait for encoding to complete, then copy to clipboard
-                    this.$nextTick(() => {
-                        if (this.encodedMessage) {
-                            const encodedStr = String(this.encodedMessage);
-                            
-                            // Use native clipboard API first for better emoji support
-                            if (navigator.clipboard && navigator.clipboard.writeText) {
-                                navigator.clipboard.writeText(encodedStr)
-                                    .then(() => {
-                                        this.showNotification(`<i class="fas fa-check"></i> Hidden message copied with ${emoji}`, 'success');
-                                        this.addToCopyHistory(`Hidden Message with ${emoji}`, encodedStr);
-                                    })
-                                    .catch(err => {
-                                        console.warn('Encoded emoji clipboard API failed:', err);
-                                        // Fall back to our custom method
-                                        this.forceCopyToClipboard(encodedStr);
-                                        this.showNotification(`<i class="fas fa-check"></i> Hidden message copied with ${emoji}`, 'success');
-                                        this.addToCopyHistory(`Hidden Message with ${emoji}`, encodedStr);
-                                    });
-                            } else {
-                                // Use our custom method if Clipboard API not available
-                                this.forceCopyToClipboard(encodedStr);
-                                this.showNotification(`<i class="fas fa-check"></i> Hidden message copied with ${emoji}`, 'success');
-                                this.addToCopyHistory(`Hidden Message with ${emoji}`, encodedStr);
-                            }
-                        }
-                    });
-                }
-            }
-        },
-        
-        renderEmojiGrid() {
-            console.log('renderEmojiGrid called with', this.filteredEmojis.length, 'emojis');
-            
-            // Make sure container exists
-            const container = document.getElementById('emoji-grid-container');
-            if (!container) {
-                console.error('emoji-grid-container not found!');
-                return;
-            }
-            
-            // Force container to be completely visible
-            container.style.cssText = 'display: block !important; visibility: visible !important; min-height: 300px;';
-            
-            // Make sure parent containers are visible too
-            const emojiLibrary = document.querySelector('.emoji-library');
-            if (emojiLibrary) {
-                emojiLibrary.style.cssText = 'display: block !important; visibility: visible !important;';
-            }
-            
-            // Clear any existing content to avoid duplication
-            container.innerHTML = '';
-            
-            // Render the emoji grid
-            window.emojiLibrary.renderEmojiGrid('emoji-grid-container', this.selectEmoji.bind(this), this.filteredEmojis);
-            
-            // Message about copying has been removed as requested
-            
-            // Log success
-            console.log('Emoji grid rendered successfully');
-        },
-        
-        // Initialize category navigation for transform sections
-        initializeCategoryNavigation() {
-            this.$nextTick(() => {
-                console.log('Initializing category navigation');
-                const legendItems = document.querySelectorAll('.transform-category-legend .legend-item');
-                
-                // First, remove any existing event listeners to prevent duplicates
-                legendItems.forEach(item => {
-                    const newItem = item.cloneNode(true);
-                    item.parentNode.replaceChild(newItem, item);
-                });
-                
-                // Now add event listeners to the fresh elements
-                document.querySelectorAll('.transform-category-legend .legend-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const targetId = item.getAttribute('data-target');
-                        if (targetId) {
-                            const targetElement = document.getElementById(targetId);
-                            if (targetElement) {
-                                // Add active class to the clicked legend item
-                                document.querySelectorAll('.transform-category-legend .legend-item').forEach(li => {
-                                    li.classList.remove('active-category');
-                                });
-                                item.classList.add('active-category');
-                                
-                                // Get height of .input-section so we can offset the scroll
-                                const inputSection = document.querySelector('.input-section');
-                                const inputSectionHeight = inputSection.offsetHeight;
-                                
-                                // Calculate the target scroll position with offset
-                                const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
-                                const offsetPosition = elementPosition - inputSectionHeight - 10; // Extra 10px padding
-                                
-                                // Scroll to the calculated position
-                                window.scrollTo({
-                                    top: offsetPosition,
-                                    behavior: 'smooth'
-                                });
-                                
-                                // Highlight the section briefly to draw attention
-                                targetElement.classList.add('highlight-section');
-                                setTimeout(() => {
-                                    targetElement.classList.remove('highlight-section');
-                                }, 1000);
-                            }
-                        }
-                    });
-                });
-            });
-        }
-        ,
-        // -------- Fuzzer --------
-        seededRandomFactory(seedStr) {
-            if (!seedStr) return Math.random;
-            let h = 1779033703 ^ seedStr.length;
-            for (let i=0;i<seedStr.length;i++) {
-                h = Math.imul(h ^ seedStr.charCodeAt(i), 3432918353);
-                h = (h << 13) | (h >>> 19);
-            }
-            return function() {
-                h ^= h >>> 16; h = Math.imul(h, 2246822507); h ^= h >>> 13; h = Math.imul(h, 3266489909); h ^= h >>> 16;
-                return (h >>> 0) / 4294967296;
-            };
-        },
-        pick(arr, rnd) { return arr[Math.floor(rnd()*arr.length)]; },
-        injectZeroWidth(text, rnd) {
-            const zw = ['\u200B','\u200C','\u200D','\u2060'];
-            return [...text].map(ch => (rnd()<0.2 ? ch+this.pick(zw,rnd) : ch)).join('');
-        },
-        injectUnicodeNoise(text, rnd) {
-            const marks = ['\u0301','\u0300','\u0302','\u0303','\u0308','\u0307','\u0304'];
-            return [...text].map(ch => (rnd()<0.15 ? ch+this.pick(marks,rnd) : ch)).join('');
-        },
-        whitespaceChaos(text, rnd) {
-            return text.replace(/\s/g, (m)=> (rnd()<0.5? m : (rnd()<0.5?'\t':'\u00A0')));
-        },
-        casingChaos(text, rnd) {
-            return [...text].map(c => /[a-z]/i.test(c)? (rnd()<0.5? c.toUpperCase():c.toLowerCase()) : c).join('');
-        },
-        // Replace encodeShuffle with homoglyph confusables injection
-        encodeShuffle(text, rnd) {
-            const map = {
-                'A':'Α','B':'Β','C':'Ϲ','E':'Ε','H':'Η','I':'Ι','K':'Κ','M':'Μ','N':'Ν','O':'Ο','P':'Ρ','T':'Τ','X':'Χ','Y':'Υ',
-                'a':'а','c':'с','e':'е','i':'і','j':'ј','o':'о','p':'р','s':'ѕ','x':'х','y':'у'
-            };
-            return [...text].map(ch => {
-                if (map[ch] && rnd() < 0.25) return map[ch];
-                return ch;
-            }).join('');
-        },
-        generateFuzzCases() {
-            const src = String(this.fuzzerInput || '');
-            if (!src) { this.fuzzerOutputs = []; return; }
-            const rnd = this.seededRandomFactory(String(this.fuzzerSeed||''));
-            const out = [];
-            for (let i=0;i<Math.max(1,Math.min(500,Number(this.fuzzerCount)||1)); i++) {
-                let s = src;
-                if (this.fuzzUseRandomMix) {
-                    try { s = window.transforms.randomizer.func(s, { minTransforms:2, maxTransforms:4 }); } catch(_) {}
-                }
-                if (this.fuzzZeroWidth) s = this.injectZeroWidth(s, rnd);
-                if (this.fuzzUnicodeNoise) s = this.injectUnicodeNoise(s, rnd);
-                if (this.fuzzWhitespace) s = this.whitespaceChaos(s, rnd);
-                if (this.fuzzCasing) s = this.casingChaos(s, rnd);
-                if (this.fuzzZalgo) { try { s = window.transforms.zalgo.func(s); } catch(_) {} }
-                if (this.fuzzEncodeShuffle) s = this.encodeShuffle(s, rnd);
-                out.push(s);
-            }
-            this.fuzzerOutputs = out;
-        },
-        copyAllFuzz() { this.copyToClipboard(this.fuzzerOutputs.join('\n')); },
-        downloadFuzz() {
-            const lines = this.fuzzerOutputs.map((s, i) => `#${i+1}\t${s}`).join('\n');
-            const header = `# Parseltongue Fuzzer Output\n# count=${this.fuzzerOutputs.length}\n# seed=${this.fuzzerSeed || ''}\n# strategies=${[
-                this.fuzzUseRandomMix?'randomMix':null,
-                this.fuzzZeroWidth?'zeroWidth':null,
-                this.fuzzUnicodeNoise?'unicodeNoise':null,
-                this.fuzzWhitespace?'whitespace':null,
-                this.fuzzCasing?'casing':null,
-                this.fuzzZalgo?'zalgo':null,
-                this.fuzzEncodeShuffle?'encodeShuffle':null
-            ].filter(Boolean).join(',')}\n`;
-            const blob = new Blob([header + lines + '\n'], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = 'fuzz_cases.txt'; a.click();
-            setTimeout(()=>URL.revokeObjectURL(url), 200);
-        },
-        // Quick estimate of token count for Tokenade
-        estimateTokenadeTokens() {
-            // Roughly approximate tokens by estimated character length
-            // This intentionally errs on the conservative side for warning purposes
-            const approx = this.estimateTokenadeLength();
-            return Math.max(0, approx);
-        },
-
-        // Confirm danger threshold before generating
-        checkTokenadeDangerThenGenerate() {
-            const estTokens = this.estimateTokenadeTokens();
-            if (estTokens > this.dangerThresholdTokens) {
-                this.showDangerModal = true;
-                return;
-            }
-            this.generateTokenBomb();
-        },
-
-        // Modal acknowledge handler
-        proceedDangerAction() {
-            // Close modal and return focus to Generate button for accessibility
-            this.showDangerModal = false;
-            this.$nextTick(() => {
-                try {
-                    const btn = document.querySelector('.token-bomb-actions .transform-button');
-                    btn && btn.focus();
-                } catch (_) {}
-            });
-        },
-
-        // Token Bomb Generator Logic
-        generateTokenBomb() {
-            const depth = Math.max(1, Math.min(8, Number(this.tbDepth) || 1));
-            const breadth = Math.max(1, Math.min(10, Number(this.tbBreadth) || 1));
-            const repeats = Math.max(1, Math.min(50, Number(this.tbRepeats) || 1));
-            const sep = this.tbSeparator === 'zwj' ? '\u200D' : this.tbSeparator === 'zwnj' ? '\u200C' : this.tbSeparator === 'zwsp' ? '\u200B' : '';
-            const includeVS = !!this.tbIncludeVS;
-            const includeNoise = !!this.tbIncludeNoise;
-            const randomize = !!this.tbRandomizeEmojis;
-
-            const emojiList = this.filteredEmojis && this.filteredEmojis.length ? this.filteredEmojis : window.emojiLibrary.EMOJI_LIST;
-
-            function pickEmojis(count) {
-                const out = [];
-                for (let i = 0; i < count; i++) {
-                    const idx = randomize ? Math.floor(Math.random() * emojiList.length) : (i % emojiList.length);
-                    out.push(String(emojiList[idx]));
-                }
-                return out;
-            }
-
-            function addVS(str) {
-                if (!includeVS) return str;
-                // Alternate VS16/VS15 to maximize tokenization churn
-                const vs16 = '\uFE0F';
-                const vs15 = '\uFE0E';
-                let out = '';
-                for (let i = 0; i < str.length; i++) {
-                    const ch = str[i];
-                    out += ch + (i % 2 === 0 ? vs16 : vs15);
-                }
-                return out;
-            }
-
-            function noise() {
-                if (!includeNoise) return '';
-                const parts = ['\u200B','\u200C','\u200D','\u2060','\u2062','\u2063'];
-                let s = '';
-                const n = 1 + Math.floor(Math.random() * 3);
-                for (let i = 0; i < n; i++) s += parts[Math.floor(Math.random() * parts.length)];
-                return s;
-            }
-
-            function buildLevel(level) {
-                if (level === 0) {
-                    const base = pickEmojis(breadth).join('');
-                    return addVS(base);
-                }
-                const items = [];
-                for (let i = 0; i < breadth; i++) {
-                    const inner = buildLevel(level - 1);
-                    items.push(inner + noise());
-                }
-                return items.join(sep);
-            }
-
-            if (this.tbSingleCarrier) {
-                const manual = (this.tbCarrierManual || '').trim();
-                const carrier = manual || (this.tbCarrier && String(this.tbCarrier)) || (this.selectedEmoji ? String(this.selectedEmoji) : '💥');
-                function countUnits(level) {
-                    if (level === 0) return breadth;
-                    return breadth * countUnits(level - 1);
-                }
-                const unitsPerBlock = countUnits(depth - 1);
-                const totalUnits = Math.max(1, repeats * unitsPerBlock);
-
-                let payload = [];
-                payload = pickEmojis(totalUnits);
-
-                function toTagSeqForEmojiChar(ch) {
-                    const cp = ch.codePointAt(0);
-                    const hex = cp.toString(16);
-                    let seq = '';
-                    for (const d of hex) {
-                        if (d >= '0' && d <= '9') {
-                            const base = 0xE0030 + (d.charCodeAt(0) - '0'.charCodeAt(0));
-                            seq += String.fromCodePoint(base);
-                        } else {
-                            const base = 0xE0061 + (d.charCodeAt(0) - 'a'.charCodeAt(0));
-                            seq += String.fromCodePoint(base);
-                        }
-                    }
-                    seq += String.fromCodePoint(0xE007F);
-                    return seq;
-                }
-
-                const vs16 = includeVS ? '\uFE0F' : '';
-                let out = carrier + vs16;
-                for (let i = 0; i < payload.length; i++) {
-                    out += sep + toTagSeqForEmojiChar(payload[i]) + noise();
-                }
-                this.tokenBombOutput = out;
-            } else {
-                let block = buildLevel(depth - 1);
-                // Repeat the block to increase token length
-                const blocks = [];
-                for (let i = 0; i < repeats; i++) {
-                    blocks.push(block + noise());
-                }
-                this.tokenBombOutput = blocks.join(sep);
-            }
-
-            // Provide a quick visual confirmation
-            this.showNotification('<i class="fas fa-bomb"></i> Tokenade generated', 'success');
-
-            if (this.tbAutoCopy && this.tokenBombOutput) {
-                this.$nextTick(() => this.copyToClipboard(this.tokenBombOutput));
-            }
-        },
-
-        applyTokenadePreset(preset) {
-            if (preset === 'feather') {
-                this.tbDepth = 1; this.tbBreadth = 3; this.tbRepeats = 2; this.tbSeparator = 'zwnj';
-                this.tbIncludeVS = false; this.tbIncludeNoise = false; this.tbRandomizeEmojis = true;
-            } else if (preset === 'light') {
-                this.tbDepth = 2; this.tbBreadth = 3; this.tbRepeats = 3; this.tbSeparator = 'zwnj';
-                this.tbIncludeVS = false; this.tbIncludeNoise = true; this.tbRandomizeEmojis = true;
-            } else if (preset === 'middle') {
-                this.tbDepth = 3; this.tbBreadth = 4; this.tbRepeats = 6; this.tbSeparator = 'zwnj';
-                this.tbIncludeVS = true; this.tbIncludeNoise = true; this.tbRandomizeEmojis = true;
-            } else if (preset === 'heavy') {
-                this.tbDepth = 4; this.tbBreadth = 6; this.tbRepeats = 12; this.tbSeparator = 'zwnj';
-                this.tbIncludeVS = true; this.tbIncludeNoise = true; this.tbRandomizeEmojis = true;
-            } else if (preset === 'super') {
-                this.tbDepth = 5; this.tbBreadth = 8; this.tbRepeats = 18; this.tbSeparator = 'zwnj';
-                this.tbIncludeVS = true; this.tbIncludeNoise = true; this.tbRandomizeEmojis = true;
-            }
-            this.showNotification('<i class="fas fa-sliders-h"></i> Preset applied', 'success');
-        },
-
-        // Live estimator for pre-generation length
-        estimateTokenadeLength() {
-            const depth = Math.max(1, Math.min(8, Number(this.tbDepth) || 1));
-            const breadth = Math.max(1, Math.min(10, Number(this.tbBreadth) || 1));
-            const repeats = Math.max(1, Math.min(50, Number(this.tbRepeats) || 1));
-            const sepLen = this.tbSeparator === 'none' ? 0 : 1;
-            const vsPerEmoji = this.tbIncludeVS ? 1 : 0;
-            const noiseAvg = this.tbIncludeNoise ? 2 : 0;
-
-            function lenLevel(level) {
-                if (level === 0) {
-                    return breadth * (1 + vsPerEmoji);
-                }
-                const inner = lenLevel(level - 1);
-                return breadth * (inner + noiseAvg) + Math.max(0, breadth - 1) * sepLen;
-            }
-
-            if (this.tbSingleCarrier) {
-                function countUnits(level) { return level === 0 ? breadth : breadth * countUnits(level - 1); }
-                const unitsPerBlock = countUnits(depth - 1);
-                const totalUnits = Math.max(1, repeats * unitsPerBlock);
-                const avgDigits = 5; // avg hex digits in tag sequence
-                const perUnit = avgDigits + 1 + sepLen + (this.tbIncludeNoise ? 2 : 0); // tags+term + sep + noise
-                const carrierLen = 1 + (this.tbIncludeVS ? 1 : 0);
-                return carrierLen + totalUnits * perUnit;
-            } else {
-                const blockLen = lenLevel(depth - 1);
-                return repeats * (blockLen + noiseAvg) + Math.max(0, repeats - 1) * sepLen;
-            }
-        },
-
-        setCarrierFromSelected() {
-            if (this.selectedEmoji) this.tbCarrier = String(this.selectedEmoji);
-        },
-        clearTokenadePayload() { this.tbPayloadEmojis = []; },
-        removeTokenadePayloadAt(idx) { this.tbPayloadEmojis.splice(idx, 1); },
-        onCarrierInput() {
-            const q = (this.tbCarrier || '').trim();
-            if (!q) {
-                this.carrierEmojiList = [...window.emojiLibrary.EMOJI_LIST];
-                return;
-            }
-            // Filter emoji list by simple name guess or by including the character; if q contains an emoji, keep it
-            const list = window.emojiLibrary.EMOJI_LIST;
-            const byChar = list.filter(e => e.includes(q));
-            // Also support colon-like query (e.g., ':heart') by rough keywords
-            const keywords = {
-                heart: ['❤️','💛','💚','💙','💜','💖','💘','💝','💗'],
-                star: ['⭐','🌟'],
-                fire: ['🔥'],
-                bomb: ['💣'],
-                snake: ['🐍'],
-                dragon: ['🐉','🐲'],
-                skull: ['💀'],
-                sparkles: ['✨'],
-                moon: ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘','🌙']
-            };
-            let byKey = [];
-            const qk = q.replace(/[:_\s]/g,'').toLowerCase();
-            Object.keys(keywords).forEach(k => {
-                if (k.indexOf(qk) !== -1) byKey = byKey.concat(keywords[k]);
-            });
-            const merged = Array.from(new Set([...byChar, ...byKey]));
-            this.carrierEmojiList = merged.length ? merged : [...window.emojiLibrary.EMOJI_LIST];
-        },
-        handleTokenadeDrop(e) {
-            e.preventDefault();
-            const text = e.dataTransfer && (e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text'));
-            if (!text) return;
-            const parts = window.emojiLibrary.splitEmojis(text);
-            const onlyEmojis = parts.filter(p => /\p{Extended_Pictographic}/u.test(p));
-            this.tbPayloadEmojis.push(...onlyEmojis);
-        },
-        handleTokenadePaste(e) {
-            const text = (e.clipboardData && e.clipboardData.getData('text')) || '';
-            if (!text) return;
-            const parts = window.emojiLibrary.splitEmojis(text);
-            const onlyEmojis = parts.filter(p => /\p{Extended_Pictographic}/u.test(p));
-            this.tbPayloadEmojis.push(...onlyEmojis);
-        }
-        ,
-        // Tokenizer visualization
-        async runTokenizer() {
-            const text = this.tokenizerInput || '';
-            const engine = this.tokenizerEngine;
-            const tokens = [];
-            if (!text) { this.tokenizerTokens = []; this.tokenizerCharCount = 0; this.tokenizerWordCount = 0; return; }
-            if (engine === 'byte') {
-                // Split into UTF-8 bytes, display hex and glyphs
-                const encoder = new TextEncoder();
-                const bytes = encoder.encode(text);
-                for (let i=0;i<bytes.length;i++) {
-                    tokens.push({ id: bytes[i], text: `0x${bytes[i].toString(16).padStart(2,'0')}` });
-                }
-            } else if (engine === 'word') {
-                // Naive word split incl. punctuation
-                const parts = text.split(/(\s+|[\.,!?:;()\[\]{}])/);
-                for (const p of parts) { if (p) tokens.push({ text: p }); }
-            } else if (['cl100k','o200k','p50k','r50k'].includes(engine)) {
-                try {
-                    if (!window.gptTok) {
-                        window.gptTok = await import('https://cdn.jsdelivr.net/npm/gpt-tokenizer@2/+esm');
-                    }
-                    const map = { cl100k: 'cl100k_base', o200k: 'o200k_base', p50k: 'p50k_base', r50k: 'r50k_base' };
-                    const enc = map[engine];
-                    const ids = window.gptTok.encode(text, enc);
-                    for (const id of ids) {
-                        const piece = window.gptTok.decode([id], enc);
-                        tokens.push({ id, text: piece });
-                    }
-                } catch (e) {
-                    console.warn('Failed to load/use gpt-tokenizer; falling back to bytes', e);
-                    this.tokenizerEngine = 'byte';
-                    return this.runTokenizer();
-                }
-            } else {
-                // Fallback to bytes
-                const encoder = new TextEncoder();
-                const bytes = encoder.encode(text);
-                for (let i=0;i<bytes.length;i++) tokens.push({ id: bytes[i], text: `0x${bytes[i].toString(16).padStart(2,'0')}` });
-            }
-            this.tokenizerTokens = tokens;
-            // Counts
-            this.tokenizerCharCount = Array.from(text).length;
-            const wordMatches = text.trim().match(/[^\s]+/g) || [];
-            this.tokenizerWordCount = wordMatches.length;
-        }
-        ,
-        generateTextPayload() {
-            const base = String(this.tpBase || 'A');
-            const count = Math.max(1, Math.min(10000, Number(this.tpRepeat) || 1));
-            const combining = this.tpCombining;
-            const addZW = this.tpZW;
-            const marks = ['\u0301','\u0300','\u0302','\u0303','\u0308','\u0307','\u0304'];
-            const zw = ['\u200B','\u200C','\u200D','\u2060'];
-            let out = '';
-            for (let i=0;i<count;i++) {
-                let token = base;
-                if (combining) {
-                    const m = marks[i % marks.length];
-                    token += m;
-                }
-                if (addZW) {
-                    const z = zw[i % zw.length];
-                    token += z;
-                }
-                out += token;
-            }
-            this.textPayload = out;
-            this.showNotification('<i class="fas fa-bomb"></i> Text payload generated', 'success');
-        },
-
-        // Gibberish Logic
-        seededRandom(seed) {
-            const x = Math.sin(seed) * 10000;
-            return x - Math.floor(x);
-        },
-
-        sentenceToGibberish() {
-        function generateGibberish(word, seed) {
-            const length = Math.max(4, word.length);
-            let gibberish = "";
-            const chars = this.gibberishChars;
-
-            for (let i = 0; i < length; i++) {
-            const randomValue = this.seededRandom(seed + i * 0.1);
-            gibberish += chars[Math.floor(randomValue * chars.length)];
-            }
-            return gibberish;
-        }
-        const src = String(this.gibberishInput || '');
-        if (!src) { this.gibberishOutput = ''; return; }
-
-        const words = this.gibberishInput.match(/\b\w+\b/g) || [];
-        const dictionary = {};
-        let gibberishSentence = "";
-        let wordIndex = 0;
-
-        words.forEach((word) => {
-            const lowerWord = word.toLowerCase();
-            const seed =
-            this.gibberishSeed === ""
-                ? Math.random() * 100
-                : Number(this.gibberishSeed);
-
-            if (!dictionary[lowerWord]) {
-            const wordSeed = seed + wordIndex * 100;
-            dictionary[lowerWord] = generateGibberish.call(this, word, wordSeed);
-            wordIndex++;
-            }
-        });
-
-        let charIndex = 0;
-        for (let i = 0; i < this.gibberishInput.length; i++) {
-            const char = this.gibberishInput[i];
-
-            if (/\w/.test(char)) {
-            let j = i;
-            while (
-                j < this.gibberishInput.length &&
-                /\w/.test(this.gibberishInput[j])
-            ) {
-                j++;
-            }
-
-            const word = this.gibberishInput.substring(i, j).toLowerCase();
-            gibberishSentence += dictionary[word];
-            i = j - 1;
-            } else {
-            gibberishSentence += char;
-            }
-        }
-
-        const dictionaryString = Object.entries(dictionary)
-            .map(([plain, gib]) => `"${plain}": "${gib}"`)
-            .join(", ");
-
-        this.gibberishOutput = gibberishSentence;
-        this.gibberishDictionary = '{' + dictionaryString + '}';
-        },
-
-        
-        generateRandomRemovals() {
-            if (!this.removalInput.trim()) {
-                this.showNotification('Please enter text to process', 'error');
-                return;
-            }
-            
-            const seed = this.removalSeed ? String(this.removalSeed) : String(Date.now());
-            let rng = this.seededRandomFactory(seed);
-            
-            this.removalOutputs = [];
-            const words = this.removalInput.split(/\s+/);
-            
-            for (let v = 0; v < this.removalVariations; v++) {
-                const modifiedWords = words.map(word => {
-                    // Skip very short words or non-alphabetic
-                    if (word.length <= 1 || !/[a-zA-Z]/.test(word)) {
-                        return word;
-                    }
-                    
-                    // Determine how many letters to remove for this word
-                    const minRemove = Math.max(0, this.removalMinLetters);
-                    const maxRemove = Math.min(word.length - 1, this.removalMaxLetters);
-                    const numToRemove = minRemove + Math.floor(rng() * (maxRemove - minRemove + 1));
-                    
-                    if (numToRemove === 0) {
-                        return word;
-                    }
-                    
-                    // Get letter positions
-                    const letters = word.split('').map((c, i) => ({ char: c, index: i }))
-                        .filter(item => /[a-zA-Z]/.test(item.char));
-                    
-                    // Randomly select positions to remove
-                    const toRemoveIndices = new Set();
-                    const maxAttempts = numToRemove * 3;
-                    let attempts = 0;
-                    
-                    while (toRemoveIndices.size < Math.min(numToRemove, letters.length) && attempts < maxAttempts) {
-                        const randIdx = Math.floor(rng() * letters.length);
-                        toRemoveIndices.add(letters[randIdx].index);
-                        attempts++;
-                    }
-                    
-                    // Build result by skipping removed indices
-                    return word.split('').filter((_, i) => !toRemoveIndices.has(i)).join('');
-                });
-                
-                this.removalOutputs.push(modifiedWords.join(' '));
-            }
-            
-            this.showNotification(`Generated ${this.removalOutputs.length} variations`, 'success');
-        },
-        
-        
-        generateSpecificRemoval() {
-            if (!this.removalSpecificInput.trim()) {
-                this.showNotification('Please enter text to process', 'error');
-                return;
-            }
-            
-            if (!this.removalCharsToRemove) {
-                this.showNotification('Please specify characters to remove', 'error');
-                return;
-            }
-            
-            const charsToRemove = new Set(this.removalCharsToRemove.split(''));
-            this.removalSpecificOutput = this.removalSpecificInput
-                .split('')
-                .filter(char => !charsToRemove.has(char))
-                .join('');
-            
-            this.showNotification('Characters removed', 'success');
-        },
-        
-        // Copy all removal outputs
-        copyAllRemovals() {
-            const allText = this.removalOutputs.join('\n');
-            this.copyToClipboard(allText);
-        },
-        
-        // Set up paste event handlers for all textareas
         setupPasteHandlers() {
-            // Get all textareas in the app
             const textareas = document.querySelectorAll('textarea');
-            
-            // Add paste event listener to each textarea
             textareas.forEach(textarea => {
                 textarea.addEventListener('paste', (e) => {
-                    // Mark this as an explicit paste event
                     this.isPasteOperation = true;
-                    
-                    // Reset the flag after a short delay
                     setTimeout(() => {
                         this.isPasteOperation = false;
-                    }, 100);
+                    }, window.CONFIG.PASTE_FLAG_RESET_DELAY_MS);
                 });
             });
         }
-    },
-    // Initialize theme and components
+    }),
     mounted() {
-        console.log('Vue app mounted');
-        // Apply theme
+        if (window.ThemeUtils && window.ThemeUtils.initializeTheme) {
+            this.isDarkTheme = window.ThemeUtils.initializeTheme();
         if (this.isDarkTheme) {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.add('light-theme');
+            }
+        } else if (this.isDarkTheme) {
             document.body.classList.add('dark-theme');
         }
         
-        // Initialize category navigation
-        this.initializeCategoryNavigation();
+        if (window.toolRegistry && typeof window.toolRegistry.mergeVueLifecycle === 'function') {
+            const lifecycleHooks = window.toolRegistry.mergeVueLifecycle();
+            if (lifecycleHooks && lifecycleHooks.mounted) {
+                lifecycleHooks.mounted.call(this);
+            }
+        }
         
-        // Initialize emoji grid with all emojis shown by default
+        if (window.toolRegistry && typeof window.toolRegistry.getAll === 'function') {
+            this.registeredTools = window.toolRegistry.getAll();
+        }
+        
         this.$nextTick(() => {
-            console.log('nextTick: Initializing emoji grid');
-            // Make sure filtered emojis is populated
-            this.filteredEmojis = [...window.emojiLibrary.EMOJI_LIST];
+            const closeButton = document.querySelector('#unicode-options-panel .close-button');
+            if (closeButton) {
+                const handleClose = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleUnicodePanel(e);
+                };
+                
+                closeButton.addEventListener('click', handleClose, { passive: false });
+                closeButton.addEventListener('touchend', handleClose, { passive: false });
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.custom-tooltip')) {
+                return;
+            }
             
-            // Define a function to properly initialize the emoji grid
+            const tooltipIcon = e.target.closest('.tooltip-icon');
+            
+            if (tooltipIcon) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const tooltipText = tooltipIcon.getAttribute('data-tooltip');
+                if (!tooltipText) return;
+                
+                const existingTooltip = document.querySelector('.custom-tooltip.active');
+                if (existingTooltip && existingTooltip.textContent === tooltipText) {
+                    existingTooltip.classList.remove('active');
+                    setTimeout(() => {
+                        if (!existingTooltip.classList.contains('active')) {
+                            existingTooltip.remove();
+                        }
+                    }, 200);
+                    return;
+                }
+                
+                document.querySelectorAll('.custom-tooltip.active').forEach(tooltip => {
+                    tooltip.classList.remove('active');
+                    setTimeout(() => {
+                        if (!tooltip.classList.contains('active')) {
+                            tooltip.remove();
+                        }
+                    }, 200);
+                });
+                
+                setTimeout(() => {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'custom-tooltip active';
+                    tooltip.textContent = tooltipText;
+                    
+                    document.body.appendChild(tooltip);
+                    
+                    const rect = tooltipIcon.getBoundingClientRect();
+                    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                    tooltip.style.top = (rect.top - tooltip.offsetHeight - 8) + 'px';
+                    tooltip.style.transform = 'translateX(-50%)';
+                }, 10);
+                
+                return;
+            }
+            
+            if (e.target.closest('#unicode-options-panel')) {
+                return;
+            }
+            
+            document.querySelectorAll('.custom-tooltip.active').forEach(tooltip => {
+                tooltip.classList.remove('active');
+                setTimeout(() => {
+                    if (!tooltip.classList.contains('active')) {
+                        tooltip.remove();
+                    }
+                }, 200);
+            });
+        });
+        
+        this.$nextTick(() => {
             const initializeEmojiGrid = () => {
-                // Only try to initialize when steganography tab is active
                 if (this.activeTab !== 'steganography') {
                     return;
                 }
@@ -2359,55 +368,48 @@ window.app = new Vue({
                 const emojiGridContainer = document.getElementById('emoji-grid-container');
                 
                 if (emojiGridContainer) {
-                    console.log('Found emoji-grid-container, rendering grid');
-                    
-                    // Set inline styles to ensure visibility
                     emojiGridContainer.setAttribute('style', 'display: block !important; visibility: visible !important; min-height: 300px; padding: 10px;');
                     
-                    // Also make sure the parent container is visible
                     const emojiLibrary = document.querySelector('.emoji-library');
                     if (emojiLibrary) {
                         emojiLibrary.setAttribute('style', 'display: block !important; visibility: visible !important; margin-top: 20px; overflow: visible;');
                     }
                     
-                    // Now render the grid
                     this.renderEmojiGrid();
-                    console.log('Emoji grid rendering complete in mounted()');
-                    
-                    // Stop retrying once we've successfully found and rendered the grid
                     clearInterval(emojiGridInitializer);
-                } else {
-                    console.log('emoji-grid-container not found, will retry when steganography tab is active');
                 }
             };
             
-            // Use an interval instead of recursive setTimeout for more reliable initialization
-            // This will try every 500ms until it succeeds or the page is navigated away from
-            const emojiGridInitializer = setInterval(initializeEmojiGrid, 500);
-            
-            // Set up paste event handlers for all textareas to prevent unwanted clipboard notifications
+            const emojiGridInitializer = setInterval(initializeEmojiGrid, window.CONFIG.EMOJI_GRID_INIT_INTERVAL_MS);
+            this._emojiGridInitializer = emojiGridInitializer;
             this.setupPasteHandlers();
         });
     },
     
-    // No keyboard shortcuts - they were removed as requested
     created() {
-        // Initialize any required functionality
-        // But no keyboard shortcuts/hotkeys for now
-    },
-    
-    // Watch for input events and ensure proper focus handling
-    watch: {
-        // Watch transform input to update transforms
-        transformInput() {
-            // Only auto-transform if we have an active transform
-            if (this.activeTransform && this.activeTab === 'transforms') {
-                this.transformOutput = this.activeTransform.func(this.transformInput);
+        if (window.toolRegistry && typeof window.toolRegistry.mergeVueLifecycle === 'function') {
+            const lifecycleHooks = window.toolRegistry.mergeVueLifecycle();
+            if (lifecycleHooks && lifecycleHooks.created) {
+                lifecycleHooks.created.call(this);
             }
         }
-        // Note: Removed watchers for emojiMessage and decodeInput that were
-        // unnecessarily re-rendering the emoji grid on every keystroke.
-        // The emoji grid is now only rendered when switching tabs or categories,
-        // which prevents losing the selected emoji state while typing.
-    }
+    },
+    
+    beforeDestroy() {
+        if (this._emojiGridInitializer) {
+            clearInterval(this._emojiGridInitializer);
+            this._emojiGridInitializer = null;
+        }
+        
+        if (window.toolRegistry && typeof window.toolRegistry.mergeVueLifecycle === 'function') {
+            const lifecycleHooks = window.toolRegistry.mergeVueLifecycle();
+            if (lifecycleHooks && lifecycleHooks.beforeDestroy) {
+                lifecycleHooks.beforeDestroy.call(this);
+            }
+        }
+    },
+    
+    watch: (window.toolRegistry && typeof window.toolRegistry.mergeVueWatchers === 'function') 
+        ? window.toolRegistry.mergeVueWatchers() 
+        : {}
 });

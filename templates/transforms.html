@@ -1,0 +1,119 @@
+<div v-if="activeTab === 'transforms'" class="tab-content">
+                <div class="transform-layout">
+                    <div class="input-section">
+                        <textarea 
+                            id="transform-input" 
+                            v-model="transformInput" 
+                            placeholder="Enter text to transform..."
+                            @input="autoTransform"
+                        ></textarea>
+                    </div>
+
+                    <div class="transform-section">
+                        <div class="transform-category-legend">
+                            <div class="legend-title">Categories:</div>
+                            <div>
+                                <div 
+                                    v-for="category in categories" 
+                                    :key="category"
+                                    :class="'legend-item transform-category-' + category" 
+                                    :data-target="'category-' + category"
+                                >
+                                    {{ category }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="transform-categories">
+                            <template v-for="category in categories" :key="category">
+                                <!-- Special handling for randomizer category -->
+                                <div 
+                                    v-if="isSpecialCategory(category)"
+                                    :id="'category-' + category" 
+                                    :class="'transform-category-section randomizer-special'"
+                                >
+                                    <h4 :class="'category-title transform-category-' + category">🎲 Randomizer - Code Switching Magic!</h4>
+                                    <p class="randomizer-description">
+                                        🌟 Apply different transforms to each word in your sentence! Creates a polyglot mix of encodings.
+                                    </p>
+                                    <div class="chaos-overlay" aria-hidden="true"></div>
+                                    <div class="transform-buttons">
+                                        <div v-for="transform in getTransformsByCategory(category)" :key="transform.name" class="transform-button-group">
+                                            <button 
+                                                @click="applyTransform(transform, $event)"
+                                                :class="'transform-button transform-category-' + category + ' randomizer-button'"
+                                                :class="{ active: activeTransform === transform }"
+                                                title="Click to apply random transforms to each word!"
+                                            >
+                                                <i class="fas fa-wand-magic-sparkles"></i>
+                                                !RANDOMIZE!
+                                                <small class="transform-preview">
+                                                    🌀 Each word = different transform!
+                                                </small>
+                                                <i class="fas fa-copy auto-copy-icon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="randomizer-info">
+                                        <h5>🎮 How it works:</h5>
+                                        <ul>
+                                            <li>🔀 Each word gets a <strong>random transform</strong></li>
+                                            <li>🎯 Mixes <strong>fantasy</strong>, <strong>ancient</strong>, and <strong>modern</strong> encodings</li>
+                                            <li>📝 Preserves punctuation and spacing</li>
+                                            <li>🔍 Check console for transform mapping details</li>
+                                        </ul>
+                                        <p><em>Example: "Hello World!" → "SGVsbG8= ᚹᚩᚱᛚᛞ!"</em></p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Standard category -->
+                                <div 
+                                    v-else
+                                    :id="'category-' + category" 
+                                    :class="'transform-category-section'"
+                                >
+                                    <h4 :class="'category-title transform-category-' + category">{{ category }}</h4>
+                                    <div class="transform-buttons">
+                                        <div v-for="transform in getTransformsByCategory(category)" :key="transform.name" class="transform-button-group">
+                                            <button 
+                                                @click="applyTransform(transform, $event)"
+                                                :class="'transform-button transform-category-' + category"
+                                                :class="{ active: activeTransform === transform }"
+                                                :title="'Click to transform and copy: ' + transform.name"
+                                            >
+                                                {{ transform.name }}
+                                                <small class="transform-preview" v-if="transformInput">
+                                                    {{ transform.preview(transformInput.slice(0, 10)) }}
+                                                </small>
+                                                <i class="fas fa-copy auto-copy-icon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="output-section" v-if="transformOutput">
+                        <div class="output-heading">
+                            <h4>
+                                <i class="fas fa-check-circle"></i> 
+                                Transformed Message
+                                <small v-if="activeTransform">({{ activeTransform.name }})</small>
+                            </h4>
+                        </div>
+                        <div class="output-container">
+                            <textarea 
+                                readonly 
+                                v-model="transformOutput"
+                                aria-label="Transformed text output"
+                            ></textarea>
+                            <button class="copy-button" @click="copyToClipboard(transformOutput)" title="Copy to clipboard">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="output-instructions">
+                            <small><i class="fas fa-info-circle"></i> Copy this text and share it. Use the Decoder tab to reverse transformations.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>

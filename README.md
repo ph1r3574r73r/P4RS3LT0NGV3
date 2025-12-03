@@ -1,6 +1,6 @@
 # 🐍 P4RS3LT0NGV3 - Universal Text Translator
 
-A powerful web-based text transformation and steganography tool that can encode/decode text in over 50 different languages, scripts, and formats. Think of it as a universal translator for ALL alphabets and writing systems!
+A powerful web-based text transformation and steganography tool that can encode/decode text in 79+ different languages, scripts, and formats. Think of it as a universal translator for ALL alphabets and writing systems!
 
 ## ✨ Features
 
@@ -77,13 +77,22 @@ A powerful web-based text transformation and steganography tool that can encode/
 - **Vaporwave** - Aesthetic spacing
 - **Zalgo** - Glitch text with combining marks
 - **Mirror Text** - Reversed text
-- **Rainbow Text** - Colorful text effects
 
 ### 🔍 **Universal Decoder**
 - **Smart Detection**: Automatically detects and decodes any supported format
 - **Priority Matching**: Prioritizes decoding based on active transform
 - **Fallback Methods**: Tries all available decoders if primary fails
 - **Real-time Processing**: Instant decoding as you type
+
+### 🛠️ **Available Tools**
+- **Universal Decoder**: Auto-detect and decode any supported format
+- **Text Transforms**: 79+ encoding, cipher, and transformation options
+- **Steganography**: Emoji and invisible text steganography
+- **Tokenade Generator**: High-density token payload builder
+- **Mutation Lab (Fuzzer)**: Generate diverse text mutations
+- **Tokenizer Visualization**: Visualize tokenization for various engines
+- **Message Splitter**: Split text into multiple copyable chunks
+- **Gibberish Generator**: Create gibberish dictionaries and character removal variants
 
 ### 📱 **User Experience**
 - **Dark/Light Theme**: Toggle between themes
@@ -95,26 +104,50 @@ A powerful web-based text transformation and steganography tool that can encode/
 
 ## 🚀 **Getting Started**
 
-### **Web Version**
-1. Open `index.html` in any modern web browser
-2. Type text in the input field
-3. Choose a transformation from the categorized buttons
-4. Click any transform button to apply and auto-copy
-5. Use the Universal Decoder to decode any encoded text
+### **Quick Start (Built Version)**
+1. Run the build process (see Development Setup below)
+2. Open `index.html` in any modern web browser
+3. Type text in the input field
+4. Choose a transformation from the categorized buttons
+5. Click any transform button to apply and auto-copy
+6. Use the Universal Decoder to decode any encoded text
 
-### **Python Version**
+### **Development Setup**
 ```bash
-pip install streamlit pillow pyperclip
-streamlit run parsel_app.py
+# Install dependencies
+npm install
+
+# Build all assets (required before use):
+# - Builds transform bundle from source files
+# - Generates emoji data
+# - Injects tool templates into index.html
+npm run build
+
+# Or build individual components:
+npm run build:transforms  # Bundle all transformers
+npm run build:emoji        # Generate emoji data
+npm run build:templates    # Inject tool HTML templates
+npm run build:index        # Generate transformer index
+
+# Run tests
+npm test                   # Run universal decoder tests
+npm run test:universal     # Same as above
+npm run test:steg          # Test steganography options
 ```
+
 
 ## 🛠️ **Technical Details**
 
 ### **Architecture**
-- **Frontend**: Vue.js 2.6 with modern CSS
-- **Backend**: Streamlit Python app (alternative)
+- **Frontend**: Vue.js 2.6 with modern CSS (staying on Vue 2)
+- **Tool System**: Modular tool registry with build-time template injection
 - **Encoding**: UTF-8 with proper Unicode handling
 - **Steganography**: Variation selectors and Tags Unicode block
+- **Build Process**: 
+  - Transformers are bundled from `src/transformers/` into `js/bundles/transforms-bundle.js`
+  - Tool templates are injected from `templates/` into `index.html`
+  - Emoji data is generated from Unicode specifications
+  - All build steps are required before the app can run
 
 ### **Browser Support**
 - Chrome/Edge 80+
@@ -136,7 +169,7 @@ streamlit run parsel_app.py
 - ✅ **Reverse Functions**: Added missing reverse functions for many transforms
 
 ### **New Features**
-- 🆕 **50+ New Languages**: Added fantasy, ancient, and technical scripts
+- 🆕 **79+ Transformations**: Added fantasy, ancient, and technical scripts
 - 🆕 **More Encodings/Ciphers**: Base58, Base62, Vigenère, Rail Fence, Roman Numerals
 - 🆕 **Category Organization**: Better organized transform categories
 - 🆕 **Enhanced Styling**: New color schemes for each category
@@ -166,56 +199,20 @@ streamlit run parsel_app.py
 
 ## 🤝 **Contributing**
 
-This project welcomes contributions! Areas for improvement:
+This project welcomes contributions! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for detailed guidelines.
 
+**Quick Start:**
+- **Adding a transformer?** See `src/transformers/` directory structure
+- **Adding a new tool/feature?** See `CONTRIBUTING.md` → "Adding a New Tool"
+- **Adding utilities?** See `CONTRIBUTING.md` → "Adding a New Utility Function"
+- **Editing tool templates?** See `templates/README.md`
+
+**Areas for improvement:**
 - **New Languages**: Add more fictional or historical scripts
 - **Better Decoding**: Improve universal decoder accuracy
 - **Performance**: Optimize for very long texts
 - **Mobile**: Enhance mobile experience
 - **Accessibility**: Improve screen reader support
-
-### 🧩 How to add a new transform
-
-1) Define the transform in `js/transforms.js` inside the `transforms` object:
-
-```js
-new_transform_key: {
-    name: 'Human Friendly Name',
-    // Optional: map for character ↔ character transforms
-    map: { /* 'a': 'α', ... */ },
-    // Required: encoding function
-    func: function(text) { /* return transformed */ },
-    // Optional but recommended: short, readable preview
-    preview: function(text) { return this.func((text||'').slice(0, 3)) + '...'; },
-    // Optional: reverse/decoder (enables universal decoder to use it directly)
-    reverse: function(text) { /* return decoded */ }
-}
-```
-
-2) Add it to a category in `js/app.js` under `transformCategories` so it shows in the UI, e.g.:
-
-```js
-transformCategories: {
-  cipher: ['Caesar Cipher', 'ROT13', 'Your New Transform']
-}
-```
-
-3) If your transform uses a custom script or style (not simple ASCII substitutions), ensure the universal decoder can detect it. Add pattern detection or reverse mapping in `universalDecode` in `js/app.js`:
-
-```js
-// Example: add to a check list
-const customChecks = [{ name: 'Your New Transform', transform: 'your_key' }];
-// build reverse map and try decoding if the input contains your characters
-```
-
-4) If you want it considered by the Randomizer, add its key to `getRandomizableTransforms()` in `js/transforms.js`.
-
-5) Test it in `test_transforms.html`. Add a button and a simple test harness calling `testTransform('your_key')`.
-
-Tips:
-- Keep `preview()` short to avoid UI overflow.
-- Prefer providing `reverse()` so the universal decoder can decode it directly.
-- Unicode-heavy styles should provide a reverse map for accurate decoding.
 
 ## 📄 **License**
 
