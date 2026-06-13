@@ -4,17 +4,18 @@ Transformers are instantiated using `BaseTransformer` class. Category is automat
 
 ## Directory Structure
 
-Categories (auto-assigned from directory name):
-- `encoding/` - Base64, Hex, Binary, URL, HTML, etc.
-- `cipher/` - ROT13, Caesar, Vigenère, Atbash, etc.
-- `unicode/` - Cursive, Medieval, Monospace, Bubble, etc.
-- `case/` - Snake case, Kebab case, Title case, etc.
-- `technical/` - Morse, Braille, NATO, Brainfuck, etc.
-- `fantasy/` - Elder Futhark, Tengwar, Klingon, Aurebesh, etc.
-- `ancient/` - Hieroglyphics, Ogham, Roman Numerals, etc.
-- `format/` - Leetspeak, Pig Latin, Reverse, etc.
-- `visual/` - Emoji speak, Rovarspraket, etc.
-- `special/` - Randomizer, etc.
+Categories (auto-assigned from directory name by `npm run build:transforms`):
+- `case/` — Case and capitalization transforms
+- `cipher/` — Classical ciphers, transposition, polyalphabetic, A1Z26, tap code, codons, etc.
+- `concealment/` — Steganography and hidden-message schemes (null cipher, acrostic, zero-width, etc.)
+- `encoding/` — Byte and data encodings (Base64, hex, binary, line codes, Brainfuck, etc.)
+- `format/` — Text cleanup and layout utilities
+- `signwriting/` — SignWriting fingerspelling and related notation
+- `special/` — Randomizer and other misc tools
+- `symbol/` — Substitution alphabets, runes, scripts, pigpen, braille, numeral systems, etc.
+- `technical/` — Morse, NATO, phone keypad, spelling alphabets, semaphore, etc.
+- `unicode/` — Unicode presentation styles (bold, bubble, zalgo, etc.)
+- `visual/` — Spoken-language games and wordplay (Pig Latin, leetspeak, etc.)
 
 ## Creating a Transformer
 
@@ -129,12 +130,12 @@ Higher priority = more specific pattern (used for decoder result ordering):
 
 ## After Adding
 
-1. Place file in appropriate category directory
-2. Run `npm run build:transforms`
-3. Test in webapp
-4. Add `detector` function if format has distinctive patterns
-5. Optionally add test cases to `tests/test_universal.js`
-6. Add a one-line description for the transform’s `name` in `DESCRIPTIONS` inside `build/readme-transform-section.js`, then run `node build/readme-transform-section.js` and merge the printed block into the **Text Transformations** section of the root `README.md` (the script exits with an error if a transform is missing from `DESCRIPTIONS`)
+1. Place the file in the appropriate category directory (folder name = UI category).
+2. Run `npm run build:transforms` (or `npm run build`).
+3. Test in the webapp (`npm start` → http://localhost:8080).
+4. Add a `detector` function if the format has distinctive patterns (helps the universal decoder).
+5. Optionally add known limitations to `limitations` in `tests/test_universal.js`.
+6. Update the root **README.md**: add or edit a bullet under **Text Transformations** in the matching category section, using the transform’s `name` and a one-line description.
 
 ## Testing
 

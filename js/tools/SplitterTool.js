@@ -13,9 +13,6 @@ class SplitterTool extends Tool {
     }
     
     getVueData() {
-        // Load category order (same as TransformTool)
-        const categoryOrder = this.getCategoryOrder();
-        
         return {
             // Message Splitter Tab
             splitterInput: '',
@@ -35,78 +32,12 @@ class SplitterTool extends Tool {
             splitterTokenizer: 'cl100k', // tokenizer for token-based mode
             splitterTokenCount: 3, // token count per chunk for token-based mode
             splitterPreserveEmptyLines: false, // preserve empty lines for line/sentence modes
-            splitMessages: [],
-            categoryOrder: categoryOrder
+            splitMessages: []
         };
-    }
-    
-    getCategoryOrder() {
-        // Get all categories from transforms
-        if (!window.transforms) return [];
-        
-        const categorySet = new Set();
-        Object.values(window.transforms).forEach(transform => {
-            if (transform.category) {
-                categorySet.add(transform.category);
-            }
-        });
-        
-        const allCategories = Array.from(categorySet);
-        const savedOrder = this.loadCategoryOrder();
-        
-        return this.mergeCategoryOrder(allCategories, savedOrder);
-    }
-    
-    loadCategoryOrder() {
-        try {
-            const saved = localStorage.getItem('transformCategoryOrder');
-            if (saved) {
-                return JSON.parse(saved);
-            }
-        } catch (e) {
-            console.warn('Failed to load category order:', e);
-        }
-        return null;
-    }
-    
-    mergeCategoryOrder(allCategories, savedOrder) {
-        // Always ensure randomizer is last
-        const categoriesWithoutRandomizer = allCategories.filter(c => c !== 'randomizer');
-        
-        if (!savedOrder || savedOrder.length === 0) {
-            // Default: alphabetical, randomizer last
-            const sorted = categoriesWithoutRandomizer.sort((a, b) => a.localeCompare(b));
-            return [...sorted, 'randomizer'];
-        }
-        
-        // Use saved order, but filter out categories that no longer exist and remove duplicates
-        const validSavedOrder = savedOrder
-            .filter(cat => allCategories.includes(cat))
-            .filter((cat, index, arr) => arr.indexOf(cat) === index); // Remove duplicates
-        
-        // Find new categories not in saved order
-        const newCategories = categoriesWithoutRandomizer.filter(cat => !validSavedOrder.includes(cat));
-        
-        // Build final order: saved order (filtered, deduplicated) + new categories (alphabetically) + randomizer
-        const finalOrder = [...validSavedOrder];
-        if (newCategories.length > 0) {
-            finalOrder.push(...newCategories.sort((a, b) => a.localeCompare(b)));
-        }
-        
-        // Ensure randomizer is always last and remove any duplicates
-        const finalWithoutRandomizer = finalOrder.filter(c => c !== 'randomizer');
-        const uniqueFinal = finalWithoutRandomizer.filter((cat, index, arr) => arr.indexOf(cat) === index);
-        return [...uniqueFinal, 'randomizer'];
     }
     
     getVueMethods() {
         return {
-            /**
-             * Get display name for category (capitalized)
-             */
-            getCategoryDisplayName: function(category) {
-                return category.charAt(0).toUpperCase() + category.slice(1);
-            },
             /**
              * Set encapsulation start and end strings
              * @param {string} start - The start string

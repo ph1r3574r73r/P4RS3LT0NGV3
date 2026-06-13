@@ -135,7 +135,9 @@ class DecodeTool extends Tool {
         var self = this;
         return {
             getAllTransformsWithReverse: function() {
-                return this.transforms.filter(t => t && typeof t.reverse === 'function');
+                return (typeof transformSelectFilter === 'function')
+                    ? transformSelectFilter(this, true)
+                    : this.transforms.filter(t => t && typeof t.reverse === 'function');
             },
             runUniversalDecode: function() {
                 const input = this.decoderInput;

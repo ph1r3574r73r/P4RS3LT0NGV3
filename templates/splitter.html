@@ -112,28 +112,12 @@
                             <div class="transform-chain">
                                 <div class="transform-chain-inline">
                                     <div v-for="(transform, index) in splitterTransforms" :key="'transform-'+index" class="transform-chain-item">
-                                        <select v-model="splitterTransforms[index]" @change="handleTransformChange(index)">
-                                            <option value="">None</option>
-                                            <optgroup v-if="getFavoriteTransforms().length > 0" label="⭐ Favorites">
-                                                <option v-for="t in getFavoriteTransforms()" :key="t.name" :value="t.name">
-                                                    {{ t.name }}
-                                                </option>
-                                            </optgroup>
-                                            <optgroup 
-                                                v-for="category in categoryOrder" 
-                                                :key="category"
-                                                :label="getCategoryDisplayName(category)"
-                                                v-if="getTransformsByCategory(category).length > 0"
-                                            >
-                                                <option 
-                                                    v-for="t in getTransformsByCategory(category)" 
-                                                    :key="t.name" 
-                                                    :value="t.name"
-                                                >
-                                                    {{ t.name }}
-                                                </option>
-                                            </optgroup>
-                                        </select>
+                                        <transform-select
+                                            v-model="splitterTransforms[index]"
+                                            show-empty
+                                            empty-label="None"
+                                            @change="handleTransformChange(index)"
+                                        ></transform-select>
                                         <i v-if="index < splitterTransforms.length - 1" class="fas fa-arrow-right transform-arrow"></i>
                                     </div>
                                 </div>

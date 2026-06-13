@@ -250,6 +250,11 @@ const limitations = {
         normalize: { uppercase: true, stripWhitespace: true },
         acceptPartial: true
     },
+    'standard_galactic': {
+        issues: 'Standard Galactic Alphabet; uppercase letters only, multi-char glyphs for P/T/X/Y',
+        acceptPartial: true,
+        normalize: { uppercase: true }
+    },
     'dovahzul': {
         issues: 'Case-insensitive mapping with vowel expansion',
         caseInsensitive: true
@@ -468,6 +473,71 @@ const limitations = {
         acceptPartial: true,
         normalize: { stripNonLetters: true, stripWhitespace: true }
     },
+    'adfgvx': {
+        issues: 'Only encodes A-Z and 0-9, removes spaces and punctuation',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, lowercase: true }
+    },
+    'amsco': {
+        issues: 'Only encodes A-Z, removes spaces and punctuation',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, lowercase: true }
+    },
+    'book_cipher': {
+        issues: 'Encodes words as indices; words must appear in reference book text',
+        acceptPartial: true,
+        normalize: { collapseWhitespace: true, lowercase: true }
+    },
+    'double_transposition': {
+        issues: 'Only encodes A-Z, removes spaces and punctuation',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, lowercase: true }
+    },
+    'dtmf': {
+        issues: 'Only encodes telephone digits 0-9, * and #',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, stripSpecialChars: true }
+    },
+    'fractionated_morse': {
+        issues: 'Only encodes A-Z; optional word/letter separators affect output shape',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, collapseWhitespace: true }
+    },
+    'phone_keypad': {
+        issues: 'Maps letters to dial digits; decode is lossy (one letter per key)',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, uppercase: true }
+    },
+    'route_cipher': {
+        issues: 'Only encodes A-Z, removes spaces and punctuation',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, lowercase: true }
+    },
+    't9': {
+        issues: 'Multi-tap encoding; preserves letters only',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, collapseWhitespace: true, lowercase: true }
+    },
+    'keyword_shift': {
+        issues: 'Only encodes A-Z, preserves case',
+        acceptPartial: true
+    },
+    'trithemius': {
+        issues: 'Only encodes A-Z, preserves case',
+        acceptPartial: true
+    },
+    'vernam': {
+        issues: 'Only encodes A-Z, preserves case',
+        acceptPartial: true
+    },
+    'multiplicative_cipher': {
+        issues: 'Only encodes A-Z, preserves case',
+        acceptPartial: true
+    },
+    'monoalphabetic': {
+        issues: 'Only encodes A-Z, preserves case',
+        acceptPartial: true
+    },
     'polybius': {
         issues: 'Only encodes A-Z, removes spaces and punctuation',
         acceptPartial: true,
@@ -530,8 +600,8 @@ const limitations = {
         acceptPartial: false
     },
     'emoji_encoding': {
-        issues: 'May have issues with emoji in input text',
-        acceptPartial: true
+        issues: 'Multiformats Base256Emoji; optional multibase 🚀 prefix via transform options',
+        acceptPartial: false
     },
     
     // === NEWEST TECHNICAL ===
@@ -644,6 +714,139 @@ const limitations = {
     'overline': {
         issues: 'Adds combining characters, reverse removes them',
         acceptPartial: true
+    },
+
+    // === CONCEALMENT / STEGO ===
+    'null_cipher': {
+        issues: 'Encodes letters only at a fixed word position; cover text is generated',
+        acceptPartial: true,
+        normalize: { stripNonLetters: false, collapseWhitespace: true }
+    },
+    'acrostic': {
+        issues: 'Encodes letters only; line mode produces multi-line cover text',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true }
+    },
+    'cardan_grille': {
+        issues: 'Encodes alphanumeric into a fixed-size grille grid',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, lowercase: true }
+    },
+    'leading_zeros': {
+        issues: 'Only affects numeric tokens in pad/strip modes',
+        acceptPartial: true
+    },
+    'group_letters': {
+        issues: 'Letters-only mode strips non-letters before grouping',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, lowercase: true }
+    },
+
+    // === MUSIC & ELECTRONICS (LLM testing encodings) ===
+    'seven_segment': {
+        issues: 'Only 0-9, A-F, dash and space have segment masks; other chars become blank segments',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, uppercase: true }
+    },
+    'decabit': {
+        issues: 'Each character becomes a 10-pulse +/- pattern',
+        acceptPartial: true
+    },
+    'manchester_code': {
+        issues: 'Binary line coding of UTF-8 bytes',
+        acceptPartial: true
+    },
+    'acere_cipher': {
+        issues: 'French solfège with optional note durations; lossy in solfège-only or A–M/N–Z modes',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true, lowercase: true }
+    },
+
+    // === BATCH A: Word games & concealment ===
+    'word_letter_add': {
+        issues: 'Inserts character per word; decode removes if same char/position',
+        acceptPartial: true,
+        normalize: { collapseWhitespace: true }
+    },
+    'word_letter_remove': {
+        issues: 'One-way letter removal per word',
+        nonReversible: true
+    },
+    'word_letter_change': {
+        issues: 'One-way letter replacement per word',
+        nonReversible: true
+    },
+    'shuffled_letters': {
+        issues: 'Seeded shuffle; decoder may not detect without seed option',
+        acceptPartial: true
+    },
+    'trevanion': {
+        issues: 'Steganography — extract letters after punctuation marks; embed builds cover text',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, lowercase: true }
+    },
+    'friderici_windows': {
+        issues: 'J→I, V→U; 4-pane window symbols; pane map from Cryptographia (1685)',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, uppercase: true }
+    },
+    'homoglyph': {
+        issues: 'Partial Cyrillic homoglyph map; not all letters substituted',
+        acceptPartial: true
+    },
+    'navajo_code': {
+        issues: 'Word code for A-Z; strips non-letters on decode',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, uppercase: true, collapseWhitespace: true }
+    },
+
+    // === BATCH B: Encodings ===
+    'bibi_binary': {
+        issues: 'UTF-8 bytes via Bibi-binary hex syllables',
+        acceptPartial: true
+    },
+    'shadoks': {
+        issues: 'UTF-8 bytes via Shadoks base-4 words',
+        acceptPartial: true
+    },
+    'periodic_table': {
+        issues: 'Letters only A-Z to element symbols',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, uppercase: true }
+    },
+    'codons': {
+        issues: 'Letters only A-Z to DNA triplets; ambiguous reverse for duplicate codons',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, uppercase: true }
+    },
+    'dominos_in_digits': {
+        issues: 'Digits only; non-digits stripped on encode',
+        acceptPartial: true,
+        normalize: { stripNonLetters: true, stripWhitespace: true }
+    },
+
+    // === BATCH C: Symbol alphabets (generated) ===
+    'eye_of_horus': {
+        issues: 'A1Z26 cycles 7 Wedjat glyphs; lossy reverse for duplicate mappings',
+        acceptPartial: true,
+        caseInsensitive: true
+    },
+    'babylonian_numerals': {
+        issues: 'A1Z26 cuneiform numerals; letters only',
+        caseInsensitive: true
+    },
+    'egyptian_numerals': {
+        issues: 'A1Z26 hieroglyph numerals; letters only',
+        caseInsensitive: true
+    },
+    'mayan_numerals': {
+        issues: 'A1Z26 Mayan numerals; letters only',
+        caseInsensitive: true
+    },
+    'younger_futhark': {
+        issues: '16 runes mapped to 26 Latin letters; lossy reverse',
+        acceptPartial: true,
+        caseInsensitive: true
     }
 };
 
@@ -683,7 +886,13 @@ for (const transformName of transformNames) {
     console.log(`\n📝 Testing: ${transform.name || transformName}`);
     console.log('-'.repeat(80));
     
-    const limitation = limitations[transformName];
+    let limitation = limitations[transformName];
+    if (!limitation && transform.category === 'symbol') {
+        limitation = {
+            issues: 'Symbol map decodes to uppercase letters',
+            caseInsensitive: true
+        };
+    }
     if (limitation) {
         console.log(`⚠️  Known limitation: ${limitation.issues}`);
     }

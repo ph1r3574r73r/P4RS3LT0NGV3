@@ -55,8 +55,24 @@ Injects tool templates from `templates/` into `dist/index.html`
 npm run build:templates
 ```
 
+### `build-alphabet-transforms.js`
+Regenerates hand-maintained symbol alphabet files from `data/alphabets/*.json` into `src/transformers/symbol/`.
+
+```bash
+npm run build:alphabets
+```
+
+Runs automatically before `build-transforms.js` (`npm run build:transforms`).
+
+### `build-code-vendor.js`
+Bundles QR and barcode libraries into `js/vendor/` for the Codes tool (no CDN).
+
+```bash
+npm run build:codes-vendor
+```
+
 ### `build-index.js`
-Generates transformer index
+Generates `src/transformers/index.js` (Node/test import index).
 
 ```bash
 npm run build:index
@@ -66,12 +82,13 @@ npm run build:index
 
 ```bash
 npm run build  # Runs all scripts in order:
-# 1. build:copy      - Copy static files to dist/
-# 2. build:index     - Generate transformer index
-# 3. build:transforms - Bundle transformers to dist/js/bundles/
-# 4. build:emoji     - Generate emoji data to dist/js/data/
-# 5. build:tools     - Inject tool scripts
-# 6. build:templates - Inject templates to dist/index.html
+# 1. build:tools         - Inject tool scripts into index.template.html + toolRegistry
+# 2. build:codes-vendor  - Bundle qrcode, JsBarcode, ZXing → js/vendor/
+# 3. build:copy          - Copy static files to dist/
+# 4. build:index         - Generate src/transformers/index.js
+# 5. build:transforms    - build:alphabets + bundle transformers → dist/js/bundles/
+# 6. build:emoji         - Generate emoji data to dist/js/data/
+# 7. build:templates     - Inject templates → dist/index.html
 ```
 
 ## Output Structure

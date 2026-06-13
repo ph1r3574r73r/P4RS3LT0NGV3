@@ -101,8 +101,15 @@ for (const [name, filePath] of Object.entries(transforms)) {
             .replace(/export default\s*/g, '') // Remove export statement
             .trim();
 
+        if (/^(const|let|var|function)\s/m.test(cleanContent)) {
+            console.error(`❌ ${name}: top-level declarations break the bundle — wrap in export default (function(){ ... return new BaseTransformer(...); })();`);
+            process.exit(1);
+        }
+
         output += `// ${name} (from ${filePath})\n`;
-        if (/^new BaseTransformer\s*\(/.test(cleanContent)) {
+        if (/^\(function\s*\(\)/.test(cleanContent)) {
+            output += `transforms['${name}'] = ${cleanContent}\n\n`;
+        } else if (/^new BaseTransformer\s*\(/.test(cleanContent)) {
             output += `transforms['${name}'] = ${cleanContent}\n\n`;
         } else {
             output += `transforms['${name}'] = ${cleanContent}\n\n`;

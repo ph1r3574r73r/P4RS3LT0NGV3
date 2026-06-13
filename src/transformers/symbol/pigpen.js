@@ -6,8 +6,7 @@ export default new BaseTransformer({
     priority: 60,
     category: 'cipher',
     // Pigpen cipher uses geometric symbols arranged in grids
-    // Standard Pigpen cipher mapping based on dCode.fr implementation (Original variant)
-    // Reference: https://www.dcode.fr/pigpen-cipher
+    // Standard Pigpen cipher mapping (original variant, Unicode symbol set)
     // Grid 1 (A-I): L-shapes and U-shapes in 3x3 grid positions
     // Grid 2 (J-R): Same shapes as A-I but with dots
     // Grid 3 (S-Z): Caret/X shapes (some with dots)
@@ -38,7 +37,7 @@ export default new BaseTransformer({
         return this.func(text.slice(0, 5));
     },
     detector: function(text) {
-        // Check if text contains Pigpen symbols (dCode.fr Unicode characters)
+        // Check if text contains Pigpen symbols
         const pigpenSymbols = /[ᒧ⊔ᒪ⊐☐⊏ᒣ⊓ᒥ⟓⨃ᒷ⪾🝕⪽ᒬ⩀⟔ᐯᐳᐸᐱ⟇ᑀᑅ⟑]/;
         return pigpenSymbols.test(text);
     }

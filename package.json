@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "Universal Text Encoder/Decoder & Steganography Tool",
   "scripts": {
+    "build:codes-vendor": "node build/build-code-vendor.js",
     "build:copy": "node build/copy-static.js",
     "build:index": "node build/build-index.js",
     "build:tools": "node build/inject-tool-scripts.js",
     "build:templates": "node build/inject-tool-templates.js",
     "build:emoji": "node build/build-emoji-data.js",
-    "build:transforms": "node build/build-transforms.js",
-    "build": "npm run build:tools && npm run build:copy && npm run build:index && npm run build:transforms && npm run build:emoji && npm run build:templates",
+    "build:alphabets": "node build/build-alphabet-transforms.js",
+    "build:transforms": "npm run build:alphabets && node build/build-transforms.js",
+    "build": "npm run build:tools && npm run build:codes-vendor && npm run build:copy && npm run build:index && npm run build:transforms && npm run build:emoji && npm run build:templates",
     "start": "serve dist -l 8080",
     "preview": "npm run build && serve dist -l 8080",
     "test": "node tests/test_universal.js",
@@ -33,6 +35,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@zxing/library": "^0.23.0",
+    "esbuild": "^0.28.0",
+    "jsbarcode": "^3.12.3",
+    "qrcode": "^1.5.4",
     "serve": "^14.2.6"
   }
 }

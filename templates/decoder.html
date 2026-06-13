@@ -3,12 +3,13 @@
                     <div class="input-section">
                         <div class="input-header">
                             <label for="decoder-input">Paste any encoded text to decode</label>
-                            <select v-model="selectedDecoder" @change="runUniversalDecode" class="decoder-method-select">
-                                <option value="auto">🔍 Auto-detect</option>
-                                <option v-for="transform in getAllTransformsWithReverse()" :key="transform.name" :value="transform.name">
-                                    {{ transform.name }}
-                                </option>
-                            </select>
+                            <transform-select
+                                v-model="selectedDecoder"
+                                decodable-only
+                                include-auto
+                                select-class="transform-select decoder-method-select"
+                                @change="runUniversalDecode"
+                            ></transform-select>
                         </div>
                         <textarea 
                             id="decoder-input" 

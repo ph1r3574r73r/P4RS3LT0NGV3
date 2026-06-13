@@ -22,7 +22,8 @@ const templateFiles = [
     'bijection.html',
     'splitter.html',
     'gibberish.html',
-    'spellingalphabet.html'
+    'spellingalphabet.html',
+    'codes.html'
 ];
 
 
@@ -53,6 +54,7 @@ if (!fs.existsSync(templatePath)) {
 }
 
 let indexContent = fs.readFileSync(templatePath, 'utf8');
+indexContent = indexContent.replace(/\r\n/g, '\n');
 
 // Find the tool-content-container
 const startMarker = '<div id="tool-content-container">';

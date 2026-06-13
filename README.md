@@ -1,6 +1,6 @@
 # 🐍 P4RS3LT0NGV3 - Universal Text Translator
 
-A powerful web-based text transformation and steganography tool with **159** built-in text transforms spanning encodings, classical and modern ciphers, Unicode styles, formatting, and niche alphabets. Think of it as a universal translator for ALL alphabets and writing systems! 
+A powerful web-based text transformation and steganography tool with **223** built-in text transforms spanning encodings, classical and modern ciphers, Unicode styles, formatting, and niche alphabets. Think of it as a universal translator for ALL alphabets and writing systems! 
 
 The app is a **static site**: run **`npm run build`** (after `npm install`), then open **`dist/index.html`** in your browser—no local server required. **Alternatively**, you can run it as a local app over HTTP with **`npm start`** or **`npx serve dist -l 8080`** (see [Getting Started](#getting-started) below). Core transforms, decoder, and steganography work **without** calling the cloud; features that use [OpenRouter](https://openrouter.ai/) need **network access** and an API key (see below).
 
@@ -15,22 +15,22 @@ The app is a **static site**: run **`npm run build`** (after `npm install`), the
 
 Categories match the Transform tab and the folders under `src/transformers/` (each transformer’s `name` as shown in the UI). Short descriptions explain what each transform does.
 
-#### **Ancient**
-- **Elder Futhark** - Germanic Elder Futhark runes
-- **Hieroglyphics** - Egyptian hieroglyph-style mapping
-- **Ogham (Celtic)** - Celtic Ogham tree alphabet
-- **Roman Numerals** - Arabic numerals ↔ Roman numerals
-
 #### **Case**
 - **Alternating Case** - Alternate uppercase and lowercase per letter (first letter upper or lower)
 - **camelCase** - lowerCamelCase for identifiers
+- **Capitalize Words** - Capitalize the first letter of each word
 - **kebab-case** - kebab-case for slugs and identifiers
+- **Lowercase All** - Lowercase entire text
 - **Random Case** - Random casing per character
 - **Sentence Case** - Capitalize the first letter of each sentence
 - **snake_case** - snake_case for identifiers
 - **Title Case** - Capitalize each word
+- **Toggle Case** - Swap case of each letter
+- **Uppercase All** - Uppercase entire text
 
 #### **Cipher**
+- **A1Z26** - A=1 … Z=26 letter numbering
+- **Acéré Cipher** - Solfege / duration encoding for musical steganography
 - **ADFGX Cipher** - WWI ADFGVX-style polybius + column transposition
 - **N7AX Cipher** - ADFGX-style polybius with N7AX coordinates + column transposition
 - **Affine Cipher** - Affine substitution (ax + b mod 26)
@@ -40,16 +40,21 @@ Categories match the Transform tab and the folders under `src/transformers/` (ea
 - **Beaufort Cipher** - Beaufort key-table polyalphabetic cipher
 - **Bifid Cipher** - Polybius square + row/column interleaving
 - **Caesar Cipher** - Classic alphabet shift (configurable)
+- **Codons (Genetic Code)** - Letters A–Z as DNA triplets
 - **Columnar Transposition** - Columnar transposition with a keyword
+- **Double Transposition** - Two keyed columnar transpositions
 - **Four-Square Cipher** - Four 5×5 squares; digraph substitution
+- **Fractionated Morse** - Morse with fractionation pattern
 - **Gronsfeld Cipher** - Vigenère family with numeric key
 - **Hill Cipher** - Matrix-based multi-letter substitution
 - **Homophonic Cipher** - Multiple ciphertext symbols per plaintext letter
+- **Multiplicative Cipher** - Multiply by key mod 26
 - **Nihilist Cipher** - Keyed Polybius + additive encryption
-- **Pigpen Cipher** - Masonic / pigpen grid symbols
 - **Playfair Cipher** - Digraph cipher on a 5×5 square
 - **Polybius Square** - Letter ↔ grid coordinates
 - **Porta Cipher** - Porta table polyalphabetic cipher
+- **QWERTY Right Shift** - Map keys to the key to the right on QWERTY
+- **Route Cipher** - Read ciphertext along a grid route
 - **Rail Fence** - Zig-zag rail-fence transposition
 - **ROT128** - UTF-16 code unit rotation by 128
 - **ROT13** - Rotate Latin letters by 13 places
@@ -58,10 +63,23 @@ Categories match the Transform tab and the folders under `src/transformers/` (ea
 - **ROT5** - Rotate digits 0–9 by 5
 - **ROT8000** - Plane-0 Unicode BMP rotation cipher
 - **Scytale Cipher** - Wrap-around strip (scytale) transposition
+- **Tap Code** - Polybius / tap / prison code
 - **Trifid Cipher** - Three Polybius cubes + trifid grouping
+- **Trithemius Cipher** - Progressive Caesar (tabula recta)
 - **Two-Square Cipher** - Digraph cipher with two Playfair squares
+- **Vernam Cipher** - One-time pad XOR (mod 26)
 - **Vigenère Cipher** - Polyalphabetic cipher with repeating keyword
 - **XOR Cipher** - XOR with a repeating key
+
+#### **Concealment**
+- **Acrostic** - First letter of each line or word spells a message
+- **Cardan Grille** - Hide text through a rotating grille
+- **Homoglyph Generator** - Latin letters to Cyrillic homoglyphs
+- **Invisible Text** - Unicode Tags / invisible carrier encoding
+- **Null Cipher** - Fixed letter position in each cover word
+- **Trevanion Cipher** - Letters N positions after punctuation marks
+- **Whitespace Steganography** - Hide bits in whitespace patterns
+- **Zero-Width Steganography** - Hide data with zero-width characters
 
 #### **Encoding**
 - **ASCII85** - Ascii85 / Adobe-style base-85 encoding
@@ -74,46 +92,39 @@ Categories match the Transform tab and the folders under `src/transformers/` (ea
 - **Base64** - Standard Base64
 - **Base64 URL** - Base64url (URL-safe alphabet)
 - **Base91** - basE91 / Ascii91 encoding
+- **Bibi-binary Code** - UTF-8 bytes via Bibi-binary syllables
 - **Baudot Code (ITA2)** - Five-bit telegraph / ITA2
 - **Binary Coded Decimal** - Decimal digits as BCD nibbles
 - **Binary** - Text bytes ↔ binary strings
+- **Bitwise NOT** - UTF-8 bytes NOT'd per byte; encode output is hex (decode pastes hex back to text)
+- **Brainfuck** - Text ↔ Brainfuck program
+- **Decabit Code** - Ten-bit patterns for decimal digits
 - **EBCDIC** - EBCDIC byte encoding
-- **Emoji Encoding** - Payload encoded with emoji
+- **Base256Emoji** - Multiformats multibase encoding (1 byte → 1 emoji)
 - **Gray Code** - Binary Gray code
 - **Hexadecimal** - Hex encode/decode bytes
 - **HTML Entities** - HTML entity escape / unescape
-- **Invisible Text** - Unicode Tags / invisible carrier encoding
+- **Manchester Code** - Manchester line coding
+- **Metaphone** - Metaphone phonetic encoding
 - **Quoted-Printable** - MIME quoted-printable
+- **Shadoks Numeral System** - UTF-8 bytes as Shadoks base-4 words
 - **Unicode Code Points** - Characters ↔ U+XXXX code points
 - **URL Encode** - application/x-www-form-urlencoded
 - **Uuencoding** - Classic uuencode / uudecode
 - **YEnc** - yEnc line-oriented binary encoding
 - **Z85** - ZeroMQ Z85 encoding
 
-#### **Fantasy**
-- **Aurebesh (Star Wars)** - Galactic Basic Aurebesh alphabet
-- **Dovahzul (Dragon)** - Skyrim Dovahzul transliteration
-- **Klingon** - Klingon transliteration
-- **Quenya (Tolkien Elvish)** - Tolkien Quenya mapping
-- **Tengwar Script** - Elvish Tengwar script
-
 #### **Format**
-- **Bitwise NOT** - UTF-8 bytes NOT'd per byte; encode output is hex (decode pastes hex back to text)
 - **Boustrophedon** - Serpentine / alternating line direction
-- **Capitalize Words** - Capitalize the first letter of each word
+- **Group Letters** - Insert separators between letters
 - **Indent** - Add leading spaces to each line (configurable width)
-- **Javanais** - French “javanais” vowel-insertion game
-- **Latin Gibberish** - Latin-flavored pseudo-text
-- **Leetspeak** - 1337-style character substitutions
 - **Letters Only** - Keep letters; strip other characters
 - **Letters & Numbers Only** - Alphanumeric only
 - **Line Numbers** - Prefix lines with numbers (start and column width configurable)
-- **Louchebem** - French argot (loucherbem-style)
-- **Lowercase All** - Lowercase entire text
+- **Leading Zeros** - Pad numbers with leading zeros
+- **List Deduplicate** - Remove duplicate lines from a list
 - **Mirror Digits** - Mirror digits 0–9 visually
 - **Numbers Only** - Digits only
-- **Pig Latin** - English Pig Latin
-- **QWERTY Right Shift** - Map keys to the key to the right on QWERTY
 - **Remove Accents** - Strip diacritics / combining marks
 - **Remove Consonants** - Remove consonant letters
 - **Remove Duplicates** - Remove duplicate lines
@@ -128,35 +139,83 @@ Categories match the Transform tab and the folders under `src/transformers/` (ea
 - **Reverse Text** - Reverse character order
 - **Shuffle Characters** - Shuffle characters (random order)
 - **Shuffle Words** - Shuffle word order
+- **Shuffled Letters** - Randomize letter order within each word
 - **Spaces Remover** - Remove space characters
 - **Text Justify** - Pad each line to a fixed width (left, right, or center); not word-spacing justify
-- **Uppercase All** - Uppercase entire text
-- **Toggle Case** - Swap case of each letter
-- **Whitespace Steganography** - Hide bits in whitespace patterns
+- **Typoglycemia** - Scrambled middle letters (readable chaos)
+- **Word Letter Add** - Insert a letter at a fixed position in each word
+- **Word Letter Change** - Replace a letter at a fixed position in each word
+- **Word Letter Remove** - Remove a letter at a fixed position in each word
 - **Word Wrap** - Break long lines at spaces so each line fits a maximum width
-- **Zero-Width Steganography** - Hide data with zero-width characters
+
+#### **SignWriting**
+- **ASL SignWriting** - American Sign Language fingerspelling (ISWA)
+- **LIBRAS SignWriting** - Brazilian Sign Language fingerspelling
+- **JSL SignWriting** - Japanese Sign Language (hiragana input)
+- **IPA Lip-reading** - IPA symbols in SignWriting
+- **Morse Blink** - Morse as SignWriting blink marks
+- **Tactile SignWriting** - Tactile SignWriting notation
 
 #### **Special**
 - **Random Mix** - Pick random transforms and chain them
 
 #### **Technical**
-- **A1Z26** - A=1 … Z=26 letter numbering
-- **Braille** - Unicode Braille patterns
-- **Brainfuck** - Text ↔ Brainfuck program
 - **ICAO Spelling Alphabet** - ICAO radiotelephony spelling
 - **ITU Spelling Alphabet** - ITU phonetic / spelling alphabet
+- **DTMF Tones** - Dual-tone multi-frequency telephone codes
 - **Maritime Signal Flags** - International maritime signal flags
 - **Morse Code** - International Morse code
+- **Navajo Code** - WWII Navajo word code for A–Z
 - **NATO Phonetic** - NATO phonetic alphabet
 - **Semaphore Flags** - Flag semaphore arm positions
-- **Tap Code** - Polybius / tap / prison code
+- **T9 (Predictive Text)** - Phone T9 multi-tap encoding
+- **Phone Keypad** - Digits from phone keypad groups
+
+#### **Symbol**
+- **Alchemical Symbols** - Alchemical symbol alphabet
+- **Aurebesh (Star Wars)** - Galactic Basic Aurebesh alphabet
+- **Babylonian Numerals** - A1Z26 as cuneiform numerals
+- **Braille** - Unicode Braille patterns
+- **Celestial Alphabet** - Celestial / angelic script
+- **Chemical Symbols** - Chemical element symbols
+- **Daedric (Elder Scrolls)** - Daedric alphabet
+- **Dancing Men (Sherlock Holmes)** - Dancing figure cipher
+- **Dominos in Digits** - Digits as domino tile notation
+- **Dovahzul (Dragon)** - Skyrim Dovahzul transliteration
+- **Egyptian Numerals** - A1Z26 as hieroglyph numerals
+- **Elder Futhark** - Germanic Elder Futhark runes
+- **Enochian** - Enochian angelic alphabet
+- **Eye of Horus (Wedjat)** - Wedjat fraction hieroglyphs
+- **Friderici Cipher (Windows)** - 1685 window-pane cipher
+- **Greek Letters** - Greek letter replacements
+- **Hieroglyphics** - Egyptian hieroglyph-style mapping
+- **Hiragana** - Rough Romaji → Hiragana
+- **Klingon** - Klingon transliteration
+- **Katakana** - Rough Romaji → Katakana
+- **Malachim** - Malachim angelic alphabet
+- **Mary Stuart Cipher** - Mary Queen of Scots cipher
+- **Mayan Numerals** - A1Z26 as Mayan numeral glyphs
+- **Moon Alphabet** - Moon type for blind readers
+- **Ogham (Celtic)** - Celtic Ogham tree alphabet
+- **Passing the River** - Golden Dawn Passing the River script
+- **Periodic Table Cipher** - Letters A–Z as element symbols
+- **Pigpen Cipher** - Masonic / pigpen grid symbols
+- **Quenya (Tolkien Elvish)** - Tolkien Quenya mapping
+- **Roman Numerals** - Arabic numerals ↔ Roman numerals
+- **Rosicrucian** - Rosicrucian cipher alphabet
+- **Seven-Segment Display** - Digits as 7-segment ASCII art
+- **Standard Galactic (Minecraft)** - Enchanting Table / SGA alphabet
+- **Templars Cipher** - Templar pigpen variant
+- **Tengwar Script** - Elvish Tengwar script
+- **Theban Alphabet** - Witches' Theban script
+- **Wingdings** - Wingdings-style symbol mapping
+- **Younger Futhark** - Medieval Younger Futhark runes
 
 #### **Unicode**
 - **Bold Italic** - Mathematical sans-serif bold italic
 - **Bold** - Mathematical bold
-- **Bubble** - Circled / “bubble” letters
-- **Chemical Symbols** - Chemical element symbols
-- **Circled** - Circled Unicode letters
+- **Bubble** - Circled letters (upper and lower case) and circled digits 0–9
+- **Circled** - Circled uppercase letters and digits (no lowercase)
 - **Cursive** - Mathematical script / cursive
 - **Cyrillic Stylized** - Latin → Cyrillic lookalike letters
 - **Dashed Underline** - Combining dashed underline
@@ -164,10 +223,7 @@ Categories match the Transform tab and the folders under `src/transformers/` (ea
 - **Double-Struck** - Mathematical double-struck
 - **Fraktur** - Mathematical Fraktur / Gothic
 - **Full Width** - Fullwidth Latin (and related) forms
-- **Greek Letters** - Greek letter replacements
-- **Hiragana** - Rough Romaji → Hiragana
 - **Italic** - Mathematical italic
-- **Katakana** - Rough Romaji → Katakana
 - **Mathematical Notation** - Mathematical alphanumeric symbols
 - **Medieval** - Medieval Unicode letterforms
 - **Mirror Text** - Left–right mirrored characters
@@ -186,12 +242,16 @@ Categories match the Transform tab and the folders under `src/transformers/` (ea
 - **Vaporwave** - Fullwidth + aesthetic spacing
 - **Wavy Underline** - Wavy underline combining marks
 - **Wide Spacing** - Insert wide spaces between characters
-- **Wingdings** - Wingdings-style symbol mapping
 - **Zalgo** - Stacked combining marks (“glitch” text)
 
 #### **Visual**
 - **Disemvowel** - Remove vowels (speech game)
 - **Emoji Speak** - Emoji-heavy “speak” transform
+- **Javanais** - French “javanais” vowel-insertion game
+- **Latin Gibberish** - Latin-flavored pseudo-text
+- **Leetspeak** - 1337-style character substitutions
+- **Louchebem** - French argot (loucherbem-style)
+- **Pig Latin** - English Pig Latin
 - **Rövarspråket** - Swedish consonant-doubling game
 - **Ubbi Dubbi** - Insert “ub” before vowel sounds
 
@@ -201,7 +261,7 @@ Tabs appear in **UI order** below. **OpenRouter** (optional or required per tool
 
 ### 🔤 **Transform**
 
-- **159 Transforms**: Encodings, ciphers, Unicode styles, formats, and more (full catalog above).
+- **223 Transforms**: Encodings, ciphers, Unicode styles, formats, and more (full catalog above).
 - **Categories**: Grouped sections you can **reorder**; quick-jump legend; **randomizer** last.
 - **Favorites & last used**: Pin transforms and recall recent picks.
 - **Per-transform options**: Gear icon where a transform exposes settings.
@@ -382,7 +442,7 @@ npm run preview            # npm run build, then serve dist/
 | [build/README.md](build/README.md) | What each `build:*` script does |
 | [templates/README.md](templates/README.md) | Editing tool HTML templates |
 
-**Keeping the transform list in this README in sync:** when you add or rename a transformer, add a one-line description to `DESCRIPTIONS` in `build/readme-transform-section.js`, run `node build/readme-transform-section.js`, and replace the **Text Transformations** section here (details in [src/transformers/README.md](src/transformers/README.md)).
+**Keeping the transform list in this README in sync:** when you add, rename, or move a transformer, update the **Text Transformations** section below manually — one bullet per transform under the correct category heading (`case`, `cipher`, `concealment`, `encoding`, `format`, `signwriting`, `special`, `symbol`, `technical`, `unicode`, `visual`). Use the transform’s UI `name` and a short description. Category comes from the folder under `src/transformers/` (see [src/transformers/README.md](src/transformers/README.md)).
 
 ## 🛠️ **Technical Details**
 
@@ -391,7 +451,7 @@ npm run preview            # npm run build, then serve dist/
 - **Tool System**: Modular tool registry with build-time template injection
 - **Encoding**: UTF-8 with proper Unicode handling
 - **Steganography**: Variation selectors and Tags Unicode block
-- **Transforms**: Individual transformer modules live under `src/transformers/` (159; the bundle is generated by `npm run build:transforms`)
+- **Transforms**: Individual transformer modules live under `src/transformers/` (223; the bundle is generated by `npm run build:transforms`)
 - **Build Process**: 
   - `npm run build` writes the runnable app under `dist/` (ignored by git in most setups)
   - Transformers are bundled from `src/transformers/` to `dist/js/bundles/transforms-bundle.js`
@@ -421,7 +481,7 @@ npm run preview            # npm run build, then serve dist/
 - 🆕 **AI Translation**: Translate to 20+ languages (including dead/exotic) via OpenRouter using TranslateGemma prompt format
 - 🆕 **PromptCraft Tool**: AI-powered prompt mutation with 9 strategies and 48+ models
 - 🆕 **OpenRouter Integration**: Unified API key management for all AI-powered features
-- 🆕 **159 Transformations**: Full catalog of encodings, ciphers, Unicode styles, fantasy and ancient scripts, and technical codes (see README transform list)
+- 🆕 **223 Transformations**: Full catalog of encodings, ciphers, Unicode styles, symbol alphabets, SignWriting, and technical codes (see README transform list)
 - 🆕 **More Encodings/Ciphers**: Base58, Base62, Vigenère, Rail Fence, Roman Numerals
 - 🆕 **Category Organization**: Better organized transform categories
 - 🆕 **Enhanced Styling**: New color schemes for each category
@@ -432,7 +492,7 @@ npm run preview            # npm run build, then serve dist/
 ### **Creative Writing**
 - Create unique text styles for stories
 - Encode secret messages in plain sight
-- Generate fantasy language text
+- Generate symbolic or script-style text
 
 ### **Education**
 - Learn about different writing systems
@@ -477,6 +537,7 @@ This project is open source. See LICENSE file for details.
 - **Star Wars** creators for Aurebesh
 - **Bethesda** for Dovahzul language
 - **Unicode Consortium** for character standards
+- **[RaidedCluster](https://github.com/RaidedCluster)** — SignWriting transforms
 
 ---
 

@@ -110,7 +110,7 @@
                                         <div v-else-if="item.type === 'translate'" class="transform-button-group">
                                             <button
                                                 type="button"
-                                                class="transform-button transform-category-ancient"
+                                                class="transform-button transform-category-translate"
                                                 @click="translateTo(item.langName)"
                                                 :disabled="translateLoading"
                                                 :title="'Translate to ' + item.langName"
@@ -170,7 +170,7 @@
                                         <div v-else-if="item.type === 'translate'" class="transform-button-group">
                                             <button
                                                 type="button"
-                                                class="transform-button transform-category-ancient"
+                                                class="transform-button transform-category-translate"
                                                 @click="translateTo(item.langName)"
                                                 :disabled="translateLoading"
                                                 :title="'Translate to ' + item.langName"
@@ -192,8 +192,8 @@
                             </div>
                             
                             <template v-for="(category, categoryIndex) in categories" :key="category">
-                                <!-- AI Translation Section — renders above "ancient" -->
-                                <div v-if="category === 'ancient'" id="category-translate" class="transform-category-section translate-inline-section">
+                                <!-- AI Translation Section — renders above "symbol" (scripts & alphabets) -->
+                                <div v-if="category === 'symbol'" id="category-translate" class="transform-category-section translate-inline-section">
                                     <h4 class="category-title transform-category-translate">
                                         <i class="fas fa-language"></i> Translation (AI)
                                         <small class="translate-powered-by">TranslateGemma</small>
@@ -345,7 +345,7 @@
                                         <h5>🎮 How it works:</h5>
                                         <ul>
                                             <li>🔀 Each word gets a <strong>random transform</strong></li>
-                                            <li>🎯 Mixes <strong>fantasy</strong>, <strong>ancient</strong>, and <strong>modern</strong> encodings</li>
+                                            <li>🎯 Mixes <strong>symbol</strong>, <strong>unicode</strong>, and <strong>modern</strong> encodings</li>
                                             <li>📝 Preserves punctuation and spacing</li>
                                             <li>🔍 Check console for transform mapping details</li>
                                         </ul>
@@ -420,7 +420,7 @@
                                 <small v-if="activeTransform">({{ activeTransform.name }})</small>
                             </h4>
                         </div>
-                        <div class="output-container">
+                        <div class="output-container" :class="{ 'signwriting-output': activeTransform && activeTransform.category === 'signwriting' }">
                             <textarea 
                                 readonly 
                                 v-model="transformOutput"

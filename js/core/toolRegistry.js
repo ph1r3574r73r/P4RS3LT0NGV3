@@ -181,6 +181,9 @@ if (typeof AntiClassifierTool !== 'undefined') {
 if (typeof BijectionTool !== 'undefined') {
     window.toolRegistry.register(new BijectionTool());
 }
+if (typeof CodesTool !== 'undefined') {
+    window.toolRegistry.register(new CodesTool());
+}
 if (typeof DecodeTool !== 'undefined') {
     window.toolRegistry.register(new DecodeTool());
 }
