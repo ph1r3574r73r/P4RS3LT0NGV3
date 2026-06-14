@@ -1,5 +1,8 @@
 const baseData = {
-    isDarkTheme: true,
+    activeTheme: 'dark',
+    themeOptions: (window.ThemeUtils && window.ThemeUtils.getThemes)
+        ? window.ThemeUtils.getThemes()
+        : [{ id: 'dark', name: 'Dark' }, { id: 'light', name: 'Light' }],
     activeTab: 'transforms',
     registeredTools: [],
     universalDecodeInput: '',
@@ -14,6 +17,9 @@ const baseData = {
     copyHistory: [],
     maxHistoryItems: window.CONFIG.MAX_HISTORY_ITEMS,
     showCopyHistory: false,
+    activeUtilityPanel: 'history',
+    mobileUtilityOpen: false,
+    utilityPanelInteractionGuard: false,
     showUnicodePanel: false,
     unicodeApplyBusy: false,
     unicodeApplyFlash: false,
@@ -33,7 +39,20 @@ const baseData = {
     allGlitchTokens: [],
     openrouterApiKey: localStorage.getItem('openrouter-api-key') || '',
     showApiKey: false,
-    apiKeySaved: false
+    apiKeySaved: false,
+    openRouterModels: (window.OpenRouterModels && window.OpenRouterModels.getStaticFallback)
+        ? window.OpenRouterModels.getStaticFallback()
+        : [],
+    openRouterModelsCatalog: (window.OpenRouterModels && window.OpenRouterModels.getStaticFallback)
+        ? window.OpenRouterModels.getStaticFallback()
+        : [],
+    openRouterModelsDisabled: (window.OpenRouterModels && window.OpenRouterModels.loadDisabledIds)
+        ? window.OpenRouterModels.loadDisabledIds()
+        : [],
+    openRouterModelsFilterQuery: '',
+    openRouterModelsLoading: false,
+    openRouterModelsError: '',
+    openRouterModelsKeyInfo: null
 };
 
 const toolData = (window.toolRegistry && typeof window.toolRegistry.mergeVueData === 'function') 
@@ -45,21 +64,107 @@ const toolMethods = (window.toolRegistry && typeof window.toolRegistry.mergeVueM
     ? window.toolRegistry.mergeVueMethods() 
     : {};
 
+Vue.component('openrouter-model-select', {
+    props: {
+        value: { type: String, default: '' },
+        label: { type: String, default: 'Model' },
+        showRefresh: { type: Boolean, default: true }
+    },
+    computed: {
+        models: function() {
+            return this.$root.openRouterModels || [];
+        },
+        loading: function() {
+            return this.$root.openRouterModelsLoading;
+        },
+        error: function() {
+            return this.$root.openRouterModelsError;
+        },
+        keyInfo: function() {
+            return this.$root.openRouterModelsKeyInfo;
+        },
+        hasApiKey: function() {
+            return this.$root.getOpenRouterApiKey ? !!this.$root.getOpenRouterApiKey() : false;
+        },
+        routerHint: function() {
+            if (!this.value || !window.OpenRouterModels || !window.OpenRouterModels.getRouterHint) {
+                return '';
+            }
+            return window.OpenRouterModels.getRouterHint(this.value);
+        }
+    },
+    methods: {
+        onChange: function(event) {
+            this.$emit('input', event.target.value);
+        },
+        refresh: function() {
+            if (this.$root.refreshOpenRouterModels) {
+                this.$root.refreshOpenRouterModels(true);
+            }
+        },
+        formatLabel: function(model) {
+            return this.$root.formatOpenRouterModelLabel
+                ? this.$root.formatOpenRouterModelLabel(model)
+                : (model && model.name) || '';
+        }
+    },
+    template:
+        '<label class="openrouter-model-picker">' +
+            '<span class="openrouter-model-label">{{ label }}</span>' +
+            '<div class="openrouter-model-row">' +
+                '<select ' +
+                    'class="openrouter-model-select" ' +
+                    ':value="value" ' +
+                    '@change="onChange" ' +
+                    ':disabled="loading && !models.length"' +
+                '>' +
+                    '<option v-if="loading && !models.length" disabled value="">Loading models…</option>' +
+                    '<option v-for="m in models" :key="m.id" :value="m.id">{{ formatLabel(m) }}</option>' +
+                '</select>' +
+                '<button ' +
+                    'v-if="showRefresh" ' +
+                    'type="button" ' +
+                    'class="openrouter-model-refresh" ' +
+                    '@click="refresh" ' +
+                    ':disabled="loading" ' +
+                    'title="Refresh model list from OpenRouter"' +
+                    'aria-label="Refresh model list"' +
+                '>' +
+                    '<i class="fas" :class="loading ? \'fa-spinner fa-spin\' : \'fa-sync-alt\'"></i>' +
+                '</button>' +
+            '</div>' +
+            '<small v-if="error" class="openrouter-model-hint openrouter-model-hint-error">{{ error }}</small>' +
+            '<small v-else-if="routerHint" class="openrouter-model-hint openrouter-model-hint-router">{{ routerHint }}</small>' +
+            '<small v-else-if="!hasApiKey" class="openrouter-model-hint">Add an OpenRouter key in Settings to load models for your account.</small>' +
+            '<small v-else-if="keyInfo && keyInfo.is_free_tier" class="openrouter-model-hint">Free tier account — models marked · free need no credits.</small>' +
+            '<small v-else class="openrouter-model-hint">Curate visible models in Settings → AI Models.</small>' +
+        '</label>'
+});
+
 window.app = new Vue({
     el: '#app',
     data: mergedData,
+    computed: {
+        filteredOpenRouterModelsCatalog: function() {
+            var query = (this.openRouterModelsFilterQuery || '').trim().toLowerCase();
+            var catalog = this.openRouterModelsCatalog || [];
+            if (!query) return catalog;
+            return catalog.filter(function(model) {
+                var haystack = [
+                    model.id,
+                    model.name,
+                    model.provider,
+                    model.summary
+                ].filter(Boolean).join(' ').toLowerCase();
+                return haystack.indexOf(query) !== -1;
+            });
+        }
+    },
     methods: Object.assign({}, toolMethods || {}, {
         toggleUnicodePanel(event) {
             if (this.unicodePanelToggleLock) return;
             this.unicodePanelToggleLock = true;
-            
-            this.showUnicodePanel = !this.showUnicodePanel;
-            const panel = document.getElementById('unicode-options-panel');
-            if (panel) {
-                if (this.showUnicodePanel) panel.classList.add('active');
-                else panel.classList.remove('active');
-            }
-            
+            this.switchUtilityPanel('settings');
             setTimeout(() => {
                 this.unicodePanelToggleLock = false;
             }, 300);
@@ -211,34 +316,74 @@ window.app = new Vue({
             }
         },
         
-        toggleTheme() {
-            this.isDarkTheme = window.ThemeUtils.toggleTheme(this.isDarkTheme);
+        setTheme(themeId) {
+            if (!window.ThemeUtils) return;
+            this.activeTheme = window.ThemeUtils.applyTheme(themeId);
+        },
+
+        cycleTheme() {
+            if (!window.ThemeUtils) return;
+            this.activeTheme = window.ThemeUtils.cycleTheme(this.activeTheme);
         },
         
         toggleCopyHistory() {
-            this.showCopyHistory = !this.showCopyHistory;
-            
-            if (this.showCopyHistory && this.copyHistory.length > 0) {
-                this.$nextTick(() => {
-                    const firstCopyButton = document.querySelector('.copy-again-button');
+            this.switchUtilityPanel('history');
+        },
+
+        toggleGlitchTokenPanel() {
+            this.switchUtilityPanel('glitch');
+        },
+
+        toggleEndSequencePanel() {
+            this.switchUtilityPanel('endsequences');
+        },
+
+        markUtilityPanelInteraction() {
+            this.utilityPanelInteractionGuard = true;
+            var self = this;
+            setTimeout(function() {
+                self.utilityPanelInteractionGuard = false;
+            }, 400);
+        },
+
+        switchUtilityPanel(panelId) {
+            var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+
+            this.activeUtilityPanel = panelId;
+            this.showCopyHistory = panelId === 'history';
+            this.showGlitchTokenPanel = panelId === 'glitch';
+            this.showEndSequencePanel = panelId === 'endsequences';
+            this.showUnicodePanel = panelId === 'settings';
+
+            if (isMobile) {
+                this.mobileUtilityOpen = true;
+                this.markUtilityPanelInteraction();
+            }
+
+            if (panelId === 'glitch' && !this.glitchTokensLoaded) {
+                this.loadGlitchTokens();
+            }
+
+            if (panelId === 'history' && this.copyHistory.length > 0) {
+                this.$nextTick(function() {
+                    var firstCopyButton = document.querySelector('.copy-again-button');
                     if (firstCopyButton) {
                         firstCopyButton.focus();
                     }
                 });
             }
         },
-        
-        toggleGlitchTokenPanel(event) {
-            this.showGlitchTokenPanel = !this.showGlitchTokenPanel;
-            
-            // Load tokens if not already loaded
-            if (this.showGlitchTokenPanel && !this.glitchTokensLoaded) {
-                this.loadGlitchTokens();
+
+        closeMobileUtility() {
+            if (this.utilityPanelInteractionGuard) {
+                return;
             }
+            this.mobileUtilityOpen = false;
         },
 
-        toggleEndSequencePanel() {
-            this.showEndSequencePanel = !this.showEndSequencePanel;
+        openMobileUtility() {
+            this.mobileUtilityOpen = true;
+            this.markUtilityPanelInteraction();
         },
 
         copyEndSequence(value) {
@@ -397,6 +542,133 @@ window.app = new Vue({
         showCopiedPopup() {
             window.NotificationUtils.showCopiedPopup();
         },
+
+        getOpenRouterApiKey() {
+            var key = (this.openrouterApiKey || '').trim();
+            if (key) return key;
+            if (window.OpenRouterModels && window.OpenRouterModels.getApiKey) {
+                return window.OpenRouterModels.getApiKey();
+            }
+            return '';
+        },
+
+        formatOpenRouterModelLabel(model) {
+            if (window.OpenRouterModels && window.OpenRouterModels.formatLabel) {
+                return window.OpenRouterModels.formatLabel(model);
+            }
+            return model && model.name ? model.name : '';
+        },
+
+        isOpenRouterModelEnabled(modelId) {
+            if (!window.OpenRouterModels) return true;
+            return window.OpenRouterModels.isModelEnabled(modelId, this.openRouterModelsDisabled);
+        },
+
+        rebuildOpenRouterDropdown() {
+            if (!window.OpenRouterModels) return;
+            var pinned = window.OpenRouterModels.getPinnedModelIds(this);
+            this.openRouterModels = window.OpenRouterModels.filterForDropdown(
+                this.openRouterModelsCatalog,
+                this.openRouterModelsDisabled,
+                pinned
+            );
+        },
+
+        toggleOpenRouterModelEnabled(modelId) {
+            if (!modelId) return;
+            var disabled = this.openRouterModelsDisabled.slice();
+            var index = disabled.indexOf(modelId);
+            if (index === -1) {
+                disabled.push(modelId);
+            } else {
+                disabled.splice(index, 1);
+            }
+            this.openRouterModelsDisabled = disabled;
+            if (window.OpenRouterModels) {
+                window.OpenRouterModels.saveDisabledIds(disabled);
+            }
+            this.rebuildOpenRouterDropdown();
+            this.syncOpenRouterModelSelections();
+        },
+
+        enableAllOpenRouterModels() {
+            this.openRouterModelsDisabled = [];
+            if (window.OpenRouterModels) {
+                window.OpenRouterModels.saveDisabledIds([]);
+            }
+            this.rebuildOpenRouterDropdown();
+            this.syncOpenRouterModelSelections();
+        },
+
+        showFreeOpenRouterModelsOnly() {
+            var disabled = (this.openRouterModelsCatalog || [])
+                .filter(function(model) {
+                    return model && model.id && !model.free && !model.virtual;
+                })
+                .map(function(model) { return model.id; });
+            this.openRouterModelsDisabled = disabled;
+            if (window.OpenRouterModels) {
+                window.OpenRouterModels.saveDisabledIds(disabled);
+            }
+            this.rebuildOpenRouterDropdown();
+            this.syncOpenRouterModelSelections();
+        },
+
+        syncOpenRouterModelSelections() {
+            if (!window.OpenRouterModels || !this.openRouterModels.length) return;
+            var models = this.openRouterModels;
+            var ensure = window.OpenRouterModels.ensureValidSelection.bind(window.OpenRouterModels);
+
+            if (typeof this.pcModel !== 'undefined') {
+                this.pcModel = ensure(this.pcModel, models, localStorage.getItem('pc-model') || 'openrouter/auto');
+            }
+            if (typeof this.acModel !== 'undefined') {
+                this.acModel = ensure(this.acModel, models, localStorage.getItem('ac-model') || 'openrouter/auto');
+            }
+            if (typeof this.saModel !== 'undefined') {
+                this.saModel = ensure(this.saModel, models, localStorage.getItem('sa-model') || 'openrouter/free');
+            }
+            if (typeof this.translateModel !== 'undefined') {
+                this.translateModel = ensure(this.translateModel, models, localStorage.getItem('translate-model') || 'google/gemma-3-27b-it');
+            }
+        },
+
+        refreshOpenRouterModels: async function(force) {
+            if (!window.OpenRouterModels) return;
+            if (this.openRouterModelsLoading) return;
+
+            this.openRouterModelsLoading = true;
+            this.openRouterModelsError = '';
+
+            var apiKey = this.getOpenRouterApiKey();
+
+            try {
+                var models = await window.OpenRouterModels.fetch(apiKey, { force: !!force });
+                this.openRouterModelsCatalog = models;
+                this.rebuildOpenRouterDropdown();
+                this.syncOpenRouterModelSelections();
+
+                if (apiKey) {
+                    this.openRouterModelsKeyInfo = await window.OpenRouterModels.fetchKeyInfo(apiKey);
+                } else {
+                    this.openRouterModelsKeyInfo = null;
+                }
+            } catch (err) {
+                console.warn('OpenRouter model fetch failed:', err);
+                var fallback = window.OpenRouterModels.getStaticFallback();
+                this.openRouterModelsCatalog = window.OpenRouterModels.mergeWithVirtual(fallback);
+                this.rebuildOpenRouterDropdown();
+                this.syncOpenRouterModelSelections();
+
+                if (err && err.status === 401) {
+                    this.openRouterModelsError = 'Invalid API key — check Settings.';
+                } else {
+                    this.openRouterModelsError = (err && err.message) || 'Could not load models; using offline list.';
+                }
+            } finally {
+                this.openRouterModelsLoading = false;
+            }
+        },
         
         saveApiKey() {
             var trimmed = (this.openrouterApiKey || '').trim();
@@ -406,6 +678,7 @@ window.app = new Vue({
                 this.apiKeySaved = true;
                 this.showNotification('API key saved', 'success');
                 setTimeout(() => { this.apiKeySaved = false; }, 2000);
+                this.refreshOpenRouterModels(true);
             }
         },
 
@@ -416,6 +689,8 @@ window.app = new Vue({
             localStorage.removeItem('openrouter_api_key');
             localStorage.removeItem('plinyos-api-key');
             this.showNotification('API key cleared', 'success');
+            this.openRouterModelsKeyInfo = null;
+            this.refreshOpenRouterModels(true);
         },
 
         setupPasteHandlers() {
@@ -431,15 +706,19 @@ window.app = new Vue({
         }
     }),
     mounted() {
-        if (window.ThemeUtils && window.ThemeUtils.initializeTheme) {
-            this.isDarkTheme = window.ThemeUtils.initializeTheme();
-        if (this.isDarkTheme) {
-                document.body.classList.add('dark-theme');
-            } else {
-                document.body.classList.add('light-theme');
-            }
-        } else if (this.isDarkTheme) {
-            document.body.classList.add('dark-theme');
+        if (window.ThemeUtils) {
+            this.activeTheme = window.ThemeUtils.applyTheme(window.ThemeUtils.initializeTheme());
+            this._themeKeyHandler = (event) => {
+                if (event.defaultPrevented || event.repeat) return;
+                if (event.key !== 'd' && event.key !== 'D') return;
+                var tag = event.target && event.target.tagName;
+                if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (event.target && event.target.isContentEditable)) {
+                    return;
+                }
+                event.preventDefault();
+                this.cycleTheme();
+            };
+            document.addEventListener('keydown', this._themeKeyHandler);
         }
         
         if (window.toolRegistry && typeof window.toolRegistry.mergeVueLifecycle === 'function') {
@@ -452,6 +731,8 @@ window.app = new Vue({
         if (window.toolRegistry && typeof window.toolRegistry.getAll === 'function') {
             this.registeredTools = window.toolRegistry.getAll();
         }
+
+        this.refreshOpenRouterModels(false);
 
         var initialRoute = window.TabRouting && window.TabRouting.parse();
         if (initialRoute && initialRoute.tab && this.getValidToolIds().includes(initialRoute.tab)) {
@@ -467,20 +748,6 @@ window.app = new Vue({
             this.applyRouteFromHash();
         };
         window.addEventListener('hashchange', this._onHashChange);
-        
-        this.$nextTick(() => {
-            const closeButton = document.querySelector('#unicode-options-panel .close-button');
-            if (closeButton) {
-                const handleClose = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.toggleUnicodePanel(e);
-                };
-                
-                closeButton.addEventListener('click', handleClose, { passive: false });
-                closeButton.addEventListener('touchend', handleClose, { passive: false });
-            }
-        });
         
         document.addEventListener('click', (e) => {
             if (e.target.closest('.custom-tooltip')) {
@@ -583,6 +850,11 @@ window.app = new Vue({
     },
     
     beforeDestroy() {
+        if (this._themeKeyHandler) {
+            document.removeEventListener('keydown', this._themeKeyHandler);
+            this._themeKeyHandler = null;
+        }
+
         if (this._onHashChange) {
             window.removeEventListener('hashchange', this._onHashChange);
             this._onHashChange = null;

@@ -13,9 +13,6 @@ class AntiClassifierTool extends Tool {
     }
 
     getVueData() {
-        const models = (typeof window !== 'undefined' && window.OPENROUTER_MODELS && window.OPENROUTER_MODELS.length)
-            ? window.OPENROUTER_MODELS
-            : [];
         const savedTemp = parseFloat(localStorage.getItem('ac-temperature'));
         const acTemperature = Number.isFinite(savedTemp)
             ? Math.min(2, Math.max(0, savedTemp))
@@ -26,8 +23,7 @@ class AntiClassifierTool extends Tool {
             acError: '',
             acLexemeAnalysis: { totalFindings: 0, findings: [], summary: 'No Latin-root wording findings.' },
             acLoading: false,
-            acModel: localStorage.getItem('ac-model') || 'anthropic/claude-sonnet-4.6',
-            acModels: models,
+            acModel: localStorage.getItem('ac-model') || 'openrouter/auto',
             acTemperature,
             acMaxTokens: 2000
         };

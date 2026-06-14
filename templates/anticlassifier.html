@@ -56,12 +56,7 @@
             </div>
 
             <div class="options-grid ac-options">
-                <label>
-                    Model
-                    <select v-model="acModel">
-                        <option v-for="m in acModels" :key="m.id" :value="m.id">{{ m.name }} ({{ m.provider }})</option>
-                    </select>
-                </label>
+                <openrouter-model-select v-model="acModel" label="Model"></openrouter-model-select>
                 <label
                     class="slider-block"
                     title="Sampling randomness: lower is more deterministic, higher is more varied (OpenRouter 0–2)."

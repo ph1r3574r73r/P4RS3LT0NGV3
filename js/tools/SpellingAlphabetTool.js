@@ -13,31 +13,6 @@ class SpellingAlphabetTool extends Tool {
     }
 
     getVueData() {
-        var freeModels = [
-            { id: 'openrouter/free', name: 'Free (auto-pick)', provider: 'OpenRouter' },
-            { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B (free)', provider: 'Google' },
-            { id: 'google/gemma-3-12b-it:free', name: 'Gemma 3 12B (free)', provider: 'Google' },
-            { id: 'google/gemma-3-4b-it:free', name: 'Gemma 3 4B (free)', provider: 'Google' },
-            { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B (free)', provider: 'Meta' }
-        ];
-        var allModels = (typeof window !== 'undefined' && window.OPENROUTER_MODELS && window.OPENROUTER_MODELS.length)
-            ? window.OPENROUTER_MODELS
-            : [{ id: 'openrouter/auto', name: 'Auto (best for price)', provider: 'OpenRouter' }];
-        var seen = {};
-        var saModels = [];
-        freeModels.forEach(function(model) {
-            if (!seen[model.id]) {
-                seen[model.id] = true;
-                saModels.push(model);
-            }
-        });
-        allModels.forEach(function(model) {
-            if (!seen[model.id]) {
-                seen[model.id] = true;
-                saModels.push(model);
-            }
-        });
-
         return {
             saView: 'list',
             saAlphabets: [],
@@ -48,8 +23,7 @@ class SpellingAlphabetTool extends Tool {
             saLoading: false,
             saError: '',
             saModel: localStorage.getItem('sa-model') || 'openrouter/free',
-            saLetters: SpellingAlphabetTransform.LETTERS,
-            saModels: saModels
+            saLetters: SpellingAlphabetTransform.LETTERS
         };
     }
 

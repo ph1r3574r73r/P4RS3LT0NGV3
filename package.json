@@ -1,6 +1,6 @@
 {
   "name": "p4rs3lt0ngv3",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "description": "Universal Text Encoder/Decoder & Steganography Tool",
   "scripts": {
     "build:codes-vendor": "node build/build-code-vendor.js",

@@ -3,11 +3,12 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #25282c;
-  color: #00FF41;
+  background-color: var(--secondary-bg);
+  color: var(--success-color);
   padding: 10px 20px;
   border-radius: 5px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--input-border);
+  box-shadow: var(--panel-shadow-soft);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -16,7 +17,7 @@
 }
 
 .copy-notification.error {
-  color: #ff4141;
+  color: #e53935;
 }
 
 .copy-notification.fade-out {

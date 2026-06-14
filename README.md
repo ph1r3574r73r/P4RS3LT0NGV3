@@ -1,6 +1,8 @@
-# 🐍 P4RS3LT0NGV3 - Universal Text Translator
+# 🐍 P4RS3LT0NGV3 4.0 — Universal Text Translator
 
-A powerful web-based text transformation and steganography tool with **223** built-in text transforms spanning encodings, classical and modern ciphers, Unicode styles, formatting, and niche alphabets. Think of it as a universal translator for ALL alphabets and writing systems! 
+A powerful web-based text transformation and steganography tool with **223** built-in text transforms spanning encodings, classical and modern ciphers, Unicode styles, formatting, and niche alphabets. Think of it as a universal translator for ALL alphabets and writing systems!
+
+**Version 4.0** brings a redesigned desktop app shell, seven themes (including WCAG 2.1 AA **Accessible**), mobile utility panels, OpenRouter model curation, and responsive UI polish across all tools.
 
 The app is a **static site**: run **`npm run build`** (after `npm install`), then open **`dist/index.html`** in your browser—no local server required. **Alternatively**, you can run it as a local app over HTTP with **`npm start`** or **`npx serve dist -l 8080`** (see [Getting Started](#getting-started) below). Core transforms, decoder, and steganography work **without** calling the cloud; features that use [OpenRouter](https://openrouter.ai/) need **network access** and an API key (see below).
 
@@ -286,7 +288,7 @@ Tabs appear in **UI order** below. **OpenRouter** (optional or required per tool
 - **Real-time**: Updates as you type.
 - **Script & language hints**: Unicode script ranges and Latin word-marker heuristics for common languages.
 - **AI translate to English** (optional, OpenRouter): When text looks foreign, optional one-shot translate to English.
-- **Keyboard shortcut**: **D**.
+- **Deep link**: `#decoder` in the URL opens this tab directly.
 
 ### 😀 **Emoji** (Steganography)
 
@@ -340,6 +342,18 @@ Tabs appear in **UI order** below. **OpenRouter** (optional or required per tool
 - **Dictionary mode**: Seeded random gibberish over a configurable character set.
 - **Removal mode**: Random or **specific** letter removal with batch **variations** and min/max strip lengths.
 
+### 📷 **Codes** (QR & barcodes)
+
+*Tab id: `codes` — deep link: `#codes` (generate) or `#codes/decode` (scan).*
+
+- **Generate**: QR codes and common 1D barcodes from any text or numeric payload.
+- **Formats**: **QR Code** (PNG download), **Code 128**, **EAN-13**, and **Code 39** (SVG download).
+- **QR options**: Pixel size, quiet-zone margin, and error-correction level (L / M / Q / H).
+- **Barcode options**: Bar height, module width, and optional human-readable label under the bars.
+- **Decode**: Upload a PNG, JPEG, GIF, or WebP image to read QR codes and barcodes — **fully client-side** (image never leaves the browser).
+- **Copy & reuse**: Send decoded text to the Generate tab with one click.
+- **Offline-friendly**: QR/barcode libraries (`qrcode`, JsBarcode, ZXing) are bundled into `js/vendor/` at build time — no runtime CDN for this tab.
+
 ### 🪄 **PromptCraft** (via OpenRouter)
 
 - **9 Mutation Strategies**: Rephrase, Obfuscate, Role-Play Wrap, Multi-Language, Expand, Compress, Metaphor, Fragment, and Custom
@@ -355,13 +369,18 @@ models
 - **Same key**: Uses the same OpenRouter API key as Translation and PromptCraft.
 
 ### 📱 **User Experience**
-- **Dark/Light Theme**: Toggle between themes
+- **Themes**: **Advanced Settings** → Theme (Dark, Light, **Accessible**, BT6, Pliny, Cyberpunk, Wild West) — press **`D`** to cycle; choice saved in the browser
+- **Desktop layout**: Left tool nav, main workspace, right utility dock (Copy History, Glitch Tokens, End Sequences, Advanced Settings)
+- **Mobile / narrow screens**: Tool picker dropdown; utility panels slide in from the right (open via the **columns** icon in the header)
 - **Copy History**: Track all copied content with timestamps
-- **Auto-copy**: Automatically copy transformed text
-- **Keyboard Shortcuts**: Quick access to features
+- **Auto-copy**: Automatically copy transformed text (where enabled per tool)
+- **Keyboard Shortcuts**: Quick access to features (including **`D`** for theme cycle)
 - **Responsive Design**: Works on all device sizes
 - **Accessibility**: Screen reader friendly with proper ARIA labels
-- **Side panels**: Glitch token browser (optional data), end-sequence / delimiter strings for research, and **Advanced Settings** (OpenRouter key, steganography tuning)
+- **Side panels**: Glitch token browser (optional data), end-sequence / delimiter strings for research, and **Advanced Settings** (OpenRouter API key, model curation, steganography tuning)
+- **Deep links**: Open a specific tool tab via URL hash — e.g. `#decoder`, `#steganography`, `#codes`, `#codes/decode` (browser back/forward supported)
+
+Contributors: see **[docs/THEMES.md](docs/THEMES.md)** for how to add or edit themes.
 
 ### 🔑 **OpenRouter API Key Setup**
 
@@ -369,9 +388,10 @@ models
 
 1. Create an account at [openrouter.ai](https://openrouter.ai/)
 2. Generate an API key (starts with `sk-or-...`)
-3. In P4RS3LT0NGV3, click the **sliders icon** (top-right) to open **Advanced Settings**
+3. In P4RS3LT0NGV3, open **Advanced Settings** from the utility dock (desktop) or the **columns** icon in the header (mobile)
 4. Paste your key and click **Save Key**
-5. Your key is stored locally in your browser only — never sent anywhere except OpenRouter
+5. Choose which OpenRouter models appear in Translation, PromptCraft, Anti-Classifier, and related dropdowns
+6. Your key is stored locally in your browser only — never sent anywhere except OpenRouter
 
 > **Tip:** Some models (like Gemma 3) are free on OpenRouter. Frontier models (Claude, GPT, Gemini Pro) require credits.
 
@@ -411,11 +431,12 @@ Notes:
 npm install
 
 # Build all assets (required before use). Order matches package.json:
-# build:tools → build:copy → build:index → build:transforms → build:emoji → build:templates
+# build:tools → build:codes-vendor → build:copy → build:index → build:transforms → build:emoji → build:templates
 npm run build
 
 # Or build individual components:
 npm run build:tools        # Auto-discover tools, inject script tags into dist/index.html
+npm run build:codes-vendor # Bundle qrcode, JsBarcode, ZXing → dist/js/vendor/
 npm run build:copy         # Copy static files to dist/
 npm run build:index        # Generate src/transformers/index.js (ES module index)
 npm run build:transforms   # Bundle all transformers to dist/js/bundles/transforms-bundle.js
@@ -457,6 +478,7 @@ npm run preview            # npm run build, then serve dist/
   - Transformers are bundled from `src/transformers/` to `dist/js/bundles/transforms-bundle.js`
   - Tool templates are injected from `templates/` into `dist/index.html`
   - Emoji data is generated to `dist/js/data/`
+  - QR/barcode vendors (`qrcode`, `JsBarcode`, `@zxing/library`) are bundled to `dist/js/vendor/` via `npm run build:codes-vendor`
 
 ### **Browser Support**
 - Chrome/Edge 80+
@@ -469,6 +491,15 @@ npm run preview            # npm run build, then serve dist/
 - **Memory Efficient**: Streams large text without loading into memory
 - **Optimized Rendering**: Efficient DOM updates with Vue.js
 
+## 🔧 **What's New in 4.0**
+
+- 🆕 **Version 4.0 release**: Major UI refresh — desktop three-column layout, theme system, and mobile utility dock
+- 🆕 **Theme system**: Seven themes (Dark, Light, **Accessible**, BT6, Pliny, Cyberpunk, Wild West) with token-based CSS and atmosphere layers
+- 🆕 **Desktop app shell**: Left tool nav, main workspace, right utility dock (Copy History, Glitch Tokens, End Sequences, Settings)
+- 🆕 **Mobile utility panels**: Slide-over panels with responsive tab bar (no horizontal scroll)
+- 🆕 **OpenRouter model settings**: Curate which models appear in AI tool dropdowns (Settings)
+- 🆕 **Responsive tool polish**: Bijection, Tokenade, transform cards, and topbar layout improvements
+
 ## 🔧 **Recent Fixes & Improvements**
 
 ### **Fixed Issues**
@@ -478,6 +509,8 @@ npm run preview            # npm run build, then serve dist/
 - ✅ **Reverse Functions**: Added missing reverse functions for many transforms
 
 ### **New Features**
+- 🆕 **Codes tool**: Generate QR codes and barcodes (Code 128, EAN-13, Code 39); decode from uploaded images client-side
+- 🆕 **URL deep links**: Jump to any tool tab with `#tab` hashes (e.g. `#codes/decode`)
 - 🆕 **AI Translation**: Translate to 20+ languages (including dead/exotic) via OpenRouter using TranslateGemma prompt format
 - 🆕 **PromptCraft Tool**: AI-powered prompt mutation with 9 strategies and 48+ models
 - 🆕 **OpenRouter Integration**: Unified API key management for all AI-powered features
@@ -541,4 +574,4 @@ This project is open source. See LICENSE file for details.
 
 ---
 
-**P4RS3LT0NGV3** - Because sometimes you need to speak in tongues that don't exist! 🐉✨
+**P4RS3LT0NGV3 4.0** - Because sometimes you need to speak in tongues that don't exist! 🐉✨

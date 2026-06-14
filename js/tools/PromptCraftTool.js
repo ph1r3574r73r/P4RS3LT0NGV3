@@ -23,7 +23,7 @@ class PromptCraftTool extends Tool {
             pcOutputs: [],
             pcLexemeAnalysis: { totalFindings: 0, findings: [], summary: 'No Latin-root wording findings.' },
             pcStrategy: 'rephrase',
-            pcModel: localStorage.getItem('pc-model') || 'nousresearch/hermes-3-llama-3.1-405b',
+            pcModel: localStorage.getItem('pc-model') || 'openrouter/auto',
             pcTemperature,
             pcCount: 3,
             pcLoading: false,
@@ -39,12 +39,7 @@ class PromptCraftTool extends Tool {
                 { id: 'metaphor', name: 'Metaphor', icon: 'fa-cloud', desc: 'Express through analogy and metaphor' },
                 { id: 'fragment', name: 'Fragment', icon: 'fa-puzzle-piece', desc: 'Split across disjointed fragments' },
                 { id: 'custom', name: 'Custom', icon: 'fa-pen-fancy', desc: 'Your own mutation instruction' }
-            ],
-            pcModels: (typeof window !== 'undefined' && window.OPENROUTER_MODELS && window.OPENROUTER_MODELS.length)
-                ? window.OPENROUTER_MODELS
-                : [
-                    { id: 'openrouter/auto', name: 'Auto (best for price)', provider: 'OpenRouter' }
-                ]
+            ]
         };
     }
 

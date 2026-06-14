@@ -6,7 +6,7 @@ class SplitterTool extends Tool {
         super({
             id: 'splitter',
             name: 'Splitter',
-            icon: 'fa-grip-lines',
+            icon: 'fa-scissors',
             title: 'Split text into multiple copyable messages',
             order: 8
         });

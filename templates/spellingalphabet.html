@@ -63,14 +63,7 @@
                         Category / theme
                         <input type="text" v-model="saCategory" placeholder="e.g. nautical, cooking, astronomy" />
                     </label>
-                    <label v-if="saHasApiKey()">
-                        OpenRouter model
-                        <select v-model="saModel">
-                            <option v-for="model in saModels" :key="model.id" :value="model.id">
-                                {{ model.name }} ({{ model.provider }})
-                            </option>
-                        </select>
-                    </label>
+                    <openrouter-model-select v-if="saHasApiKey()" v-model="saModel" label="OpenRouter model"></openrouter-model-select>
                 </div>
 
                 <div class="sa-generate-row">

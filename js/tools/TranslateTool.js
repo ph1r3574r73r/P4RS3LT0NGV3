@@ -40,16 +40,6 @@ class TranslateTool extends Tool {
             translateError: '',
             translateActiveLang: '',
             translateModel: localStorage.getItem('translate-model') || 'google/gemma-3-27b-it',
-            translateModels: [
-                { id: 'google/gemma-3-27b-it', name: 'Gemma 3 27B', note: 'Best quality' },
-                { id: 'google/gemma-3-12b-it', name: 'Gemma 3 12B', note: 'Fast + good' },
-                { id: 'google/gemma-3-4b-it', name: 'Gemma 3 4B', note: 'Fastest' },
-                { id: 'google/gemini-2.5-flash-preview', name: 'Gemini 2.5 Flash', note: 'Google flagship' },
-                { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', note: 'Stable' },
-                { id: 'google/translategemma-27b-it', name: 'TranslateGemma 27B', note: 'Purpose-built (if available)' },
-                { id: 'google/translategemma-12b-it', name: 'TranslateGemma 12B', note: 'Purpose-built (if available)' },
-                { id: 'google/translategemma-4b-it', name: 'TranslateGemma 4B', note: 'Purpose-built (if available)' }
-            ],
             translateMainLangs: [
                 { code: 'es', name: 'Spanish', flag: 'ES' },
                 { code: 'fr', name: 'French', flag: 'FR' },

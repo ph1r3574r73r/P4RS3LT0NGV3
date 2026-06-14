@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parseltongue 2.0 - LLM Payload Crafter</title>
+    <title>Parseltongue 4.0 — Text Encoder, Decoder &amp; Steganography Tool</title>
+    <meta name="description" content="Free online text encoder &amp; decoder with 223+ transforms: ciphers, Base64, Unicode styles, emoji steganography &amp; QR codes. No install required — because sometimes you need to speak in tongues that don't exist.">
+    <meta name="keywords" content="P4RS3LT0NGV3, Parseltongue, text encoder, text decoder, cipher tool, steganography, Unicode converter, Base64">
+    <meta name="application-name" content="P4RS3LT0NGV3">
+    <meta property="og:title" content="Parseltongue 4.0 — Text Encoder, Decoder &amp; Steganography Tool">
+    <meta property="og:description" content="223+ encodings, ciphers &amp; steganography in your browser. Because sometimes you need to speak in tongues that don't exist.">
+    <meta property="og:type" content="website">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/notification.css">
@@ -13,161 +19,185 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div id="app" class="container">
-        <header>
-            <div class="logo">
-                <h1>🐉️︎︎︎︎︎︎︎️︎︎︎️︎︎︎️︎️️︎️️︎︎︎︎︎︎︎️︎︎︎️︎︎︎️︎️️︎️️︎︎︎︎︎︎︎️︎︎︎️︎︎︎️︎️️︎️️︎︎︎︎︎︎︎️︎︎︎️︎︎︎️︎️️︎️︎︎️️️️︎︎︎️️️️️︎︎︎️︎︎︎️️️︎️︎︎️️️️︎️︎︎︎️︎︎︎️︎︎️️︎️︎️︎︎️️️️︎️︎︎︎️︎︎︎️︎︎︎️︎️︎︎️️️︎️︎︎️︎︎︎️︎️︎️︎︎️️️︎︎️︎︎︎︎︎️︎️︎︎︎︎️︎︎️︎︎️️︎︎︎️︎︎︎️︎️︎️︎︎︎️︎︎︎︎️︎️️️︎︎︎️︎️️️︎︎︎️︎️️️︎︎️︎︎️️︎︎︎️︎︎️️️️︎️︎️︎️️︎︎️︎︎︎️︎️︎︎️️️︎︎️︎️︎️︎︎︎︎︎︎️︎︎️️︎︎︎️︎︎️︎︎️︎️︎︎️️️︎︎️︎️️︎︎️︎️️️️️︎︎︎︎️️️️️︎︎︎️︎️️︎️️︎︎︎︎︎︎︎️︎︎︎️︎︎︎️︎️️︎️️︎︎︎︎︎︎︎️︎︎︎️︎︎︎️︎️️︎️️︎︎︎︎︎︎︎️︎︎︎️︎︎︎️︎️️︎️️︎︎︎︎︎︎︎️︎︎︎️︎︎︎️︎️️︎️️︎︎︎︎︎︎︎️︎︎︎️︎︎︎️︎️️︎️️︎︎︎︎︎︎︎️︎︎︎️︎​ P4RS3LT0NGV3</h1>
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme') || 'dark';
+                document.body.classList.add('theme-' + saved);
+                document.body.classList.add(
+                    saved === 'light' || saved === 'accessible' ? 'light-theme' : 'dark-theme'
+                );
+            } catch (e) {
+                document.body.classList.add('theme-dark', 'dark-theme');
+            }
+        })();
+    </script>
+    <div id="app" class="app-root">
+        <header class="app-topbar">
+            <div class="logo app-logo">
+                <h1>🐉 P4RS3LT0NGV3</h1>
             </div>
-            <div class="actions">
+            <div class="actions topbar-actions">
                 <button
-                    @click="toggleCopyHistory"
-                    class="history-button"
-                    title="Show copy history"
-                    aria-label="Show copy history"
+                    type="button"
+                    class="topbar-utility-btn"
+                    @click="mobileUtilityOpen ? closeMobileUtility() : openMobileUtility()"
+                    :title="mobileUtilityOpen ? 'Close panels' : 'Open panels'"
+                    :aria-label="mobileUtilityOpen ? 'Close panels' : 'Open panels'"
+                    :aria-expanded="mobileUtilityOpen"
                 >
-                    <i class="fas fa-history"></i>
+                    <i :class="mobileUtilityOpen ? 'fas fa-xmark' : 'fas fa-columns'"></i>
                 </button>
-                <button 
-                    @click="toggleTheme" 
-                    @keyup.d="toggleTheme"
-                    class="theme-button" 
-                    title="Toggle dark mode (D)"
-                    aria-label="Toggle dark mode"
-                >
-                    <i class="fas" :class="isDarkTheme ? 'fa-moon' : 'fa-sun'"></i>
-                </button>
-                <a 
-                    href="https://github.com/elder-plinius/P4RS3LT0NGV3" 
-                    target="_blank" 
-                    class="github-button" 
+                <a
+                    href="https://github.com/elder-plinius/P4RS3LT0NGV3"
+                    target="_blank"
+                    class="github-button"
                     title="View source on GitHub"
                     aria-label="View source code on GitHub"
                 >
                     <i class="fab fa-github"></i>
                 </a>
-                <button 
-                    @click="toggleUnicodePanel"
-                    class="history-button" 
-                    title="Advanced Settings"
-                    aria-label="Advanced Settings"
-                >
-                    <i class="fas fa-sliders-h"></i>
-                </button>
-                <button 
-                    @click="toggleGlitchTokenPanel"
-                    class="history-button" 
-                    title="Glitch Tokens"
-                    aria-label="Glitch Tokens"
-                >
-                    <i class="fas fa-bug"></i>
-                </button>
-                <button 
-                    @click="toggleEndSequencePanel"
-                    class="history-button" 
-                    title="End sequences (delimiter strings)"
-                    aria-label="End sequences"
-                >
-                    <i class="fas fa-stop"></i>
-                </button>
             </div>
         </header>
 
-        <div class="tabs">
-            <div class="tab-buttons" role="tablist" aria-label="Tools">
-                <!-- Dynamically generated tab buttons from tool registry -->
-                <button
-                    v-for="tool in registeredTools"
-                    v-if="!tool.hidden"
-                    :key="tool.id"
-                    :class="{ active: activeTab === tool.id }"
-                    @click="switchToTab(tool.id)"
-                    :title="tool.title"
-                    role="tab"
-                    :aria-selected="activeTab === tool.id"
-                >
-                    <i :class="'fas ' + tool.icon"></i> {{ tool.name }}
-                </button>
-            </div>
-
-            <div class="tab-tool-select">
-                <label for="mobile-tool-select">Selected Tool</label>
-                <select
-                    id="mobile-tool-select"
-                    class="mobile-tool-dropdown"
-                    :value="activeTab"
-                    aria-label="Selected tool"
-                    @change="switchToTab($event.target.value)"
-                >
-                    <template v-for="tool in registeredTools">
-                        <option
-                            v-if="!tool.hidden"
-                            :key="tool.id"
-                            :value="tool.id"
-                        >{{ tool.name }}</option>
-                    </template>
-                </select>
-            </div>
-
-            <div id="tool-content-container">
-            </div>
-
-        </div>
-
-                    <!-- Copy History Panel -->
-            <div class="app-sidebar copy-history-panel" :class="{ 'active': showCopyHistory }">
-                <div class="app-sidebar-header copy-history-header">
-                    <h3><i class="fas fa-history"></i> Copy History</h3>
-                    <div class="header-actions">
-                        <button 
-                            v-if="copyHistory.length > 0"
-                            @click.stop="clearCopyHistory" 
-                            class="clear-history-button" 
-                            title="Clear all history"
-                        >
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="close-button" @click="toggleCopyHistory" title="Close history">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+        <div class="app-shell">
+            <nav class="app-nav" role="tablist" aria-label="Tools">
+                <div class="tab-buttons">
+                    <button
+                        v-for="tool in registeredTools"
+                        v-if="!tool.hidden"
+                        :key="tool.id"
+                        :class="{ active: activeTab === tool.id }"
+                        @click="switchToTab(tool.id)"
+                        :title="tool.title"
+                        role="tab"
+                        :aria-selected="activeTab === tool.id"
+                    >
+                        <i :class="'fas ' + tool.icon"></i>
+                        <span class="nav-label">{{ tool.name }}</span>
+                    </button>
                 </div>
-                <div class="app-sidebar-body copy-history-content">
-                    <div v-if="copyHistory.length === 0" class="no-history">
-                        <p>No copy history yet. Use the app features to auto-copy content.</p>
-                    </div>
-                    <div v-else class="history-items">
-                        <div v-for="(item, index) in copyHistory" :key="item.id || index" class="history-item">
-                            <div class="history-item-header">
-                                <span class="history-source">{{ item.source }}</span>
-                                <span class="history-time">{{ formatHistoryTime(item.timestamp) }}</span>
+            </nav>
+
+            <main class="app-main">
+                <div class="tab-tool-select">
+                    <label for="mobile-tool-select">Selected Tool</label>
+                    <select
+                        id="mobile-tool-select"
+                        class="mobile-tool-dropdown"
+                        :value="activeTab"
+                        aria-label="Selected tool"
+                        @change="switchToTab($event.target.value)"
+                    >
+                        <template v-for="tool in registeredTools">
+                            <option
+                                v-if="!tool.hidden"
+                                :key="tool.id"
+                                :value="tool.id"
+                            >{{ tool.name }}</option>
+                        </template>
+                    </select>
+                </div>
+
+                <div id="tool-content-container" class="tool-content-container">
+                </div>
+            </main>
+
+            <div
+                v-if="mobileUtilityOpen"
+                class="utility-backdrop"
+                @click="closeMobileUtility"
+                aria-hidden="true"
+            ></div>
+
+            <aside
+                class="app-utility"
+                :class="{ 'utility-open': mobileUtilityOpen }"
+                aria-label="Utilities"
+                @click.stop
+            >
+                <div class="utility-tab-bar" role="tablist" aria-label="Utility panels" @click.stop>
+                    <button
+                        type="button"
+                        class="utility-tab-btn"
+                        :class="{ active: activeUtilityPanel === 'history' }"
+                        @click.stop="switchUtilityPanel('history')"
+                        role="tab"
+                        :aria-selected="activeUtilityPanel === 'history'"
+                    >
+                        Copy History
+                    </button>
+                    <button
+                        type="button"
+                        class="utility-tab-btn"
+                        :class="{ active: activeUtilityPanel === 'glitch' }"
+                        @click.stop="switchUtilityPanel('glitch')"
+                        role="tab"
+                        :aria-selected="activeUtilityPanel === 'glitch'"
+                    >
+                        Glitch Tokens
+                    </button>
+                    <button
+                        type="button"
+                        class="utility-tab-btn"
+                        :class="{ active: activeUtilityPanel === 'endsequences' }"
+                        @click.stop="switchUtilityPanel('endsequences')"
+                        role="tab"
+                        :aria-selected="activeUtilityPanel === 'endsequences'"
+                    >
+                        End Sequences
+                    </button>
+                    <button
+                        type="button"
+                        class="utility-tab-btn"
+                        :class="{ active: activeUtilityPanel === 'settings' }"
+                        @click.stop="switchUtilityPanel('settings')"
+                        role="tab"
+                        :aria-selected="activeUtilityPanel === 'settings'"
+                    >
+                        Settings
+                    </button>
+                </div>
+
+                <div class="utility-panels">
+                    <div v-show="activeUtilityPanel === 'history'" class="utility-panel copy-history-panel">
+                        <div class="utility-panel-toolbar" v-if="copyHistory.length > 0">
+                            <button
+                                @click.stop="clearCopyHistory"
+                                class="clear-history-button"
+                                title="Clear all history"
+                            >
+                                <i class="fas fa-trash"></i> Clear all
+                            </button>
+                        </div>
+                        <div class="utility-panel-body copy-history-content">
+                            <div v-if="copyHistory.length === 0" class="no-history">
+                                <p>No copy history yet. Use the app features to auto-copy content.</p>
                             </div>
-                            <div class="history-content">
-                                {{ item.content }}
-                            </div>
-                            <div class="history-actions">
-                                <button class="copy-again-button" @click="copyToClipboard(item.content)" title="Copy again">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                                <button class="remove-history-button" @click.stop="removeFromCopyHistory(item.id)" title="Remove from history">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                            <div v-else class="history-items">
+                                <div v-for="(item, index) in copyHistory" :key="item.id || index" class="history-item">
+                                    <div class="history-item-header">
+                                        <span class="history-source">{{ item.source }}</span>
+                                        <span class="history-time">{{ formatHistoryTime(item.timestamp) }}</span>
+                                    </div>
+                                    <div class="history-content">
+                                        {{ item.content }}
+                                    </div>
+                                    <div class="history-actions">
+                                        <button class="copy-again-button" @click="copyToClipboard(item.content)" title="Copy again">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="remove-history-button" @click.stop="removeFromCopyHistory(item.id)" title="Remove from history">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Glitch Tokens Panel -->
-            <div class="app-sidebar glitch-token-panel" :class="{ 'active': showGlitchTokenPanel }">
-                <div class="app-sidebar-header glitch-token-header">
-                    <h3><i class="fas fa-bug"></i> Glitch Tokens</h3>
-                    <div class="header-actions">
-                        <button class="close-button" @click="toggleGlitchTokenPanel" title="Close glitch tokens">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="app-sidebar-body glitch-token-content">
+                    <div v-show="activeUtilityPanel === 'glitch'" class="utility-panel glitch-token-panel">
+                        <div class="utility-panel-body glitch-token-content">
                     <!-- Filter Section -->
                     <div class="glitch-token-filters">
                         <div class="filter-group">
@@ -251,147 +281,199 @@
                                 </div>
                             </div>
                         </div>
+                        </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- End sequences sidebar (delimiter / stop strings for research) -->
-            <div class="app-sidebar end-sequence-panel" :class="{ active: showEndSequencePanel }">
-                <div class="app-sidebar-header end-sequence-header">
-                    <h3><i class="fas fa-stop"></i> End sequences</h3>
-                    <div class="header-actions">
-                        <button class="close-button" type="button" @click="toggleEndSequencePanel" title="Close">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="app-sidebar-body end-sequence-content">
-                    <p class="end-sequence-lede">
-                        Strings sometimes used to probe delimiter and termination behavior. Copy into your payloads as needed for authorized testing.
-                    </p>
-                    <div
-                        v-for="cat in endSequenceCategories"
-                        :key="cat.title"
-                        class="endsequence-category"
-                    >
-                        <h4>{{ cat.title }}</h4>
-                        <div class="endsequence-items">
-                            <button
-                                v-for="(item, idx) in cat.items"
-                                :key="cat.title + '-' + idx"
-                                type="button"
-                                class="endsequence-item"
-                                @click="copyEndSequence(item.value)"
-                                :title="'Copy to clipboard'"
-                                :aria-label="'Copy ' + item.label"
+                    <div v-show="activeUtilityPanel === 'endsequences'" class="utility-panel end-sequence-panel">
+                        <div class="utility-panel-body end-sequence-content">
+                            <p class="end-sequence-lede">
+                                Strings sometimes used to probe delimiter and termination behavior. Copy into your payloads as needed for authorized testing.
+                            </p>
+                            <div
+                                v-for="cat in endSequenceCategories"
+                                :key="cat.title"
+                                class="endsequence-category"
                             >
-                                <code class="endsequence-label">{{ item.label }}</code>
-                                <span class="endsequence-copy-affordance" aria-hidden="true">
-                                    <i class="fas fa-copy"></i>
-                                </span>
-                            </button>
+                                <h4>{{ cat.title }}</h4>
+                                <div class="endsequence-items">
+                                    <button
+                                        v-for="(item, idx) in cat.items"
+                                        :key="cat.title + '-' + idx"
+                                        type="button"
+                                        class="endsequence-item"
+                                        @click="copyEndSequence(item.value)"
+                                        :title="'Copy to clipboard'"
+                                        :aria-label="'Copy ' + item.label"
+                                    >
+                                        <code class="endsequence-label">{{ item.label }}</code>
+                                        <span class="endsequence-copy-affordance" aria-hidden="true">
+                                            <i class="fas fa-copy"></i>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-show="activeUtilityPanel === 'settings'" id="unicode-options-panel" class="utility-panel unicode-options-panel">
+                        <div class="utility-panel-body unicode-panel-content">
+                            <div class="settings-section theme-settings-section">
+                                <h4><i class="fas fa-palette"></i> Theme</h4>
+                                <small class="settings-hint">App appearance. Press <kbd>D</kbd> to cycle themes.</small>
+                                <label class="settings-theme-field">
+                                    Active theme
+                                    <select
+                                        class="settings-theme-select"
+                                        :value="activeTheme"
+                                        @change="setTheme($event.target.value)"
+                                        aria-label="Select theme"
+                                    >
+                                        <option
+                                            v-for="theme in themeOptions"
+                                            :key="theme.id"
+                                            :value="theme.id"
+                                        >
+                                            {{ theme.name }}
+                                        </option>
+                                    </select>
+                                </label>
+                            </div>
+                            <hr class="settings-divider" />
+                            <div class="settings-section api-key-section">
+                                <h4><i class="fas fa-key"></i> OpenRouter API Key</h4>
+                                <small class="settings-hint">Required for Translation, PromptCraft, and Anti-Classifier. Stored locally in your browser only.</small>
+                                <div class="api-key-input-row">
+                                    <input
+                                        :type="showApiKey ? 'text' : 'password'"
+                                        v-model="openrouterApiKey"
+                                        placeholder="sk-or-..."
+                                        class="api-key-input"
+                                        autocomplete="off"
+                                        spellcheck="false"
+                                    />
+                                    <button class="api-key-toggle" @click="showApiKey = !showApiKey" :title="showApiKey ? 'Hide key' : 'Show key'">
+                                        <i :class="showApiKey ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                    </button>
+                                </div>
+                                <div class="api-key-actions">
+                                    <button class="api-key-save" @click="saveApiKey" :disabled="!openrouterApiKey">
+                                        <i class="fas fa-save"></i> Save Key
+                                    </button>
+                                    <button class="api-key-clear" @click="clearApiKey" v-if="openrouterApiKey">
+                                        <i class="fas fa-trash"></i> Clear
+                                    </button>
+                                    <small v-if="apiKeySaved" class="apply-status">Saved</small>
+                                </div>
+                            </div>
+                            <hr class="settings-divider" />
+                            <div class="settings-section openrouter-models-section">
+                                <h4><i class="fas fa-robot"></i> AI Models</h4>
+                                <small class="settings-hint">Choose which models appear in tool dropdowns. Disabled models stay hidden unless currently selected.</small>
+                                <div class="openrouter-models-toolbar">
+                                    <input
+                                        type="search"
+                                        v-model="openRouterModelsFilterQuery"
+                                        class="openrouter-models-search"
+                                        placeholder="Search models…"
+                                        autocomplete="off"
+                                    />
+                                    <button type="button" class="openrouter-models-action" @click="enableAllOpenRouterModels">Show all</button>
+                                    <button type="button" class="openrouter-models-action" @click="showFreeOpenRouterModelsOnly">Free only</button>
+                                    <button type="button" class="openrouter-models-action" @click="refreshOpenRouterModels(true)" :disabled="openRouterModelsLoading">
+                                        <i class="fas" :class="openRouterModelsLoading ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
+                                    </button>
+                                </div>
+                                <small class="openrouter-models-summary">
+                                    {{ openRouterModels.length }} shown in dropdowns · {{ openRouterModelsCatalog.length }} loaded
+                                    <span v-if="openRouterModelsDisabled.length"> · {{ openRouterModelsDisabled.length }} hidden</span>
+                                </small>
+                                <small v-if="openRouterModelsError" class="openrouter-model-hint openrouter-model-hint-error">{{ openRouterModelsError }}</small>
+                                <div class="openrouter-models-list" role="group" aria-label="Model visibility">
+                                    <label
+                                        v-for="model in filteredOpenRouterModelsCatalog"
+                                        :key="model.id"
+                                        class="openrouter-model-toggle-row"
+                                        :class="{ 'is-virtual-router': model.virtual }"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            :checked="isOpenRouterModelEnabled(model.id)"
+                                            @change="toggleOpenRouterModelEnabled(model.id)"
+                                        />
+                                        <span class="openrouter-model-toggle-text">
+                                            <span class="openrouter-model-toggle-name">{{ formatOpenRouterModelLabel(model) }}</span>
+                                            <small v-if="model.summary" class="openrouter-model-toggle-summary">{{ model.summary }}</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <hr class="settings-divider" />
+                            <h4><i class="fas fa-user-secret"></i> Emoji Steganography</h4>
+                            <small class="settings-hint">Global encoding options for the Steganography tool (emoji carrier bit patterns). Not used by Unicode style transforms.</small>
+                            <div class="options-grid steg-adv-panel">
+                                <label>
+                                    Initial Presentation
+                                    <select class="steg-initial-presentation">
+                                        <option value="emoji">Emoji (VS16)</option>
+                                        <option value="text">Text (VS15)</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Bit-0 Selector
+                                    <select class="steg-vs-zero">
+                                        <option value="\ufe0e">VS15 (\ufe0e)</option>
+                                        <option value="\ufe0f">VS16 (\ufe0f)</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Bit-1 Selector
+                                    <select class="steg-vs-one">
+                                        <option value="\ufe0f">VS16 (\ufe0f)</option>
+                                        <option value="\ufe0e">VS15 (\ufe0e)</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Inter-bit Zero-Width
+                                    <select class="steg-inter-zw">
+                                        <option value="">None</option>
+                                        <option value="\u200C">ZWNJ (\u200C)</option>
+                                        <option value="\u200D">ZWJ (\u200D)</option>
+                                        <option value="\u200B">ZWSP (\u200B)</option>
+                                        <option value="\ufeff">BOM (\ufeff)</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Inter-bit Every N bits
+                                    <input class="steg-inter-every" type="number" min="1" max="8" value="1" />
+                                </label>
+                                <label>
+                                    Bit Order
+                                    <select class="steg-bit-order">
+                                        <option value="msb">MSB First</option>
+                                        <option value="lsb">LSB First</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Trailing Zero-Width
+                                    <select class="steg-trailing-zw">
+                                        <option value="\u200B">ZWSP (\u200B)</option>
+                                        <option value="\u200C">ZWNJ (\u200C)</option>
+                                        <option value="\u200D">ZWJ (\u200D)</option>
+                                        <option value="\ufeff">BOM (\ufeff)</option>
+                                        <option value="">None</option>
+                                    </select>
+                                </label>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <button class="apply-steg-options" :class="{ applied: unicodeApplyFlash }" :disabled="unicodeApplyBusy" @click="applyUnicodeOptions" title="These options affect Unicode-based steganography encoding/decoding.">Apply</button>
+                                    <small v-if="unicodeApplyFlash" class="apply-status">Applied</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-        <!-- Advanced Settings Panel (inside app so Vue bindings work) -->
-        <div id="unicode-options-panel" class="app-sidebar unicode-options-panel">
-            <div class="app-sidebar-header unicode-panel-header">
-                <h3><i class="fas fa-sliders-h"></i> Advanced Settings</h3>
-                <button class="close-button" title="Close Advanced Settings"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="app-sidebar-body unicode-panel-content">
-                <!-- OpenRouter API Key -->
-                <div class="settings-section api-key-section">
-                    <h4><i class="fas fa-key"></i> OpenRouter API Key</h4>
-                    <small class="settings-hint">Required for Translation, PromptCraft, and Anti-Classifier. Stored locally in your browser only.</small>
-                    <div class="api-key-input-row">
-                        <input
-                            :type="showApiKey ? 'text' : 'password'"
-                            v-model="openrouterApiKey"
-                            placeholder="sk-or-..."
-                            class="api-key-input"
-                            autocomplete="off"
-                            spellcheck="false"
-                        />
-                        <button class="api-key-toggle" @click="showApiKey = !showApiKey" :title="showApiKey ? 'Hide key' : 'Show key'">
-                            <i :class="showApiKey ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                        </button>
-                    </div>
-                    <div class="api-key-actions">
-                        <button class="api-key-save" @click="saveApiKey" :disabled="!openrouterApiKey">
-                            <i class="fas fa-save"></i> Save Key
-                        </button>
-                        <button class="api-key-clear" @click="clearApiKey" v-if="openrouterApiKey">
-                            <i class="fas fa-trash"></i> Clear
-                        </button>
-                        <small v-if="apiKeySaved" class="apply-status">Saved</small>
-                    </div>
-                </div>
-                <hr class="settings-divider" />
-                <!-- Steganography Options -->
-                <h4><i class="fas fa-user-secret"></i> Steganography Options</h4>
-            </div>
-            <div class="app-sidebar-body unicode-panel-content options-grid steg-adv-panel">
-                <label>
-                    Initial Presentation
-                    <select class="steg-initial-presentation">
-                        <option value="emoji">Emoji (VS16)</option>
-                        <option value="text">Text (VS15)</option>
-                        <option value="none">None</option>
-                    </select>
-                </label>
-                <label>
-                    Bit-0 Selector
-                    <select class="steg-vs-zero">
-                        <option value="\ufe0e">VS15 (\ufe0e)</option>
-                        <option value="\ufe0f">VS16 (\ufe0f)</option>
-                    </select>
-                </label>
-                <label>
-                    Bit-1 Selector
-                    <select class="steg-vs-one">
-                        <option value="\ufe0f">VS16 (\ufe0f)</option>
-                        <option value="\ufe0e">VS15 (\ufe0e)</option>
-                    </select>
-                </label>
-                <label>
-                    Inter-bit Zero-Width
-                    <select class="steg-inter-zw">
-                        <option value="">None</option>
-                        <option value="\u200C">ZWNJ (\u200C)</option>
-                        <option value="\u200D">ZWJ (\u200D)</option>
-                        <option value="\u200B">ZWSP (\u200B)</option>
-                        <option value="\ufeff">BOM (\ufeff)</option>
-                    </select>
-                </label>
-                <label>
-                    Inter-bit Every N bits
-                    <input class="steg-inter-every" type="number" min="1" max="8" value="1" />
-                </label>
-                <label>
-                    Bit Order
-                    <select class="steg-bit-order">
-                        <option value="msb">MSB First</option>
-                        <option value="lsb">LSB First</option>
-                    </select>
-                </label>
-                <label>
-                    Trailing Zero-Width
-                    <select class="steg-trailing-zw">
-                        <option value="\u200B">ZWSP (\u200B)</option>
-                        <option value="\u200C">ZWNJ (\u200C)</option>
-                        <option value="\u200D">ZWJ (\u200D)</option>
-                        <option value="\ufeff">BOM (\ufeff)</option>
-                        <option value="">None</option>
-                    </select>
-                </label>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <button class="apply-steg-options" :class="{ applied: unicodeApplyFlash }" :disabled="unicodeApplyBusy" @click="applyUnicodeOptions" title="These options affect Unicode-based steganography encoding/decoding.">Apply</button>
-                    <small v-if="unicodeApplyFlash" class="apply-status">Applied</small>
-                </div>
-            </div>
+            </aside>
         </div>
 
     </div>
@@ -423,6 +505,7 @@
     <script src="js/utils/history.js"></script>
     <script src="js/utils/clipboard.js"></script>
     <script src="js/utils/theme.js"></script>
+    <script src="js/utils/openrouterModels.js"></script>
     <script src="js/utils/routing.js"></script>
     <script src="js/utils/emoji.js"></script>
     

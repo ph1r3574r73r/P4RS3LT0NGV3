@@ -13,6 +13,7 @@ P4RS3LT0NGV3/
 ├── index.template.html          # HTML shell; tool *script* tags updated by inject-tool-scripts
 ├── css/
 │   ├── style.css
+│   ├── themes-atmosphere.css    # Optional per-theme atmosphere / component overrides
 │   └── notification.css
 ├── js/
 │   ├── app.js                   # Vue app entry
@@ -37,7 +38,8 @@ P4RS3LT0NGV3/
 │   │   ├── glitchTokens.js
 │   │   ├── history.js
 │   │   ├── notifications.js
-│   │   └── theme.js
+│   │   ├── openrouterModels.js  # Fetch/cache OpenRouter model lists for Settings UI
+│   │   └── theme.js             # Theme registry + applyTheme / cycleTheme
 │   └── tools/                   # One *Tool.js per tab (extends Tool.js)
 │       ├── Tool.js
 │       ├── AntiClassifierTool.js
@@ -98,7 +100,8 @@ P4RS3LT0NGV3/
 ├── docs/
 │   ├── TOOL-SYSTEM.md
 │   ├── TOOL_ARCHITECTURE.md
-│   └── UI-COMPONENTS.md
+│   ├── UI-COMPONENTS.md
+│   └── THEMES.md                # Adding / editing themes
 ├── README.md
 └── CONTRIBUTING.md
 
@@ -118,7 +121,7 @@ dist/   # npm run build — gitignored
 
 - **`js/core/`** — Shared business logic and infrastructure (not tab-specific)
   - Examples: `decoder.js` (DecodeTool, decoder pipeline), `steganography.js` (EmojiTool, steg engine), `toolRegistry.js` (registers tools, merges Vue surface), `transformOptions.js` (shared transform UI helpers)
-- **`js/utils/`** — Cross-cutting helpers (`clipboard`, `EmojiUtils` in `emoji.js`, notifications, theme, etc.)
+- **`js/utils/`** — Cross-cutting helpers (`clipboard`, `EmojiUtils` in `emoji.js`, notifications, `theme.js`, `openrouterModels.js`, etc.)
 - **`js/data/`** — Committed static payloads (models, prompts, glitch token data, end sequences, `emojiCompatibility.js`). **`emojiData.js`** is **not** edited here — it is **generated** to `dist/js/data/emojiData.js` by `npm run build:emoji`.
 - **`src/`** — `emojiWordMap.js` feeds the emoji build; `transformers/` holds transformer modules
 - **Generated bundle** — `npm run build:transforms` writes `dist/js/bundles/transforms-bundle.js` (a legacy `js/bundles/transforms-bundle.js` path may exist for older workflows and is gitignored)
@@ -313,7 +316,18 @@ Utilities are shared helper functions used across the app. Currently, utility fu
 - Document with JSDoc comments
 - Consider adding to existing modules if functionality is related
 
-**Note:** Prefer `js/utils/` for shared helpers (clipboard, emoji, escapeParser, focus, glitchTokens, history, notifications, theme). Use `js/config/` for constants.
+**Note:** Prefer `js/utils/` for shared helpers (clipboard, emoji, escapeParser, focus, glitchTokens, history, notifications, theme, openrouterModels). Use `js/config/` for constants.
+
+### 4. Adding or Updating a Theme
+
+Themes are registry entries plus CSS token blocks—not Vue components.
+
+1. Register the theme in `js/utils/theme.js` (`themes` array).
+2. Add a `body.theme-<id> { … }` token block in `css/style.css` (copy from `body.theme-dark` or an existing custom theme).
+3. Optionally add atmosphere rules in `css/themes-atmosphere.css`.
+4. `npm run build`, then verify in the browser (dropdown, **`D`** cycle, nav, utility dock, toggles, mobile header utility button).
+
+Full step-by-step guide, token checklist, and testing list: **[docs/THEMES.md](docs/THEMES.md)**.
 
 ## 🧪 Testing
 
@@ -417,6 +431,7 @@ This:
 - **Tool system**: `docs/TOOL-SYSTEM.md` — Templates, injection, UI vocabulary
 - **Tool architecture**: `docs/TOOL_ARCHITECTURE.md`
 - **UI components**: `docs/UI-COMPONENTS.md`
+- **Themes**: `docs/THEMES.md` — Adding and editing themes
 
 ## ✅ Checklist Before Submitting
 

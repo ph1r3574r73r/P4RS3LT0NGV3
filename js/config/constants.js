@@ -2,6 +2,8 @@
  * Application Configuration Constants
  */
 window.CONFIG = {
+    APP_VERSION: '4.0.0',
+
     // History configuration
     MAX_HISTORY_ITEMS: 50,
     
