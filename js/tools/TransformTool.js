@@ -76,6 +76,8 @@ class TransformTool extends Tool {
                 return true;
             })
             .map(([key, transform]) => ({
+                transformKey: key,
+                customSpellingId: transform.customSpellingId || null,
                 name: transform.name,
                 func: transform.func.bind(transform),
                 preview: transform.preview ? transform.preview.bind(transform) : function() { return '[preview]'; },
@@ -247,6 +249,12 @@ class TransformTool extends Tool {
                 // Find transform by name and return its category property
                 const transform = this.transforms.find(t => t.name === transformName);
                 return transform ? transform.category : 'special';
+            },
+            getTransformKey: function(transform) {
+                if (!transform) {
+                    return '';
+                }
+                return transform.customSpellingId || transform.transformKey || transform.name;
             },
             /**
              * True if this transform should show the options gear (uses saved prefs + defaults in decoder).
@@ -644,10 +652,21 @@ class TransformTool extends Tool {
                     return;
                 }
 
+                const previousCustomCount = (this.transforms || []).filter(function(t) {
+                    return t.category === 'custom_spelling';
+                }).length;
+
                 this.transforms = transformTool.buildTransformsFromWindow();
                 const categories = transformTool.rebuildTransformCategories(this.transforms);
                 this.legendCategories = categories.legendCategories;
                 this.categories = categories.sectionCategories;
+
+                const nextCustomCount = this.transforms.filter(function(t) {
+                    return t.category === 'custom_spelling';
+                }).length;
+                if (nextCustomCount !== previousCustomCount) {
+                    this.saveCategoryOrder(this.categories);
+                }
 
                 this.$nextTick(() => {
                     if (typeof this.initializeCategoryNavigation === 'function') {
@@ -719,6 +738,9 @@ class TransformTool extends Tool {
     getVueLifecycle() {
         return {
             mounted() {
+                if (typeof this.refreshCustomSpellingTransforms === 'function') {
+                    this.refreshCustomSpellingTransforms();
+                }
                 this.initializeCategoryNavigation();
                 
                 // Save initial category order to localStorage if it doesn't exist
@@ -736,6 +758,9 @@ class TransformTool extends Tool {
     }
     
     onActivate(vueInstance) {
+        if (typeof vueInstance.refreshCustomSpellingTransforms === 'function') {
+            vueInstance.refreshCustomSpellingTransforms();
+        }
         vueInstance.$nextTick(() => {
             vueInstance.initializeCategoryNavigation();
         });

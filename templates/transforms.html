@@ -416,7 +416,7 @@
                                     </p>
                                     <div class="chaos-overlay" aria-hidden="true"></div>
                                     <div class="transform-buttons">
-                                        <div v-for="transform in getTransformsByCategory(category)" :key="transform.name" class="transform-button-group">
+                                        <div v-for="transform in getTransformsByCategory(category)" :key="getTransformKey(transform)" class="transform-button-group">
                                             <button 
                                                 @click="applyTransform(transform, $event)"
                                                 :class="'transform-button transform-category-' + category + ' randomizer-button'"
@@ -486,7 +486,7 @@
                                         </span>
                                     </h4>
                                     <div class="transform-buttons">
-                                        <div v-for="transform in getTransformsByCategory(category)" :key="transform.name" class="transform-button-group">
+                                        <div v-for="transform in getTransformsByCategory(category)" :key="getTransformKey(transform)" class="transform-button-group">
                                             <button 
                                                 @click="applyTransform(transform, $event)"
                                                 :class="'transform-button transform-category-' + category"

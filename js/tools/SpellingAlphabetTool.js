@@ -207,6 +207,14 @@ class SpellingAlphabetTool extends Tool {
                     return 'Enter a name for this spelling alphabet.';
                 }
 
+                var duplicateName = (this.saAlphabets || []).some(function(entry) {
+                    return entry.id !== this.saEditingId &&
+                        String(entry.name || '').trim().toLowerCase() === name.toLowerCase();
+                }, this);
+                if (duplicateName) {
+                    return 'Another spelling alphabet already uses this name. Choose a unique name.';
+                }
+
                 var missing = this.saLetters.filter(function(letter) {
                     return !String(this.saAlphabet[letter] || '').trim();
                 }, this);
@@ -295,6 +303,9 @@ class SpellingAlphabetTool extends Tool {
 
     onActivate(vueInstance) {
         vueInstance.saLoadAlphabets();
+        if (typeof vueInstance.refreshCustomSpellingTransforms === 'function') {
+            vueInstance.refreshCustomSpellingTransforms();
+        }
     }
 }
 
