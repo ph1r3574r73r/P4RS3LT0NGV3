@@ -8,7 +8,7 @@ This workflow automatically builds and deploys the project to GitHub Pages whene
 
 1. **Build Stage:**
    - Checks out the repository
-   - Sets up Node.js (v20) with npm cache enabled
+   - Sets up Node.js (v24) with npm cache enabled
    - Installs dependencies with `npm ci`
    - Runs test suite with `npm run test:all`
    - Runs `npm run build` which:

@@ -54,7 +54,9 @@ class TransformTool extends Tool {
             transformOptionPrefs: this.loadTransformOptionPrefs(),
             transformOptionsModalOpen: false,
             transformOptionsModalTransform: null,
-            transformOptionsDraft: {}
+            transformOptionsDraft: {},
+            transformSearchQuery: '',
+            transformCategoryFilter: ''
         };
     }
 
@@ -395,6 +397,104 @@ class TransformTool extends Tool {
                     !this.favorites.some(f => typeof f === 'string' && f === t.name)
                 );
             },
+            formatCategoryLabel: function(category) {
+                return String(category || '').replace(/_/g, ' ');
+            },
+            toggleCategoryFilter: function(category) {
+                this.transformCategoryFilter = this.transformCategoryFilter === category ? '' : category;
+            },
+            clearTransformFilters: function() {
+                this.transformSearchQuery = '';
+                this.transformCategoryFilter = '';
+            },
+            transformSearchActive: function() {
+                return String(this.transformSearchQuery || '').trim().length > 0;
+            },
+            transformMatchesSearchText: function(text) {
+                const query = String(this.transformSearchQuery || '').trim().toLowerCase();
+                if (!query) {
+                    return true;
+                }
+                return String(text || '').toLowerCase().indexOf(query) !== -1;
+            },
+            transformMatchesSearch: function(transform) {
+                return this.transformMatchesSearchText(transform && transform.name);
+            },
+            getFilteredTransformsByCategory: function(category) {
+                const list = this.getTransformsByCategory(category);
+                if (!this.transformSearchActive()) {
+                    return list;
+                }
+                return list.filter(t => this.transformMatchesSearch(t));
+            },
+            categorySectionVisible: function(category) {
+                if (this.transformCategoryFilter && this.transformCategoryFilter !== category) {
+                    return false;
+                }
+                return this.getFilteredTransformsByCategory(category).length > 0;
+            },
+            displayItemMatchesFilters: function(item) {
+                if (!item) {
+                    return false;
+                }
+                if (this.transformCategoryFilter) {
+                    if (item.type === 'translate') {
+                        return false;
+                    }
+                    if (item.type === 'transform' && item.transform) {
+                        const category = item.transform.category || this.getDisplayCategory(item.transform.name);
+                        if (category !== this.transformCategoryFilter) {
+                            return false;
+                        }
+                    }
+                }
+                if (!this.transformSearchActive()) {
+                    return true;
+                }
+                if (item.type === 'translate') {
+                    return this.transformMatchesSearchText(item.langName);
+                }
+                if (item.type === 'transform' && item.transform) {
+                    return this.transformMatchesSearch(item.transform);
+                }
+                return true;
+            },
+            getFilteredFavoriteDisplayItems: function() {
+                return this.getFavoriteDisplayItems().filter(item => this.displayItemMatchesFilters(item));
+            },
+            getFilteredLastUsedDisplayItems: function() {
+                return this.getLastUsedDisplayItems().filter(item => this.displayItemMatchesFilters(item));
+            },
+            favoritesSectionVisible: function() {
+                return this.showFavorites && this.getFilteredFavoriteDisplayItems().length > 0;
+            },
+            lastUsedSectionVisible: function() {
+                return this.showLastUsed && this.getFilteredLastUsedDisplayItems().length > 0;
+            },
+            translateSectionVisible: function() {
+                if (this.transformCategoryFilter) {
+                    return false;
+                }
+                if (!this.transformSearchActive()) {
+                    return true;
+                }
+                const langs = (this.translateMainLangs || [])
+                    .concat(this.translateExoticLangs || [])
+                    .concat(this.translateCustomLangs || []);
+                return langs.some(lang => this.transformMatchesSearchText(lang.name));
+            },
+            translateLangVisible: function(langName) {
+                return this.transformMatchesSearchText(langName);
+            },
+            transformListHasNoMatches: function() {
+                if (!this.transformSearchActive() && !this.transformCategoryFilter) {
+                    return false;
+                }
+                if (this.favoritesSectionVisible() || this.lastUsedSectionVisible() || this.translateSectionVisible()) {
+                    return false;
+                }
+                return !this.categories.some(category => this.categorySectionVisible(category));
+            },
             isSpecialCategory: function(category) {
                 return category === 'randomizer';
             },
@@ -667,52 +767,7 @@ class TransformTool extends Tool {
                 if (nextCustomCount !== previousCustomCount) {
                     this.saveCategoryOrder(this.categories);
                 }
-
-                this.$nextTick(() => {
-                    if (typeof this.initializeCategoryNavigation === 'function') {
-                        this.initializeCategoryNavigation();
-                    }
-                });
             },
-            initializeCategoryNavigation: function() {
-                this.$nextTick(() => {
-                    const legendItems = document.querySelectorAll('.transform-category-legend .legend-item');
-                    legendItems.forEach(item => {
-                        const newItem = item.cloneNode(true);
-                        item.parentNode.replaceChild(newItem, item);
-                    });
-                    
-                    document.querySelectorAll('.transform-category-legend .legend-item').forEach(item => {
-                        item.addEventListener('click', () => {
-                            const targetId = item.getAttribute('data-target');
-                            if (targetId) {
-                                const targetElement = document.getElementById(targetId);
-                                if (targetElement) {
-                                    document.querySelectorAll('.transform-category-legend .legend-item').forEach(li => {
-                                        li.classList.remove('active-category');
-                                    });
-                                    item.classList.add('active-category');
-                                    
-                                    const inputSection = document.querySelector('.input-section');
-                                    const inputSectionHeight = inputSection.offsetHeight;
-                                    const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
-                                    const offsetPosition = elementPosition - inputSectionHeight - 10;
-                                    
-                                    window.scrollTo({
-                                        top: offsetPosition,
-                                        behavior: 'smooth'
-                                    });
-                                    
-                                    targetElement.classList.add('highlight-section');
-                                    setTimeout(() => {
-                                        targetElement.classList.remove('highlight-section');
-                                    }, 1000);
-                                }
-                            }
-                        });
-                    });
-                });
-            }
         };
     }
     
@@ -741,7 +796,6 @@ class TransformTool extends Tool {
                 if (typeof this.refreshCustomSpellingTransforms === 'function') {
                     this.refreshCustomSpellingTransforms();
                 }
-                this.initializeCategoryNavigation();
                 
                 // Save initial category order to localStorage if it doesn't exist
                 // This ensures consistent state for category reordering operations
@@ -761,9 +815,6 @@ class TransformTool extends Tool {
         if (typeof vueInstance.refreshCustomSpellingTransforms === 'function') {
             vueInstance.refreshCustomSpellingTransforms();
         }
-        vueInstance.$nextTick(() => {
-            vueInstance.initializeCategoryNavigation();
-        });
     }
 }
 
